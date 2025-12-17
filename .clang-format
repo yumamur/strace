@@ -1,0 +1,47 @@
+Language: C
+AlignAfterOpenBracket: true
+AlignArrayOfStructures: Right
+AlignConsecutiveDeclarations:
+  Enabled: true
+  AcrossEmptyLines: true
+  AcrossComments: false
+  AlignCompound: false
+  AlignFunctionPointers: true
+  PadOperators: true
+AlignEscapedNewlinesLeft: true
+AllowAllParametersOfDeclarationOnNextLine: false
+AllowShortBlocksOnASingleLine: false
+AllowShortFunctionsOnASingleLine: None
+AlwaysBreakAfterReturnType: None
+AlwaysBreakBeforeMultilineStrings: false
+BinPackArguments: true
+BinPackParameters: true
+BreakBeforeBraces: Allman
+BreakBeforeTernaryOperators: false
+Cpp11BracedListStyle: true
+ColumnLimit: 0
+IndentWidth: 4
+KeepEmptyLinesAtTheStartOfBlocks: false
+MaxEmptyLinesToKeep: 1
+PointerAlignment: Right
+PenaltyBreakBeforeFirstCallParameter: 1
+PenaltyBreakString: 1
+PenaltyExcessCharacter: 0
+SpaceAfterCStyleCast: true
+SpaceBeforeAssignmentOperators: true
+SpaceInEmptyParentheses: false
+SpacesInCStyleCastParentheses: false
+SpacesInParentheses: false
+SpacesInSquareBrackets: false
+TabWidth: 4
+UseTab: ForContinuationAndIndentation
+IndentAccessModifiers: true
+IndentWrappedFunctionNames: true
+KeepEmptyLinesAtEOF: true
+SpaceBeforeParensOptions:
+  AfterIfMacros: true
+  AfterFunctionDefinitionName: true
+  BeforeNonEmptyParentheses: false
+  AfterControlStatements: true
+AlignConsecutiveMacros:
+  Enabled: true
