@@ -6,43 +6,33 @@
 #include <errno.h>
 #include <linux/elf.h>
 #include <signal.h>
-#include <stdio.h>
+#include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/ptrace.h>
+#include <sys/syscall.h>
 #include <sys/uio.h>
 #include <sys/user.h>
 #include <sys/wait.h>
-#include <unistd.h>
 
 #ifndef NT_PRSTATUS
-#define NT_PRSTATUS 1
+#  define NT_PRSTATUS 1
 #endif
 
 #define MAX_SYSCALL 512
 
 static struct user_regs_struct g_regs;
 
-extern SYS_FUNC(access);
-
-#define X(name)    \
-	SYS_FUNC(name) \
-	{              \
-		(void) td; \
-	}
-#include "syscalls.def"
-#undef X
-
-static t_entry sysent[] = {
+static t_entry                 sysent[] = {
 #define X(name) [__NR_##name] = {.call_name = #name, .logger = sys_##name},
 #include "syscalls.def"
-	X(access)
 #undef X
 };
 
-static inline const char *get_syscall_name(long scno)
+static inline const char *get_syscall_name(t_td *td)
 {
-	if (scno < 0 || scno >= (long) (sizeof(sysent) / sizeof(sysent[0])))
+	unsigned long scno = td->sc_no;
+	if (scno >= (long) (sizeof(sysent) / sizeof(sysent[0])))
 		return "unknown";
 
 	const char *s = sysent[scno].call_name;
@@ -97,6 +87,20 @@ void fill_trace_data(t_td *td)
 	}
 }
 
+void syscallstart(t_td *td)
+{
+	fill_trace_data(td);
+	printsyscallstart(get_syscall_name(td));
+	sysent[td->sc_no].logger(td);
+	td->flags |= TD_INSYSCALL;
+}
+
+void syscallend(t_td *td)
+{
+	printsyscallend(td);
+	td->flags &= ~TD_INSYSCALL;
+}
+
 void trace_syscalls(pid_t child)
 {
 	int          status;
@@ -112,7 +116,7 @@ void trace_syscalls(pid_t child)
 
 	if (!WIFSTOPPED(status))
 	{
-		fputfmt(stderr, "Child not stopped\n");
+		perror("Child not stopped\n");
 		return;
 	}
 
@@ -160,13 +164,13 @@ void trace_syscalls(pid_t child)
 
 		if (WIFEXITED(status))
 		{
-			putfmt("+++ exited with %d +++\n", WEXITSTATUS(status));
+			printexit(WEXITSTATUS(status));
 			break;
 		}
 
 		if (WIFSIGNALED(status))
 		{
-			putfmt("+++ killed by signal %d +++\n", WTERMSIG(status));
+			printkillsig(WTERMSIG(status));
 			break;
 		}
 
@@ -187,18 +191,10 @@ void trace_syscalls(pid_t child)
 					break;
 				}
 
-				if (entering(&td))
-				{
-					fill_trace_data(&td);
-					putfmt("%s(", get_syscall_name(td.sc_no));
-					sysent[td.sc_no].logger(&td);
-					td.flags |= TD_INSYSCALL;
-				}
+				if (entering(td))
+					syscallstart(&td);
 				else
-				{
-					putfmt(") = %lld\n", *(int *) &td.sc_ret);
-					td.flags &= ~TD_INSYSCALL;
-				}
+					syscallend(&td);
 
 				if (ptrace(PTRACE_SYSCALL, child, 0, 0) == -1)
 				{
@@ -232,27 +228,33 @@ void trace_syscalls(pid_t child)
 	}
 }
 
-char *get_executable(char *cmd)
+char *get_executable(const char *cmd, char *buf, size_t buflen)
 {
-	char   buf[4096];
 	char  *env_path;
 	char  *tok;
 	size_t cmdlen;
 
 	if (!cmd)
 		return (NULL);
+	if (cmd[0] == '.' || cmd[0] == '/')
+	{
+		strcpy(buf, cmd);
+		if (access(buf, F_OK))
+			perror_and_die("Cannot stat '%s': %s", cmd, strerror(errno));
+		return buf;
+	}
 	cmdlen = strlen(cmd);
 	env_path = getenv("PATH");
 	if (!env_path)
 		return (NULL);
 	tok = strtok(env_path, ":");
-	while (tok && *tok && strlen(tok) + 1 + cmdlen <= 4096)
+	while (tok && *tok && strlen(tok) + 1 + cmdlen <= buflen)
 	{
 		strcpy(buf, tok);
 		buf[strlen(tok)] = '/';
-		strcpy(&buf[strlen(tok) + 1], cmd);
+		strcpy(buf + strlen(tok) + 1, cmd);
 		if (access(buf, F_OK) == 0)
-			return (strdup(buf));
+			return buf;
 		tok = strtok(NULL, ":");
 	}
 	return (NULL);
@@ -261,20 +263,11 @@ char *get_executable(char *cmd)
 int main(int argc, char *const *argv, char *const *envp)
 {
 	if (argc < 2)
-	{
-		fputfmt(stderr, "Usage: %s <program> [args...]\n", argv[0]);
-		return 1;
-	}
-	char *path = get_executable(argv[1]);
+		perror_and_die("Usage: %s <program> [args...]\n", argv[0]);
+	char  another_buffer[4096];
+	char *path = get_executable(argv[1], another_buffer, sizeof(another_buffer));
 	if (!path)
-	{
-		fputfmt(stderr, "Cannot find executable '%s'\n", argv[1]);
-		return 1;
-	}
-
-	char another_buffer[4096];
-	strcpy(another_buffer, path);
-	free(path);
+		perror_and_die("Cannot find executable '%s'\n", argv[1]);
 
 	pid_t pid = fork();
 
@@ -285,23 +278,13 @@ int main(int argc, char *const *argv, char *const *envp)
 	}
 	if (pid == 0)
 	{
-		/* Ensure parent can trace the child from the very first stop.
-		 * With PTRACE_TRACEME the subsequent raise(SIGSTOP) will be
-		 * visible to the tracer so it can log the stop/syscall events
-		 * from the very beginning. */
-		if (ptrace(PTRACE_TRACEME, 0, NULL, NULL) == -1)
-			perror("ptrace traceme");
-
 		raise(SIGSTOP);
-
 		execve(another_buffer, &argv[1], envp);
 		perror("execvp");
 		exit(1);
 	}
 	else
-	{
 		trace_syscalls(pid);
-	}
 
 	return 0;
 }

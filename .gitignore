@@ -1,3 +1,5 @@
 *.o
 .*.swp
 /.vscode
+/ft_strace
+/vgcore.*

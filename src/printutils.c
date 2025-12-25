@@ -1,46 +1,41 @@
-#include "ft_print.h"
+#include "ft_printutils.h"
 #include <ctype.h>
+#include <inttypes.h>
+#include <stdarg.h>
 
-int puthex(__kernel_ulong_t addr)
+int inprintnum(char *ptr, size_t n, uint64_t num, enum e_putnum_fmt fmt)
 {
-	static char hex[16] = {'0', '1', '2', '3', '4', '5', '6', '7',
-						   '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
-	char        buf[17];
-	int         i = 1;
-
-	buf[0] = '#';
-	while (i < 16)
+	switch (fmt)
 	{
-		buf[i] = hex[(addr >> (i * 4)) & 0xf];
-		i++;
+	case DEC:
+		return snprintf(ptr, n, "%" PRId64, num);
+	case UND:
+		return snprintf(ptr, n, "%" PRIu64, num);
+	case OCT:
+		return snprintf(ptr, n, "%" PRIo64, num);
+	case OCTO3:
+		return snprintf(ptr, n, "%#03" PRIo64, num);
+	case HEX:
+		return snprintf(ptr, n, "%#" PRIx64, num);
+	case UPHEX:
+		return snprintf(ptr, n, "%#" PRIX64, num);
 	}
-	buf[i] = '\0';
+	return -1;
+}
+
+int putnum(uint64_t num, enum e_putnum_fmt fmt)
+{
+	static char buf[sizeof(num) * 3];
+	inprintnum(buf, sizeof(buf), num, fmt);
 	return TPUTS(buf);
 }
 
-int putnum(__kernel_ulong_t num)
-{
-	char buf[21];
-	snprintf(buf, sizeof(buf), "%lu", num);
-	return TPUTS(buf);
-}
-
-int printaddr(__kernel_ulong_t addr)
-{
-	return puthex(addr);
-}
-
-int printnull()
-{
-	return TPUTS("NULL");
-}
-
-int printquotstr(const char *str, size_t len)
+int putquotstr(const char *str, size_t len)
 {
 	if (!str || !len)
 		return 0;
 
-	size_t bufsize = MIN(3 + len * 4, MAX_PRINTSTR_LEN);
+	size_t bufsize = MIN(3 + len * 4, MAX_STR_LEN);
 
 	char   buf[bufsize];
 	char  *bufptr = buf + 1;
@@ -85,7 +80,7 @@ int printquotstr(const char *str, size_t len)
 		default:
 			if (isprint(ch))
 				*bufptr++ = ch;
-			else if (i < len)
+			else if (i < len - 1)
 			{
 				*bufptr++ = '\\';
 				if (ch >> 3)
@@ -101,7 +96,7 @@ int printquotstr(const char *str, size_t len)
 	}
 	buf[0] = '\"';
 	*bufptr++ = '\"';
-	*bufptr = '\0';
+	*bufptr++ = 0;
 	return TPUTS(buf);
 }
 
@@ -115,4 +110,14 @@ int fputfmt(FILE *file, const char *fmt, ...)
 	fflush(file);
 	va_end(args);
 	return ret;
+}
+
+void putcomment(const char *str)
+{
+	if (str && *str)
+	{
+		TPUTS("/* ");
+		TPUTS(str);
+		TPUTS(" */");
+	}
 }

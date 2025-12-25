@@ -1,16 +1,40 @@
-#include "ft_common.h"
+#include "trace.h"
 #include <string.h>
+
+/*
+	'process_vm_readv' exists since Linux 3.2 and glibc 2.15.
+	the project allows linux >3.4, so it's assumed safe to __USE_GNU for
+	'process_vm_readv' function declaration.
+*/
+#define __USE_GNU
 #include <sys/uio.h>
+#undef __USE_GNU
+
 #include <syscall.h>
 #include <unistd.h>
 
-static ssize_t strace_process_vm_readv(pid_t pid, const struct iovec *lvec, unsigned long liovcnt, const struct iovec *rvec, unsigned long riovcnt, unsigned long flags)
-{
-	return syscall(__NR_process_vm_readv, (long) pid, lvec, liovcnt, rvec, riovcnt, flags);
-}
-#define process_vm_readv strace_process_vm_readv
+// this goes to trash
+// static ssize_t strace_process_vm_readv(pid_t               pid,
+// 									   const struct iovec *lvec,
+// 									   unsigned long       liovcnt,
+// 									   const struct iovec *rvec,
+// 									   unsigned long       riovcnt,
+// 									   unsigned long       flags)
+// {
+// 	return syscall(__NR_process_vm_readv,
+// 				   (long) pid,
+// 				   lvec,
+// 				   liovcnt,
+// 				   rvec,
+// 				   riovcnt,
+// 				   flags);
+// }
+// #define process_vm_readv strace_process_vm_readv
 
-static ssize_t process_read_mem(const pid_t pid, void *const laddr, void *const raddr, const size_t len)
+static ssize_t process_read_mem(const pid_t  pid,
+								void *const  laddr,
+								void *const  raddr,
+								const size_t len)
 {
 	const struct iovec local = {.iov_base = laddr, .iov_len = len};
 	const struct iovec remote = {.iov_base = raddr, .iov_len = len};

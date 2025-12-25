@@ -8,6 +8,8 @@ AlignConsecutiveDeclarations:
   AlignCompound: false
   AlignFunctionPointers: true
   PadOperators: true
+AlignConsecutiveMacros:
+  Enabled: true
 AlignEscapedNewlinesLeft: true
 AllowAllParametersOfDeclarationOnNextLine: false
 AllowShortBlocksOnASingleLine: false
@@ -17,11 +19,16 @@ AlwaysBreakBeforeMultilineStrings: false
 BinPackArguments: true
 BinPackParameters: true
 BreakBeforeBraces: Allman
+BreakBeforeBinaryOperators: true
 BreakBeforeTernaryOperators: false
 Cpp11BracedListStyle: true
 ColumnLimit: 0
+IndentPPDirectives: AfterHash
+PPIndentWidth: 2
 IndentWidth: 4
 KeepEmptyLinesAtTheStartOfBlocks: false
+MacroBlockBegin: ''
+MacroBlockEnd:   ''
 MaxEmptyLinesToKeep: 1
 PointerAlignment: Right
 PenaltyBreakBeforeFirstCallParameter: 1
@@ -43,5 +50,3 @@ SpaceBeforeParensOptions:
   AfterFunctionDefinitionName: true
   BeforeNonEmptyParentheses: false
   AfterControlStatements: true
-AlignConsecutiveMacros:
-  Enabled: true
