@@ -3,3 +3,4 @@
 /.vscode
 /ft_strace
 /vgcore.*
+/obj/
