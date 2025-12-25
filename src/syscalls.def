@@ -1,4 +1,3 @@
-/* syscalls with '__NR_' stripped */
 X(access)
 X(accept)
 X(accept4)

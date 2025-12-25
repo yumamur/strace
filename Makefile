@@ -11,7 +11,7 @@ CFLAGS := -Wall -Wextra -Werror
 all: $(NAME)
 
 debug: CFLAGS += -g -DDEBUG_ME
-debug: all
+debug: fclean all
 
 $(NAME): $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $(OBJS)

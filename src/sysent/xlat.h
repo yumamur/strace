@@ -61,10 +61,16 @@ static const t_xlat_data open_flags_data[] = {
 	XLAT(O_TRUNC),
 };
 
+static const t_xlat_data execveat_flags_data[] = {
+	XLAT(AT_EMPTY_PATH),
+	XLAT(AT_SYMLINK_NOFOLLOW),
+};
+
 static const t_xlat access_modes[] = {WXLAT(access_modes_data)};
 static const t_xlat faccessat2_flags[] = {WXLAT(faccessat2_flags_data)};
 static const t_xlat open_access_flags[] = {WXLAT(open_access_flags_data)};
 static const t_xlat open_flags[] = {WXLAT(open_flags_data)};
+static const t_xlat execveat_flags[] = {WXLAT(execveat_flags_data)};
 
 // util functions
 const char *search_xlat(const t_xlat *xlat, const uint64_t val);

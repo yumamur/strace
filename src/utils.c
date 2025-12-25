@@ -1,6 +1,6 @@
 #include "ft_utils.h"
 
-int detect_abi(struct user_regs_struct *g_regs)
+enum e_abi detect_abi(struct user_regs_struct *g_regs)
 {
 #ifdef __x86_64__
 	if (g_regs->cs == 0x33)

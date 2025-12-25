@@ -8,13 +8,25 @@
 #define TD_INSYSCALL   0x1
 #define TD_OUT_SUMMARY 0x2
 
+// #define ABI_64BIT 0
+// #define ABI_32BIT 1
+// #define ABI_X32   2
+
 #define entering(tcp) (!((tcp).flags & TD_INSYSCALL))
 #define exiting(tcp)  ((tcp).flags & TD_INSYSCALL)
 
 #define MAX_ARGS 6
 
+enum e_abi
+{
+	ABI_64BIT,
+	ABI_32BIT,
+	ABI_X32
+};
+
 typedef struct s_td
 {
+		enum e_abi       abi;
 		unsigned int     flags;
 		int              pid;
 		unsigned int     err;

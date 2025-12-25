@@ -1,6 +1,11 @@
 #include "ft_printutils.h"
 #include "ft_utils.h"
 
+int printaddr(__kernel_ulong_t addr)
+{
+	return putnum(zero_extend_signed_to_ull(addr), HEX);
+}
+
 int printpath(t_td *td, __kernel_ulong_t addr)
 {
 	char path[4096];
@@ -11,8 +16,22 @@ int printpath(t_td *td, __kernel_ulong_t addr)
 	int null_idx = umovestr(td, path, addr, sizeof(path) - 1);
 	if (null_idx < 0)
 		putnum(addr, HEX);
-	else if (null_idx)
+	else
 		putquotstr(path, (size_t) null_idx ?: sizeof(path));
+	return null_idx;
+}
+
+int printstr(t_td *td, __kernel_ulong_t addr)
+{
+	if (!addr)
+		return -1;
+
+	char str[MAX_PRINTSTR_LEN + 2];
+	int  null_idx = umovestr(td, str, addr, sizeof(str) - 1);
+	if (null_idx < 0)
+		putnum(addr, HEX);
+	else
+		putquotstr(str, (size_t) null_idx ?: sizeof(str));
 	return null_idx;
 }
 

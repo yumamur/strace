@@ -20,17 +20,17 @@
 	TPUTS(", ");          \
 	TPUTS(EXTEND_ARGNAME(argname))
 
-// #define inprint(buf, fmt, ...) snprintf(buf, sizeof(buf), fmt, __VA_ARGS__);
-
-// int  putquotstr(const char *str, size_t len);
-
 void        printexit(int status);
 void        printkillsig(int sig);
 
 void        printsyscallstart(const char *name);
 void        printsyscallend(t_td *td);
 
+void        putcomment(const char *str);
+int         printaddr(__kernel_ulong_t addr);
 int         printpath(t_td *td, __kernel_ulong_t addr);
+int         printstr(t_td *td, __kernel_ulong_t addr);
+
 int         printflags(const t_xlat *xlat, uint64_t flags, const char *dflt);
 const char *snprintflags(char         *dst,
 						 size_t        n,

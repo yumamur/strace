@@ -7,7 +7,7 @@
 #include "ft_string.h"
 #include "sysent/xlat.h"
 
-#define MAX_PRINTSTR_LEN 4096
+#define MAX_PRINTSTR_LEN 32
 
 #define TPUTS(x) fputs(x, FT_OUTFILE)
 #ifdef DEBUG_ME
@@ -35,9 +35,9 @@ int  putquotstr(const char *str, size_t len);
 int  fputfmt(FILE *file, const char *fmt, ...);
 void putcomment(const char *str);
 
-#define inprint(buf, fmt, ...) snprintf(buf, sizeof(buf), fmt, __VA_ARGS__)
-#define putfmt(fmt, ...)       fputfmt(FT_OUTFILE, fmt, __VA_ARGS__)
-#define putfmterr(fmt, ...)    fputfmt(stderr, fmt, __VA_ARGS__)
+#define inprint(buf, fmt, ...) snprintf(buf, sizeof(buf), fmt, ##__VA_ARGS__)
+#define putfmt(fmt, ...)       fputfmt(FT_OUTFILE, fmt, ##__VA_ARGS__)
+#define putfmterr(fmt, ...)    fputfmt(stderr, fmt, ##__VA_ARGS__)
 
 #define putnull() TPUTS("NULL")
 

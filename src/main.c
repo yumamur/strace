@@ -240,7 +240,7 @@ char *get_executable(const char *cmd, char *buf, size_t buflen)
 	{
 		strcpy(buf, cmd);
 		if (access(buf, F_OK))
-			perror_and_die("Cannot stat '%s': %s", cmd, strerror(errno));
+			perror_and_die(errno, "Cannot stat '%s'", cmd);
 		return buf;
 	}
 	cmdlen = strlen(cmd);
@@ -263,11 +263,11 @@ char *get_executable(const char *cmd, char *buf, size_t buflen)
 int main(int argc, char *const *argv, char *const *envp)
 {
 	if (argc < 2)
-		perror_and_die("Usage: %s <program> [args...]\n", argv[0]);
+		perror_and_die(errno, "Usage: %s <program> [args...]", argv[0]);
 	char  another_buffer[4096];
 	char *path = get_executable(argv[1], another_buffer, sizeof(another_buffer));
 	if (!path)
-		perror_and_die("Cannot find executable '%s'\n", argv[1]);
+		perror_and_die(errno, "Cannot find executable '%s'", argv[1]);
 
 	pid_t pid = fork();
 

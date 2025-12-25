@@ -42,6 +42,16 @@ static ssize_t process_read_mem(const pid_t  pid,
 	return process_vm_readv(pid, &local, 1, &remote, 1, 0);
 }
 
+int umovemem(t_td *const td, void *laddr, __kernel_ulong_t taddr, size_t len)
+{
+	const int pid = td->pid;
+	ssize_t   r = process_read_mem(pid, laddr, (void *) taddr, len);
+
+	if (r <= 0)
+		return (-1);
+	return (0);
+}
+
 int umovestr(t_td *const td, char *laddr, __kernel_ulong_t taddr, size_t len)
 {
 	const int    pid = td->pid;
