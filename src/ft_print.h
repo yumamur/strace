@@ -7,6 +7,8 @@
 #include "ft_string.h"
 #include "sysent/xlat.h"
 
+#define FT_OUTFILE stderr
+
 #define TPUTS(x) fputs(x, FT_OUTFILE)
 
 #ifdef DEBUG_ME
@@ -16,9 +18,7 @@
 #endif
 
 #define FIRST_ARG(argname) TPUTS(EXTEND_ARGNAME(argname))
-#define NEXT_ARG(argname) \
-	TPUTS(", ");          \
-	TPUTS(EXTEND_ARGNAME(argname))
+#define NEXT_ARG(argname)  TPUTS(", " EXTEND_ARGNAME(argname))
 
 void        printexit(int status);
 void        printkillsig(int sig);

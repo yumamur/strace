@@ -1,6 +1,7 @@
 #include "../ft_common.h"
 #include "../ft_print.h"
 #include "xlat.h"
+#include <linux/fcntl.h>
 #include <string.h>
 
 void print_open_flags(unsigned int flags)

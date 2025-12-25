@@ -1,20 +1,13 @@
 #ifndef FT_PRINTUTILS
 #define FT_PRINTUTILS
 
-#include "trace.h"
-
 #include "ft_common.h"
+#include "ft_print.h"
 #include "ft_string.h"
 #include "sysent/xlat.h"
+#include "trace.h"
 
 #define MAX_PRINTSTR_LEN 32
-
-#define TPUTS(x) fputs(x, FT_OUTFILE)
-#ifdef DEBUG_ME
-#  define EXTEND_ARGNAME(ARGNAME) (ARGNAME "=")
-#else
-#  define EXTEND_ARGNAME(ARGNAME) ""
-#endif
 
 #define FIRST_ARG(argname) TPUTS(EXTEND_ARGNAME(argname))
 #define NEXT_ARG(argname)  TPUTS(", " EXTEND_ARGNAME(argname))

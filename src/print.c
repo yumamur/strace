@@ -1,5 +1,6 @@
 #include "ft_printutils.h"
 #include "ft_utils.h"
+#include <linux/fcntl.h>
 
 int printaddr(__kernel_ulong_t addr)
 {

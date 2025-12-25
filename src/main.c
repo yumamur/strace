@@ -14,6 +14,7 @@
 #include <sys/uio.h>
 #include <sys/user.h>
 #include <sys/wait.h>
+#include <unistd.h>
 
 #ifndef NT_PRSTATUS
 #  define NT_PRSTATUS 1

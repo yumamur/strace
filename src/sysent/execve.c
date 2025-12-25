@@ -1,5 +1,6 @@
 #include "../ft_common.h"
 #include "../ft_print.h"
+#include "../ft_utils.h"
 #include "xlat.h"
 
 void printargv(t_td *td, __kernel_ulong_t addr)
