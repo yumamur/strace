@@ -19,9 +19,10 @@ enum e_putnum_fmt
 	UPHEX,
 };
 
-int inprintnum(char *ptr, size_t n, uint64_t num, enum e_putnum_fmt fmt);
+int sprintnum(char *ptr, size_t n, uint64_t num, enum e_putnum_fmt fmt);
 int putnum(uint64_t num, enum e_putnum_fmt fmt);
 int putquotstr(const char *str, size_t len);
+
 int __attribute__((format(printf, 2, 3)))
 fputfmt(FILE *file, const char *fmt, ...);
 

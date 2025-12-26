@@ -19,8 +19,11 @@ perror_and_die_(int errno_, const char *fmt, ...);
 								  (unsigned long long) (v))
 
 #define SYS_FUNC_NAME(syscall_name) sys_##syscall_name
+
+// Now I see that some syscalls require more decoding after syscall return
+
 #define SYS_FUNC(syscall_name) \
-	void SYS_FUNC_NAME(syscall_name)(struct s_td * td)
+	int SYS_FUNC_NAME(syscall_name)(struct s_td * td)
 
 union u_addrb
 {

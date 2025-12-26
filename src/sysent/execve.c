@@ -85,12 +85,14 @@ SYS_FUNC(execve)
 
 	NEXT_ARG("envp");
 	printenvp(td, td->sc_args[2]);
+
+	return SC_DECODE_COMPLETE;
 }
 
 SYS_FUNC(execveat)
 {
 	FIRST_ARG("dirfd");
-	print_dirfd(td, td->sc_args[0]);
+	printdirfd(td, td->sc_args[0]);
 
 	NEXT_ARG("pathname");
 	printpath(td, td->sc_args[1]);
@@ -103,4 +105,6 @@ SYS_FUNC(execveat)
 
 	NEXT_ARG("flags");
 	printflags(execveat_flags, td->sc_args[4], "AT_???");
+
+	return SC_DECODE_COMPLETE;
 }

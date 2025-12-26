@@ -22,6 +22,8 @@
 #define FIRST_ARG(argname) TPUTS(EXTEND_ARGNAME(argname))
 #define NEXT_ARG(argname)  TPUTS(", " EXTEND_ARGNAME(argname))
 
+#define PRINT_ULL(num) fprintf(FT_OUTFILE, "%llu", zero_extend_signed_to_ull(num))
+
 void        printexit(int status);
 void        printkillsig(int sig);
 
@@ -30,6 +32,7 @@ void        printsyscallend(t_td *td);
 int         printaddr(__kernel_ulong_t addr);
 int         printpath(t_td *td, __kernel_ulong_t addr);
 int         printstr(t_td *td, __kernel_ulong_t addr);
+int         printnstr(t_td *td, __kernel_ulong_t addr, size_t n);
 
 int         printflags(const t_xlat *xlat, uint64_t flags, const char *dflt);
 const char *snprintflags(char         *dst,
@@ -38,10 +41,12 @@ const char *snprintflags(char         *dst,
 						 uint64_t      flags,
 						 const char   *dflt);
 int         printmode(uint64_t mode);
-void        print_dirfd(t_td *td, int fd);
+void        printdirfd(t_td *td, int fd);
+void        printfd(int fd);
 
 void __attribute__((format(printf, 1, 2)))
 printcomment(const char *fmt, ...);
+
 // some tiny functions
 
 static inline int prints(const char *s)
@@ -66,4 +71,5 @@ FT_SIVP_(comment_end, " */ ")
 FT_SIVP_(has_more, "...")
 
 #undef FT_SIVP_
+
 #endif

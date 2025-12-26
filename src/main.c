@@ -10,10 +10,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/ptrace.h>
-#include <sys/syscall.h>
 #include <sys/uio.h>
 #include <sys/user.h>
 #include <sys/wait.h>
+#include <syscall.h>
 #include <unistd.h>
 
 #ifndef NT_PRSTATUS
@@ -40,7 +40,7 @@ static inline const char *get_syscall_name(t_td *td)
 	return s ? s : "unknown";
 }
 
-void fill_trace_data(t_td *td)
+void fill_trace_data_entering(t_td *td)
 {
 	switch (detect_abi(&g_regs))
 	{
@@ -88,18 +88,48 @@ void fill_trace_data(t_td *td)
 	}
 }
 
+void fill_trace_data_exiting(t_td *td)
+{
+	switch (detect_abi(&g_regs))
+	{
+	case ABI_32BIT:
+#ifdef __x86_64__
+		td->sc_ret = g_regs.rax;
+#else
+		td->sc_ret = () & g_regs.eax;
+#endif
+		break;
+
+	case ABI_X32:
+#ifdef __x86_64__
+		td->sc_ret = g_regs.rax;
+#endif
+		break;
+
+	case ABI_64BIT:
+	default:
+#ifdef __x86_64__
+		td->sc_ret = g_regs.rax;
+#endif
+	}
+}
+
 void syscallstart(t_td *td)
 {
-	fill_trace_data(td);
+	fill_trace_data_entering(td);
 	printsyscallstart(get_syscall_name(td));
-	sysent[td->sc_no].logger(td);
+	td->flags |= sysent[td->sc_no].logger(td);
 	td->flags |= TD_INSYSCALL;
 }
 
 void syscallend(t_td *td)
 {
+	fill_trace_data_exiting(td);
+	if (!(td->flags & SC_DECODE_COMPLETE))
+		td->flags |= sysent[td->sc_no].logger(td);
 	printsyscallend(td);
 	td->flags &= ~TD_INSYSCALL;
+	td->flags &= ~SC_MASK;
 }
 
 void trace_syscalls(pid_t child)
@@ -208,14 +238,9 @@ void trace_syscalls(pid_t child)
 			else
 			{
 				if (ptrace(PTRACE_GETSIGINFO, child, 0, &si) == 0)
-				{
-					// putfmt("--- %s {si_signo=%d, si_code=%d} ---\n", strsignal(si.si_signo), si.si_signo, si.si_code);
 					sig = si.si_signo;
-				}
 				else
-				{
 					sig = stopsig;
-				}
 
 				if (ptrace(PTRACE_SYSCALL, child, 0, sig) == -1)
 				{

@@ -5,12 +5,12 @@
 #include <linux/posix_types.h>
 #include <time.h>
 
-#define TD_INSYSCALL   0x1
-#define TD_OUT_SUMMARY 0x2
+#define TD_INSYSCALL   0x01
+#define TD_OUT_SUMMARY 0x02
 
-// #define ABI_64BIT 0
-// #define ABI_32BIT 1
-// #define ABI_X32   2
+#define SC_DECODE_COMPLETE 0x10
+#define SC_PRINT_HEX       0x20
+#define SC_MASK            (SC_DECODE_COMPLETE | SC_PRINT_HEX)
 
 #define entering(tcp) (!((tcp).flags & TD_INSYSCALL))
 #define exiting(tcp)  ((tcp).flags & TD_INSYSCALL)

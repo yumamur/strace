@@ -42,12 +42,14 @@ SYS_FUNC(open)
 		NEXT_ARG("mode");
 		printmode(td->sc_args[2]);
 	}
+
+	return SC_DECODE_COMPLETE;
 }
 
 SYS_FUNC(openat)
 {
 	FIRST_ARG("dirfd");
-	print_dirfd(td, td->sc_args[0]);
+	printdirfd(td, td->sc_args[0]);
 
 	NEXT_ARG("pathname");
 	printpath(td, td->sc_args[1]);
@@ -60,4 +62,6 @@ SYS_FUNC(openat)
 		NEXT_ARG("mode");
 		printmode(td->sc_args[3]);
 	}
+
+	return SC_DECODE_COMPLETE;
 }

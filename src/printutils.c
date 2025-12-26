@@ -5,7 +5,7 @@
 #include <stdarg.h>
 #include <stdlib.h>
 
-int inprintnum(char *ptr, size_t n, uint64_t num, enum e_putnum_fmt fmt)
+int sprintnum(char *ptr, size_t n, uint64_t num, enum e_putnum_fmt fmt)
 {
 	switch (fmt)
 	{
@@ -28,7 +28,7 @@ int inprintnum(char *ptr, size_t n, uint64_t num, enum e_putnum_fmt fmt)
 int putnum(uint64_t num, enum e_putnum_fmt fmt)
 {
 	static char buf[sizeof(num) * 3];
-	inprintnum(buf, sizeof(buf), num, fmt);
+	sprintnum(buf, sizeof(buf), num, fmt);
 	return TPUTS(buf);
 }
 
@@ -100,13 +100,13 @@ int inprintquotstr(const char *src, char *dst, size_t len, int truncated)
 		}
 	}
 	dst[0] = '\"';
+	dst[i_dst++] = '\"';
 	if (truncated)
 	{
 		dst[i_dst++] = '.';
 		dst[i_dst++] = '.';
 		dst[i_dst++] = '.';
 	}
-	dst[i_dst++] = '\"';
 	dst[i_dst++] = 0;
 	return 0;
 }

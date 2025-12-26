@@ -37,6 +37,20 @@ int printstr(t_td *td, __kernel_ulong_t addr)
 	return null_idx;
 }
 
+int printnstr(t_td *td, __kernel_ulong_t addr, size_t n)
+{
+	if (!addr)
+		return -1;
+
+	char str[MAX_PRINTSTR_LEN + 2];
+	int  null_idx = umovemem(td, str, addr, MIN(sizeof(str) - 1, n));
+	if (null_idx < 0)
+		putnum(addr, HEX);
+	else
+		putquotstr(str, (size_t) null_idx ?: sizeof(str));
+	return null_idx;
+}
+
 const char *snprintflags(char         *dst,
 						 size_t        n,
 						 const t_xlat *xlat,
@@ -67,14 +81,14 @@ const char *snprintflags(char         *dst,
 		if (flags)
 		{
 			dst[i_dst++] = '|';
-			i_dst += inprintnum(&dst[i_dst], n - i_dst, flags, HEX);
+			i_dst += sprintnum(&dst[i_dst], n - i_dst, flags, HEX);
 		}
 	}
 	else
 	{
 		if (flags)
 		{
-			i_dst += inprintnum(&dst[i_dst], n - i_dst, flags, HEX);
+			i_dst += sprintnum(&dst[i_dst], n - i_dst, flags, HEX);
 			snprintf(&dst[i_dst], n - i_dst, "/* %s */", dflt);
 		}
 		else if (dflt)
@@ -154,14 +168,22 @@ void printsyscallstart(const char *name)
 
 void printsyscallend(t_td *td)
 {
-	putfmt(") = %" PRIu64 "\n", *(__kernel_ulong_t *) &td->sc_ret);
+	if (td->flags & SC_PRINT_HEX)
+		putfmt(") = %#0" PRIx64 "\n", *(__kernel_ulong_t *) &td->sc_ret);
+	else
+		putfmt(") = %" PRIu64 "\n", *(__kernel_ulong_t *) &td->sc_ret);
 }
 
-void print_dirfd(t_td *td, int fd)
+void printdirfd(t_td *td, int fd)
 {
 	(void) td;
 	if (fd == AT_FDCWD)
 		TPUTS("AT_FDCWD");
 	else
 		putnum(fd, DEC);
+}
+
+void printfd(int fd)
+{
+	putnum(fd, DEC);
 }
