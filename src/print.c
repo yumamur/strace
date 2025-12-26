@@ -1,5 +1,6 @@
 #include "ft_printutils.h"
 #include "ft_utils.h"
+#include <inttypes.h>
 #include <linux/fcntl.h>
 
 int printaddr(__kernel_ulong_t addr)
@@ -101,7 +102,7 @@ int printflags(const t_xlat *xlat, uint64_t flags, const char *dflt)
 			&& (flags == val || (val && val == (flags & val))))
 		{
 			if (ct++)
-				TPUTS("|");
+				print_or();
 			TPUTS(xlat->data[i].name);
 			// uncheck processed flag
 			flags &= ~val;
@@ -115,7 +116,7 @@ int printflags(const t_xlat *xlat, uint64_t flags, const char *dflt)
 	{
 		if (flags)
 		{
-			TPUTS("|");
+			print_or();
 			putnum(flags, HEX);
 		}
 	}
@@ -124,7 +125,7 @@ int printflags(const t_xlat *xlat, uint64_t flags, const char *dflt)
 		if (flags)
 		{
 			putnum(flags, HEX);
-			putcomment(dflt);
+			printcomment(dflt);
 		}
 	}
 
@@ -153,7 +154,7 @@ void printsyscallstart(const char *name)
 
 void printsyscallend(t_td *td)
 {
-	putfmt(") = %lld\n", *(int *) &td->sc_ret);
+	putfmt(") = %" PRIu64 "\n", *(__kernel_ulong_t *) &td->sc_ret);
 }
 
 void print_dirfd(t_td *td, int fd)

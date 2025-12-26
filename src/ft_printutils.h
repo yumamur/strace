@@ -9,9 +9,6 @@
 
 #define MAX_PRINTSTR_LEN 32
 
-#define FIRST_ARG(argname) TPUTS(EXTEND_ARGNAME(argname))
-#define NEXT_ARG(argname)  TPUTS(", " EXTEND_ARGNAME(argname))
-
 enum e_putnum_fmt
 {
 	DEC,
@@ -22,11 +19,11 @@ enum e_putnum_fmt
 	UPHEX,
 };
 
-int  inprintnum(char *ptr, size_t n, uint64_t num, enum e_putnum_fmt fmt);
-int  putnum(uint64_t num, enum e_putnum_fmt fmt);
-int  putquotstr(const char *str, size_t len);
-int  fputfmt(FILE *file, const char *fmt, ...);
-void putcomment(const char *str);
+int inprintnum(char *ptr, size_t n, uint64_t num, enum e_putnum_fmt fmt);
+int putnum(uint64_t num, enum e_putnum_fmt fmt);
+int putquotstr(const char *str, size_t len);
+int __attribute__((format(printf, 2, 3)))
+fputfmt(FILE *file, const char *fmt, ...);
 
 #define inprint(buf, fmt, ...) snprintf(buf, sizeof(buf), fmt, ##__VA_ARGS__)
 #define putfmt(fmt, ...)       fputfmt(FT_OUTFILE, fmt, ##__VA_ARGS__)

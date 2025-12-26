@@ -139,12 +139,14 @@ int fputfmt(FILE *file, const char *fmt, ...)
 	return ret;
 }
 
-void putcomment(const char *str)
+void printcomment(const char *fmt, ...)
 {
-	if (str && *str)
-	{
-		TPUTS("/* ");
-		TPUTS(str);
-		TPUTS(" */");
-	}
+	va_list args;
+
+	va_start(args, fmt);
+	print_comment_start();
+	vfprintf(FT_OUTFILE, fmt, args);
+	print_comment_end();
+	fflush(FT_OUTFILE);
+	va_end(args);
 }

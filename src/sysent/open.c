@@ -26,7 +26,7 @@ void print_open_flags(unsigned int flags)
 					 "O_???");
 	}
 
-	TPUTS(buffer);
+	prints(buffer);
 }
 
 SYS_FUNC(open)
