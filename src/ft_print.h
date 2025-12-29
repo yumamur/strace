@@ -23,6 +23,7 @@
 #define NEXT_ARG(argname)  TPUTS(", " EXTEND_ARGNAME(argname))
 
 #define PRINT_ULL(num) fprintf(FT_OUTFILE, "%llu", zero_extend_signed_to_ull(num))
+#define PRINT_X(num)   fprintf(FT_OUTFILE, "%#llx", zero_extend_signed_to_ull(num))
 
 void        printexit(int status);
 void        printkillsig(int sig);
@@ -43,6 +44,7 @@ const char *snprintflags(char         *dst,
 int         printmode(uint64_t mode);
 void        printdirfd(t_td *td, int fd);
 void        printfd(int fd);
+void        printdev_t(__dev_t dev);
 
 void __attribute__((format(printf, 1, 2)))
 printcomment(const char *fmt, ...);
@@ -60,8 +62,30 @@ static inline int prints(const char *s)
 		TPUTS(chars_);                    \
 	}
 
-FT_SIVP_(or, "|")
+#define FT_SIVP_B(fun_, before_)                   \
+	static inline void print_##fun_(const char *s) \
+	{                                              \
+		TPUTS(before_);                            \
+		TPUTS(s);                                  \
+	}
+#define FT_SIVP_A(fun_, after_)                    \
+	static inline void print_##fun_(const char *s) \
+	{                                              \
+		TPUTS(s);                                  \
+		TPUTS(after_);                             \
+	}
+#define FT_SIVP_BA(fun_, before_, after_)          \
+	static inline void print_##fun_(const char *s) \
+	{                                              \
+		TPUTS(before_);                            \
+		TPUTS(s);                                  \
+		TPUTS(after_);                             \
+	}
+
+FT_SIVP_A(arg_start, "(")
 FT_SIVP_(arg_sep, ", ")
+FT_SIVP_(arg_end, ")")
+FT_SIVP_(or, "|")
 FT_SIVP_(arr_start, "[ ")
 FT_SIVP_(arr_end, " ]")
 FT_SIVP_(struct_start, "{ ")
@@ -69,6 +93,8 @@ FT_SIVP_(struct_end, " }")
 FT_SIVP_(comment_start, " /* ")
 FT_SIVP_(comment_end, " */ ")
 FT_SIVP_(has_more, "...")
+FT_SIVP_A(struct_member, "=")
+FT_SIVP_B(struct_member_sep, ",")
 
 #undef FT_SIVP_
 

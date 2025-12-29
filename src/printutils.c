@@ -83,7 +83,7 @@ int inprintquotstr(const char *src, char *dst, size_t len, int truncated)
 			dst[i_dst++] = '\"';
 			break;
 		default:
-			if (isprint(ch))
+			if (isprint((unsigned char) ch))
 				dst[i_dst++] = ch;
 			else if (i_src < len - 1)
 			{
@@ -118,7 +118,7 @@ int putquotstr(const char *str, size_t len)
 
 	if (!str || !len)
 		return 0;
-	bufsize = MIN(len, MAX_PRINTSTR_LEN) * 4 + 3;
+	bufsize = MAX_PRINTSTR_LEN * 4 + 3;
 	if (!buf)
 		buf = malloc(bufsize);
 	if (!buf)

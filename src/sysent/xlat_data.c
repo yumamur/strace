@@ -2,11 +2,18 @@
 #include "xlat.h"
 #include <linux/fcntl.h>
 #include <stdint.h>
+#include <sys/stat.h>
 #include <unistd.h>
 
-#define XLAT(val_) {.val = (uint64_t) (val_), .name = #val_}
+#define XLAT(val_)              {.val = (uint64_t) (val_), .name = #val_}
+#define XLAT_NAMED(val_, name_) {.val = (uint64_t) (val_), .name = name_}
 
-#define WXLAT(data_) {.data = data_, .size = ARRAY_SIZE(data_)}
+#define WXLAT(data_)                                 \
+	{                                                \
+		{                                            \
+			.data = data_, .size = ARRAY_SIZE(data_) \
+		}                                            \
+	}
 
 const t_xlat_data access_modes_data[] = {
 	XLAT(F_OK),
@@ -39,8 +46,8 @@ const t_xlat_data open_flags_data[] = {
 	XLAT(O_NOFOLLOW),
 	XLAT(O_NONBLOCK),
 	XLAT(O_PATH),
-	XLAT(__O_SYNC),
-	XLAT(__O_TMPFILE),
+	XLAT_NAMED(__O_SYNC, "O_SYNC"),
+	XLAT_NAMED(__O_TMPFILE, "O_TMPFILE"),
 	XLAT(FASYNC),
 	XLAT(O_SYNC),
 	XLAT(O_TMPFILE),
@@ -52,8 +59,30 @@ const t_xlat_data execveat_flags_data[] = {
 	XLAT(AT_SYMLINK_NOFOLLOW),
 };
 
-const t_xlat access_modes[] = {WXLAT(access_modes_data)};
-const t_xlat faccessat2_flags[] = {WXLAT(faccessat2_flags_data)};
-const t_xlat open_access_flags[] = {WXLAT(open_access_flags_data)};
-const t_xlat open_flags[] = {WXLAT(open_flags_data)};
-const t_xlat execveat_flags[] = {WXLAT(execveat_flags_data)};
+const t_xlat_data mode_file_types_data[] = {
+	XLAT_NAMED(__S_IFDIR, "S_IFDIR"),
+	XLAT_NAMED(__S_IFCHR, "S_IFCHR"),
+	XLAT_NAMED(__S_IFBLK, "S_IFBLK"),
+	XLAT_NAMED(__S_IFREG, "S_IFREG"),
+	XLAT_NAMED(__S_IFIFO, "S_IFIFO"),
+	XLAT_NAMED(__S_IFLNK, "S_IFLNK"),
+	XLAT_NAMED(__S_IFSOCK, "S_IFSOCK"),
+};
+
+const t_xlat_data mode_protection_bits_data[] = {
+	XLAT_NAMED(__S_ISUID, "S_ISUID"),
+	XLAT_NAMED(__S_ISGID, "S_ISGID"),
+	XLAT_NAMED(__S_ISVTX, "S_ISVTX"),
+	// not sure why these are even defined in 'stat.h' in the first place
+	// XLAT_NAMED(__S_IREAD, "S_IREAD"),
+	// XLAT_NAMED(__S_IWRITE, "S_IWRITE"),
+	// XLAT_NAMED(__S_IEXEC, "S_IEXEC"),
+};
+
+const t_xlat access_modes[] = WXLAT(access_modes_data);
+const t_xlat faccessat2_flags[] = WXLAT(faccessat2_flags_data);
+const t_xlat open_access_flags[] = WXLAT(open_access_flags_data);
+const t_xlat open_flags[] = WXLAT(open_flags_data);
+const t_xlat execveat_flags[] = WXLAT(execveat_flags_data);
+const t_xlat mode_file_types[] = WXLAT(mode_file_types_data);
+const t_xlat mode_protection_bits[] = WXLAT(mode_protection_bits_data);

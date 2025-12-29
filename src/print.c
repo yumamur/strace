@@ -2,6 +2,7 @@
 #include "ft_utils.h"
 #include <inttypes.h>
 #include <linux/fcntl.h>
+#include <sys/sysmacros.h>
 
 int printaddr(__kernel_ulong_t addr)
 {
@@ -43,12 +44,12 @@ int printnstr(t_td *td, __kernel_ulong_t addr, size_t n)
 		return -1;
 
 	char str[MAX_PRINTSTR_LEN + 2];
-	int  null_idx = umovemem(td, str, addr, MIN(sizeof(str) - 1, n));
-	if (null_idx < 0)
+	int  read = umovemem(td, str, addr, MIN(sizeof(str) - 1, n));
+	if (read < 0)
 		putnum(addr, HEX);
 	else
-		putquotstr(str, (size_t) null_idx ?: sizeof(str));
-	return null_idx;
+		putquotstr(str, (size_t) read ?: sizeof(str));
+	return read;
 }
 
 const char *snprintflags(char         *dst,
@@ -81,14 +82,14 @@ const char *snprintflags(char         *dst,
 		if (flags)
 		{
 			dst[i_dst++] = '|';
-			i_dst += sprintnum(&dst[i_dst], n - i_dst, flags, HEX);
+			i_dst += sprintnum(&dst[i_dst], n - i_dst, flags, OCTO3);
 		}
 	}
 	else
 	{
 		if (flags)
 		{
-			i_dst += sprintnum(&dst[i_dst], n - i_dst, flags, HEX);
+			i_dst += sprintnum(&dst[i_dst], n - i_dst, flags, OCTO3);
 			snprintf(&dst[i_dst], n - i_dst, "/* %s */", dflt);
 		}
 		else if (dflt)
@@ -186,4 +187,16 @@ void printdirfd(t_td *td, int fd)
 void printfd(int fd)
 {
 	putnum(fd, DEC);
+}
+
+void printdev_t(__dev_t dev)
+{
+	unsigned long maj = major(dev);
+	unsigned long min = minor(dev);
+
+	print_arg_start("makedev");
+	PRINT_X(maj);
+	print_arg_sep();
+	PRINT_X(min);
+	print_arg_end();
 }

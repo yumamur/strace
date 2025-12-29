@@ -1,8 +1,12 @@
 done:
-	- access
-	- faccessat
-	- faccessat2
+	- read
+	- write
 	- open
-	- openat
+	- close
+	
+	- access
 	- execve
+	- faccessat
+	- openat
+	- faccessat2
 	- execveat

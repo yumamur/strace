@@ -31,6 +31,10 @@
 // }
 // #define process_vm_readv strace_process_vm_readv
 
+/**
+ * @param laddr: local (parent) address
+ * @param raddr: remote (child) address
+ */
 static ssize_t process_read_mem(const pid_t  pid,
 								void *const  laddr,
 								void *const  raddr,
@@ -44,12 +48,7 @@ static ssize_t process_read_mem(const pid_t  pid,
 
 int umovemem(t_td *const td, void *laddr, __kernel_ulong_t taddr, size_t len)
 {
-	const int pid = td->pid;
-	ssize_t   r = process_read_mem(pid, laddr, (void *) taddr, len);
-
-	if (r <= 0)
-		return (-1);
-	return (0);
+	return process_read_mem(td->pid, laddr, (void *) taddr, len);
 }
 
 int umovestr(t_td *const td, char *laddr, __kernel_ulong_t taddr, size_t len)

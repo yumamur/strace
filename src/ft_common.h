@@ -1,12 +1,22 @@
 #ifndef FT_COMMON
 #define FT_COMMON
 
+#ifdef DEBUG_ME
+#define DONT_FORGET(msg)
+#else
+#define DONT_FORGET(msg) _Pragma(#msg);
+#endif
+
 #include <linux/posix_types.h>
 
 void __attribute__((__noreturn__, __format__(__printf__, 2, 3)))
 perror_and_die_(int errno_, const char *fmt, ...);
 
+void __attribute__((__noreturn__, __format__(__printf__, 1, 2)))
+die_(const char *fmt, ...);
+
 #define perror_and_die(erno_, fmt, ...) perror_and_die_(erno_, "%s: " fmt, __func__, ##__VA_ARGS__)
+#define die(fmt_, ...)                  die_("%s: " fmt_, __func__, ##__VA_ARGS__)
 
 #define MIN(x, y) ((x) < (y) ? (x) : (y))
 #define MAX(x, y) ((x) > (y) ? (x) : (y))

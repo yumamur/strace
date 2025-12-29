@@ -8,6 +8,7 @@ typedef struct s_entry
 		unsigned int nargs;
 		int          (*logger)(struct s_td *);
 		const char  *call_name;
+		unsigned int traced : 1;
 } t_entry;
 
 #define SYS_STUB(n)                                               \

@@ -35,7 +35,7 @@ SYS_FUNC(open)
 	printpath(td, td->sc_args[0]);
 
 	NEXT_ARG("flags");
-	print_open_flags(td->sc_args[2]);
+	print_open_flags(td->sc_args[1]);
 
 	if (td->sc_args[1] & (O_CREAT | O_TMPFILE))
 	{
@@ -62,6 +62,14 @@ SYS_FUNC(openat)
 		NEXT_ARG("mode");
 		printmode(td->sc_args[3]);
 	}
+
+	return SC_DECODE_COMPLETE;
+}
+
+SYS_FUNC(close)
+{
+	FIRST_ARG("fd");
+	printfd(td->sc_args[0]);
 
 	return SC_DECODE_COMPLETE;
 }

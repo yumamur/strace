@@ -3,8 +3,6 @@
 
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
 
-#define FT_OUTFILE stderr
-
 #include "trace.h"
 
 #include <sys/syscall.h>

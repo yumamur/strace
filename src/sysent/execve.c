@@ -9,6 +9,7 @@ size_t readv(t_td *td, __kernel_ulong_t addr, _Bool should_print)
 {
 	if (!td || !addr)
 	{
+		print_debug("Invalid td or addr");
 		if (should_print)
 			printaddr(addr);
 		return 0;
@@ -28,7 +29,7 @@ size_t readv(t_td *td, __kernel_ulong_t addr, _Bool should_print)
 			break;
 		}
 
-		if (umovemem(td, addr_buffer.raw, addr, wordbytes))
+		if (umovemem(td, addr_buffer.raw, addr, wordbytes) == -1)
 		{
 			if (should_print)
 				printaddr(addr);

@@ -17,8 +17,8 @@ perror_and_die_(int errno_, const char *fmt, ...)
 	exit(1);
 }
 
-void __attribute__((__format__(__printf__, 1, 0)))
-perror_warn(const char *fmt, ...)
+void __attribute__((__noreturn__, __format__(__printf__, 1, 2)))
+die_(const char *fmt, ...)
 {
 	va_list va;
 	va_start(va, fmt);
@@ -26,4 +26,6 @@ perror_warn(const char *fmt, ...)
 	vfprintf(stderr, fmt, va);
 	fflush(stderr);
 	va_end(va);
+	exit(1);
 }
+

@@ -6,11 +6,10 @@ OBJS := $(patsubst $(SRC_DIR)/%.c,$(OBJDIR)/%.o,$(SRCS))
 
 CC := gcc
 CFLAGS := -Wall -Wextra -Werror
-# CFLAGS += -fsanitize=address
 
 all: $(NAME)
 
-debug: CFLAGS += -g -DDEBUG_ME
+debug: CFLAGS += -g -DDEBUG_ME -fsanitize=address
 debug: fclean all
 
 $(NAME): $(OBJS)
