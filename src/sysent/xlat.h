@@ -23,6 +23,8 @@ extern const t_xlat open_flags[];
 extern const t_xlat execveat_flags[];
 extern const t_xlat mode_file_types[];
 extern const t_xlat mode_protection_bits[];
+extern const t_xlat fstatat_flags[];
+
 // util functions
 const char *search_xlat(const t_xlat *xlat, const uint64_t val);
 

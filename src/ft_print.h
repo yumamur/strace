@@ -45,6 +45,7 @@ int         printmode(uint64_t mode);
 void        printdirfd(t_td *td, int fd);
 void        printfd(int fd);
 void        printdev_t(__dev_t dev);
+void        printtime(time_t sec, unsigned long nsec);
 
 void __attribute__((format(printf, 1, 2)))
 printcomment(const char *fmt, ...);
@@ -86,15 +87,15 @@ FT_SIVP_A(arg_start, "(")
 FT_SIVP_(arg_sep, ", ")
 FT_SIVP_(arg_end, ")")
 FT_SIVP_(or, "|")
-FT_SIVP_(arr_start, "[ ")
-FT_SIVP_(arr_end, " ]")
-FT_SIVP_(struct_start, "{ ")
-FT_SIVP_(struct_end, " }")
+FT_SIVP_(arr_start, "[")
+FT_SIVP_(arr_end, "]")
+FT_SIVP_(struct_start, "{")
+FT_SIVP_(struct_end, "}")
 FT_SIVP_(comment_start, " /* ")
-FT_SIVP_(comment_end, " */ ")
+FT_SIVP_(comment_end, " */")
 FT_SIVP_(has_more, "...")
 FT_SIVP_A(struct_member, "=")
-FT_SIVP_B(struct_member_sep, ",")
+FT_SIVP_(struct_member_sep, ", ")
 
 #undef FT_SIVP_
 

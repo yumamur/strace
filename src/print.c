@@ -200,3 +200,20 @@ void printdev_t(__dev_t dev)
 	PRINT_X(min);
 	print_arg_end();
 }
+
+void printtime(time_t sec, unsigned long nsec)
+{
+	static char      buf[sizeof("2000-10-11T17:17:17.171717171+0300") + 5];
+
+	size_t           pos = 0;
+	const struct tm *tp = localtime(&sec);
+
+	pos = strftime(buf, sizeof(buf), "%FT%T", tp);
+	if (!pos)
+		return;
+
+	pos += snprintf(buf + pos, sizeof(buf) - pos, ".%09lu", nsec);
+	strftime(buf + pos, sizeof(buf) - pos, "%z", tp);
+
+	printcomment("%s", buf);
+}
