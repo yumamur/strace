@@ -162,17 +162,17 @@ void printkillsig(int sig)
 	putfmt("+++ killed by signal %d +++\n", sig);
 }
 
-void printsyscallstart(const char *name)
+void print_syscall_enter(const char *name)
 {
 	putfmt("%s(", name);
 }
 
-void printsyscallend(t_td *td)
+void print_syscall_return(t_td *td)
 {
 	if (td->flags & SC_PRINT_HEX)
-		putfmt(") = %#0" PRIx64 "\n", *(__kernel_ulong_t *) &td->sc_ret);
+		putfmt(") = %#0" PRIx64, *(__kernel_ulong_t *) &td->sc_ret);
 	else
-		putfmt(") = %" PRIu64 "\n", *(__kernel_ulong_t *) &td->sc_ret);
+		putfmt(") = %" PRIu64, *(__kernel_ulong_t *) &td->sc_ret);
 }
 
 void printdirfd(t_td *td, int fd)
@@ -194,7 +194,8 @@ void printdev_t(__dev_t dev)
 	unsigned long maj = major(dev);
 	unsigned long min = minor(dev);
 
-	print_arg_start("makedev");
+	prints("makedev");
+	print_arg_start();
 	PRINT_X(maj);
 	print_arg_sep();
 	PRINT_X(min);

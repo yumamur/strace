@@ -23,13 +23,14 @@
 #define NEXT_ARG(argname)  TPUTS(", " EXTEND_ARGNAME(argname))
 
 #define PRINT_ULL(num) fprintf(FT_OUTFILE, "%llu", zero_extend_signed_to_ull(num))
+#define PRINT_LL(num)  fprintf(FT_OUTFILE, "%lld", zero_extend_signed_to_ll(num))
 #define PRINT_X(num)   fprintf(FT_OUTFILE, "%#llx", zero_extend_signed_to_ull(num))
 
 void        printexit(int status);
 void        printkillsig(int sig);
 
-void        printsyscallstart(const char *name);
-void        printsyscallend(t_td *td);
+void        print_syscall_enter(const char *name);
+void        print_syscall_return(t_td *td);
 int         printaddr(__kernel_ulong_t addr);
 int         printpath(t_td *td, __kernel_ulong_t addr);
 int         printstr(t_td *td, __kernel_ulong_t addr);
@@ -83,7 +84,8 @@ static inline int prints(const char *s)
 		TPUTS(after_);                             \
 	}
 
-FT_SIVP_A(arg_start, "(")
+FT_SIVP_(space, " ")
+FT_SIVP_(arg_start, "(")
 FT_SIVP_(arg_sep, ", ")
 FT_SIVP_(arg_end, ")")
 FT_SIVP_(or, "|")
@@ -95,7 +97,9 @@ FT_SIVP_(comment_start, " /* ")
 FT_SIVP_(comment_end, " */")
 FT_SIVP_(has_more, "...")
 FT_SIVP_A(struct_member, "=")
+FT_SIVP_BA(next_struct_member, ",", "=")
 FT_SIVP_(struct_member_sep, ", ")
+FT_SIVP_(syscall_end, "\n")
 
 #undef FT_SIVP_
 

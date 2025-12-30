@@ -2,9 +2,9 @@
 #define FT_COMMON
 
 #ifdef DEBUG_ME
-#define DONT_FORGET(msg)
+#  define DONT_FORGET(msg)
 #else
-#define DONT_FORGET(msg) _Pragma(#msg);
+#  define DONT_FORGET(msg) _Pragma(#msg);
 #endif
 
 #include <linux/posix_types.h>
@@ -27,6 +27,20 @@ die_(const char *fmt, ...);
 	 sizeof(v) == sizeof(int)   ? (unsigned long long) (unsigned int) (v) :   \
 	 sizeof(v) == sizeof(long)  ? (unsigned long long) (unsigned long) (v) :  \
 								  (unsigned long long) (v))
+
+#define zero_extend_signed_to_ll(v)                         \
+	(sizeof(v) == sizeof(char)  ? (long long) (char) (v) :  \
+	 sizeof(v) == sizeof(short) ? (long long) (short) (v) : \
+	 sizeof(v) == sizeof(int)   ? (long long) (int) (v) :   \
+	 sizeof(v) == sizeof(long)  ? (long long) (long) (v) :  \
+								  (long long) (v))
+
+#define zero_extend_signed_to_size_t(v)                           \
+	(sizeof(v) == sizeof(char)  ? (size_t) (unsigned char) (v) :  \
+	 sizeof(v) == sizeof(short) ? (size_t) (unsigned short) (v) : \
+	 sizeof(v) == sizeof(int)   ? (size_t) (unsigned int) (v) :   \
+	 sizeof(v) == sizeof(long)  ? (size_t) (unsigned long) (v) :  \
+								  (size_t) (v))
 
 #define SYS_FUNC_NAME(syscall_name) sys_##syscall_name
 

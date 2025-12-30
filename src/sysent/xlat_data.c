@@ -2,6 +2,7 @@
 #include "xlat.h"
 #include <linux/fcntl.h>
 #include <stdint.h>
+#include <sys/poll.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
@@ -85,6 +86,15 @@ const t_xlat_data fstatat_flags_data[] = {
 	XLAT(AT_SYMLINK_NOFOLLOW),
 };
 
+const t_xlat_data pollfd_events_data[] = {
+	XLAT(POLLIN),
+	XLAT(POLLPRI),
+	XLAT(POLLOUT),
+	XLAT(POLLERR),
+	XLAT(POLLHUP),
+	XLAT(POLLNVAL),
+};
+
 const t_xlat access_modes[] = WXLAT(access_modes_data);
 const t_xlat faccessat2_flags[] = WXLAT(faccessat2_flags_data);
 const t_xlat open_access_flags[] = WXLAT(open_access_flags_data);
@@ -93,3 +103,4 @@ const t_xlat execveat_flags[] = WXLAT(execveat_flags_data);
 const t_xlat mode_file_types[] = WXLAT(mode_file_types_data);
 const t_xlat mode_protection_bits[] = WXLAT(mode_protection_bits_data);
 const t_xlat fstatat_flags[] = WXLAT(fstatat_flags_data);
+const t_xlat pollfd_events[] = WXLAT(pollfd_events_data);

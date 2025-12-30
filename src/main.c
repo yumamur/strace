@@ -128,7 +128,7 @@ void syscallstart(t_td *td)
 	fill_trace_data_entering(td);
 	if (g_flag_trace == sysent[td->sc_no].traced)
 	{
-		printsyscallstart(get_syscall_name(td));
+		print_syscall_enter(get_syscall_name(td));
 		td->flags |= sysent[td->sc_no].logger(td);
 	}
 	td->flags |= TD_INSYSCALL;
@@ -139,10 +139,20 @@ void syscallend(t_td *td)
 	fill_trace_data_exiting(td);
 	if (g_flag_trace == sysent[td->sc_no].traced)
 	{
-		if (!(td->flags & SC_DECODE_COMPLETE))
-			td->flags |= sysent[td->sc_no].logger(td);
-		printsyscallend(td);
+		if (td->flags & SC_AFTER_RETURN)
+		{
+			print_syscall_return(td);
+			print_space();
+			sysent[td->sc_no].logger(td);
+		}
+		else
+		{
+			if (!(td->flags & SC_DECODE_COMPLETE))
+				td->flags |= sysent[td->sc_no].logger(td);
+			print_syscall_return(td);
+		}
 		td->flags &= ~SC_MASK;
+		print_syscall_end();
 	}
 	td->flags &= ~TD_INSYSCALL;
 }

@@ -10,10 +10,11 @@
 
 #define SC_DECODE_COMPLETE 0x10
 #define SC_PRINT_HEX       0x20
-#define SC_MASK            (SC_DECODE_COMPLETE | SC_PRINT_HEX)
+#define SC_AFTER_RETURN    0x40
+#define SC_MASK            (SC_DECODE_COMPLETE | SC_PRINT_HEX | SC_AFTER_RETURN)
 
-#define entering(tcp) (!((tcp).flags & TD_INSYSCALL))
-#define exiting(tcp)  ((tcp).flags & TD_INSYSCALL)
+#define entering(td_) (!((td_).flags & TD_INSYSCALL))
+#define exiting(td_)  ((td_).flags & TD_INSYSCALL)
 
 #define MAX_ARGS 6
 
