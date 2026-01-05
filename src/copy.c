@@ -6,30 +6,38 @@
 	the project allows linux >3.4, so it's assumed safe to __USE_GNU for
 	'process_vm_readv' function declaration.
 */
-#define __USE_GNU
 #include <sys/uio.h>
-#undef __USE_GNU
-
 #include <syscall.h>
 #include <unistd.h>
 
+#ifndef __USE_GNU
 // this goes to trash
-// static ssize_t strace_process_vm_readv(pid_t               pid,
-// 									   const struct iovec *lvec,
-// 									   unsigned long       liovcnt,
-// 									   const struct iovec *rvec,
-// 									   unsigned long       riovcnt,
-// 									   unsigned long       flags)
-// {
-// 	return syscall(__NR_process_vm_readv,
-// 				   (long) pid,
-// 				   lvec,
-// 				   liovcnt,
-// 				   rvec,
-// 				   riovcnt,
-// 				   flags);
-// }
-// #define process_vm_readv strace_process_vm_readv
+// or maybe not?
+extern ssize_t __attribute__((weak))
+process_vm_readv(pid_t               __pid,
+				 const struct iovec *__lvec,
+				 unsigned long int   __liovcnt,
+				 const struct iovec *__rvec,
+				 unsigned long int   __riovcnt,
+				 unsigned long int   __flags)
+	__THROW;
+
+ssize_t process_vm_readv(pid_t               pid,
+						 const struct iovec *lvec,
+						 unsigned long int   liovcnt,
+						 const struct iovec *rvec,
+						 unsigned long int   riovcnt,
+						 unsigned long int   flags)
+{
+	return syscall(__NR_process_vm_readv,
+				   (long) pid,
+				   lvec,
+				   liovcnt,
+				   rvec,
+				   riovcnt,
+				   flags);
+}
+#endif
 
 /**
  * @param laddr: local (parent) address
@@ -46,12 +54,12 @@ static ssize_t process_read_mem(const pid_t  pid,
 	return process_vm_readv(pid, &local, 1, &remote, 1, 0);
 }
 
-int umovemem(t_td *const td, void *laddr, __kernel_ulong_t taddr, size_t len)
+int umovemem(struct s_td *const td, void *laddr, __kernel_ulong_t taddr, size_t len)
 {
 	return process_read_mem(td->pid, laddr, (void *) taddr, len);
 }
 
-int umovestr(t_td *const td, char *laddr, __kernel_ulong_t taddr, size_t len)
+int umovestr(struct s_td *const td, char *laddr, __kernel_ulong_t taddr, size_t len)
 {
 	const int    pid = td->pid;
 	const size_t page_size = getpagesize();

@@ -1,10 +1,12 @@
 #include "../ft_common.h"
 #include "../ft_print.h"
+#include "../ft_syscall.h"
 #include "../ft_utils.h"
 #include "xlat.h"
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+
 #ifdef __USE_XOPEN2K8
 #  undef __USE_XOPEN2K8
 #  define __DISABLED_USE_XOPEN2K8

@@ -1,5 +1,6 @@
 #include "../ft_common.h"
 #include "../ft_print.h"
+#include "../ft_syscall.h"
 #include "xlat.h"
 #include <linux/fcntl.h>
 #include <string.h>

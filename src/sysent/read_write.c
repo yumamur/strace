@@ -1,3 +1,4 @@
+#include "../ft_syscall.h"
 #include "../ft_common.h"
 #include "../ft_print.h"
 #include "xlat.h"
@@ -10,7 +11,7 @@ SYS_FUNC(read)
 	{
 		FIRST_ARG("fd");
 		printfd(td->sc_args[0]);
-		return 0;
+		return (0);
 	}
 	else
 	{

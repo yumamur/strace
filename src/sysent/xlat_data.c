@@ -16,6 +16,11 @@
 		}                                            \
 	}
 
+#define WXXLAT(name_)        \
+	const t_xlat name_[] = { \
+		{.data = name_##_data, .size = ARRAY_SIZE(name_##_data)} \
+    }
+
 const t_xlat_data access_modes_data[] = {
 	XLAT(F_OK),
 	XLAT(R_OK),
@@ -95,12 +100,23 @@ const t_xlat_data pollfd_events_data[] = {
 	XLAT(POLLNVAL),
 };
 
-const t_xlat access_modes[] = WXLAT(access_modes_data);
-const t_xlat faccessat2_flags[] = WXLAT(faccessat2_flags_data);
-const t_xlat open_access_flags[] = WXLAT(open_access_flags_data);
-const t_xlat open_flags[] = WXLAT(open_flags_data);
-const t_xlat execveat_flags[] = WXLAT(execveat_flags_data);
-const t_xlat mode_file_types[] = WXLAT(mode_file_types_data);
-const t_xlat mode_protection_bits[] = WXLAT(mode_protection_bits_data);
-const t_xlat fstatat_flags[] = WXLAT(fstatat_flags_data);
-const t_xlat pollfd_events[] = WXLAT(pollfd_events_data);
+const t_xlat_data lseek_whence_values_data[] = {
+	XLAT(SEEK_SET),
+	XLAT(SEEK_CUR),
+	XLAT(SEEK_END),
+#ifdef __USE_GNU
+	XLAT(SEEK_DATA),
+	XLAT(SEEK_HOLE),
+#endif
+};
+
+WXXLAT(access_modes);
+WXXLAT(faccessat2_flags);
+WXXLAT(open_access_flags);
+WXXLAT(open_flags);
+WXXLAT(execveat_flags);
+WXXLAT(mode_file_types);
+WXXLAT(mode_protection_bits);
+WXXLAT(fstatat_flags);
+WXXLAT(pollfd_events);
+WXXLAT(lseek_whence_values);

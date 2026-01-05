@@ -1,7 +1,8 @@
 #include "ft_common.h"
 #include "ft_print.h"
+#include "ft_syscall.h"
 #include "ft_utils.h"
-#include "sysent/ft_sysent.h"
+#include "regs.h"
 #include <bits/types/siginfo_t.h>
 #include <errno.h>
 #include <linux/elf.h>
@@ -25,144 +26,17 @@
 
 #define IS_SET(flag_) ((flag_) != 0)
 
-static struct user_regs_struct g_regs;
-
-static t_entry                 sysent[] = {
-#define X(name) [__NR_##name] = {.call_name = #name, .logger = sys_##name, .traced = 0},
-#include "syscalls.def"
-#undef X
-};
+//
+extern struct iovec g_io;
 
 // flags
 bool g_flag_trace = false;
 
-//
-static inline const char *get_syscall_name(t_td *td)
-{
-	unsigned long scno = td->sc_no;
-	if (scno >= (long) (ARRAY_SIZE(sysent)))
-		return "unknown";
-
-	const char *s = sysent[scno].call_name;
-	return s ? s : "unknown";
-}
-
-void fill_trace_data_entering(t_td *td)
-{
-	td->abi = detect_abi(&g_regs);
-	switch (td->abi)
-	{
-	case ABI_32BIT:
-#ifdef __x86_64__
-		td->sc_no = g_regs.orig_rax;
-		td->sc_args[0] = g_regs.rbx;
-		td->sc_args[1] = g_regs.rcx;
-		td->sc_args[2] = g_regs.rdx;
-		td->sc_args[3] = g_regs.rsi;
-		td->sc_args[4] = g_regs.rdi;
-		td->sc_args[5] = g_regs.rbp;
-#else
-		td->sc_no = g_regs.orig_eax;
-		td->sc_ret = () & g_regs.eax;
-		td->sc_args[0] = g_regs.ebx;
-		td->sc_args[1] = g_regs.ecx;
-		td->sc_args[2] = g_regs.edx;
-#endif
-		break;
-
-	case ABI_X32:
-#ifdef __x86_64__
-		td->sc_no = g_regs.orig_rax & ~__X32_SYSCALL_BIT;
-		td->sc_args[0] = g_regs.rdi;
-		td->sc_args[1] = g_regs.rsi;
-		td->sc_args[2] = g_regs.rdx;
-		td->sc_args[3] = g_regs.r10;
-		td->sc_args[4] = g_regs.r8;
-		td->sc_args[5] = g_regs.r9;
-#endif
-		break;
-
-	case ABI_64BIT:
-	default:
-#ifdef __x86_64__
-		td->sc_no = g_regs.orig_rax;
-		td->sc_args[0] = g_regs.rdi;
-		td->sc_args[1] = g_regs.rsi;
-		td->sc_args[2] = g_regs.rdx;
-		td->sc_args[3] = g_regs.r10;
-		td->sc_args[4] = g_regs.r8;
-		td->sc_args[5] = g_regs.r9;
-#endif
-	}
-}
-
-void fill_trace_data_exiting(t_td *td)
-{
-	td->abi = detect_abi(&g_regs);
-	switch (td->abi)
-	{
-	case ABI_32BIT:
-#ifdef __x86_64__
-		td->sc_ret = g_regs.rax;
-#else
-		td->sc_ret = () & g_regs.eax;
-#endif
-		break;
-
-	case ABI_X32:
-#ifdef __x86_64__
-		td->sc_ret = g_regs.rax;
-#endif
-		break;
-
-	case ABI_64BIT:
-	default:
-#ifdef __x86_64__
-		td->sc_ret = g_regs.rax;
-#endif
-	}
-}
-
-void syscallstart(t_td *td)
-{
-	fill_trace_data_entering(td);
-	if (g_flag_trace == sysent[td->sc_no].traced)
-	{
-		print_syscall_enter(get_syscall_name(td));
-		td->flags |= sysent[td->sc_no].logger(td);
-	}
-	td->flags |= TD_INSYSCALL;
-}
-
-void syscallend(t_td *td)
-{
-	fill_trace_data_exiting(td);
-	if (g_flag_trace == sysent[td->sc_no].traced)
-	{
-		if (td->flags & SC_AFTER_RETURN)
-		{
-			print_syscall_return(td);
-			print_space();
-			sysent[td->sc_no].logger(td);
-		}
-		else
-		{
-			if (!(td->flags & SC_DECODE_COMPLETE))
-				td->flags |= sysent[td->sc_no].logger(td);
-			print_syscall_return(td);
-		}
-		td->flags &= ~SC_MASK;
-		print_syscall_end();
-	}
-	td->flags &= ~TD_INSYSCALL;
-}
-
 void trace_syscalls(pid_t child)
 {
-	int          status;
-	struct iovec io;
-	siginfo_t    si;
-	t_td         td = {.pid = child};
+	int       status;
+	siginfo_t si;
+	t_td      td = {.pid = child};
 
 	if (waitpid(child, &status, WUNTRACED) == -1)
 	{
@@ -236,10 +110,9 @@ void trace_syscalls(pid_t child)
 
 			if (stopsig == (SIGTRAP | 0x80))
 			{
-				io.iov_base = &g_regs;
-				io.iov_len = sizeof(g_regs);
+				g_io.iov_len = sizeof(struct user_regs_struct);
 
-				if (ptrace(PTRACE_GETREGSET, child, NT_PRSTATUS, &io) == -1)
+				if (ptrace(PTRACE_GETREGSET, child, NT_PRSTATUS, &g_io) == -1)
 				{
 					if (errno == ESRCH)
 						break;
@@ -282,13 +155,11 @@ void trace_syscalls(pid_t child)
 char *get_executable(const char *cmd, char *buf, size_t buflen)
 {
 	char  *env_path;
-	char  *inf_save;
-	char  *tok;
 	size_t cmdlen;
 
 	if (!cmd)
 		return (NULL);
-	if (cmd[0] == '.' || cmd[0] == '/')
+	if (strchr(cmd, '/') != NULL)
 	{
 		strcpy(buf, cmd);
 		if (access(buf, F_OK))
@@ -300,7 +171,9 @@ char *get_executable(const char *cmd, char *buf, size_t buflen)
 	if (!env_path)
 		return (NULL);
 	env_path = strdup(env_path);
-	tok = __strtok_r(env_path, ":", &inf_save);
+
+	char  *inf_save;
+	char  *tok = __strtok_r(env_path, ":", &inf_save);
 	size_t toklen = strlen(tok);
 	while (tok && *tok && toklen + 1 + cmdlen <= buflen)
 	{
@@ -320,15 +193,6 @@ char *get_executable(const char *cmd, char *buf, size_t buflen)
 	return (NULL);
 }
 
-int check_and_set_syscall(const char *scname)
-{
-	static const size_t sysent_size = ARRAY_SIZE(sysent);
-	for (size_t i = 0; i < sysent_size; i++)
-		if (sysent[i].call_name && strcmp(scname, sysent[i].call_name) == 0)
-			return !(sysent[i].traced = true);
-	return -1;
-}
-
 int parse_trace_options(const char *arg)
 {
 	if (!*arg)
@@ -341,7 +205,7 @@ int parse_trace_options(const char *arg)
 		 tok;
 		 tok = __strtok_r(NULL, ",", &inf_save))
 	{
-		if (check_and_set_syscall(tok))
+		if (!mark_syscall_to_trace(tok))
 			die("Invalid syscall name: %s", tok);
 	}
 

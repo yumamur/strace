@@ -1,8 +1,6 @@
 #ifndef FT_PRINT
 #define FT_PRINT
 
-#include "trace.h"
-
 #include "ft_common.h"
 #include "ft_string.h"
 #include "sysent/xlat.h"
@@ -10,6 +8,9 @@
 #define FT_OUTFILE stderr
 
 #define TPUTS(x) fputs(x, FT_OUTFILE)
+
+struct s_td;
+typedef struct s_td t_td;
 
 #ifdef DEBUG_ME
 #  define EXTEND_ARGNAME(argname) argname "="
@@ -23,6 +24,7 @@
 #define NEXT_ARG(argname)  TPUTS(", " EXTEND_ARGNAME(argname))
 
 #define PRINT_ULL(num) fprintf(FT_OUTFILE, "%llu", zero_extend_signed_to_ull(num))
+#define PRINT_D(num)   fprintf(FT_OUTFILE, "%lld", zero_extend_signed_to_ll(num))
 #define PRINT_LL(num)  fprintf(FT_OUTFILE, "%lld", zero_extend_signed_to_ll(num))
 #define PRINT_X(num)   fprintf(FT_OUTFILE, "%#llx", zero_extend_signed_to_ull(num))
 
@@ -48,8 +50,11 @@ void        printfd(int fd);
 void        printdev_t(__dev_t dev);
 void        printtime(time_t sec, unsigned long nsec);
 
+int __attribute__((format(printf, 1, 2)))
+print_flush(const char *fmt, ...);
+
 void __attribute__((format(printf, 1, 2)))
-printcomment(const char *fmt, ...);
+print_comment(const char *fmt, ...);
 
 // some tiny functions
 

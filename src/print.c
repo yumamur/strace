@@ -2,6 +2,7 @@
 #include "ft_utils.h"
 #include <inttypes.h>
 #include <linux/fcntl.h>
+#include <string.h>
 #include <sys/sysmacros.h>
 
 int printaddr(__kernel_ulong_t addr)
@@ -140,7 +141,7 @@ int printflags(const t_xlat *xlat, uint64_t flags, const char *dflt)
 		if (flags)
 		{
 			putnum(flags, HEX);
-			printcomment(dflt);
+			print_comment(dflt);
 		}
 	}
 
@@ -169,7 +170,11 @@ void print_syscall_enter(const char *name)
 
 void print_syscall_return(t_td *td)
 {
-	if (td->flags & SC_PRINT_HEX)
+	if (td->sc_err)
+	{
+		putfmt(") = -1 %s", get_errmsg(-td->sc_err));
+	}
+	else if (td->flags & SC_PRINT_HEX)
 		putfmt(") = %#0" PRIx64, *(__kernel_ulong_t *) &td->sc_ret);
 	else
 		putfmt(") = %" PRIu64, *(__kernel_ulong_t *) &td->sc_ret);
@@ -213,8 +218,9 @@ void printtime(time_t sec, unsigned long nsec)
 	if (!pos)
 		return;
 
-	pos += snprintf(buf + pos, sizeof(buf) - pos, ".%09lu", nsec);
+	if (nsec)
+		pos += snprintf(buf + pos, sizeof(buf) - pos, ".%09lu", nsec);
 	strftime(buf + pos, sizeof(buf) - pos, "%z", tp);
 
-	printcomment("%s", buf);
+	print_comment("%s", buf);
 }

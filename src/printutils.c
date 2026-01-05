@@ -139,7 +139,20 @@ int fputfmt(FILE *file, const char *fmt, ...)
 	return ret;
 }
 
-void printcomment(const char *fmt, ...)
+int print_flush(const char *fmt, ...)
+{
+	va_list args;
+	int     ret;
+
+	va_start(args, fmt);
+	fflush(FT_OUTFILE);
+	ret = vfprintf(FT_OUTFILE, fmt, args);
+	fflush(FT_OUTFILE);
+	va_end(args);
+	return ret;
+}
+
+void print_comment(const char *fmt, ...)
 {
 	va_list args;
 

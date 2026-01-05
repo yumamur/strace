@@ -1,5 +1,5 @@
-#include "../ft_common.h"
 #include "../ft_print.h"
+#include "../ft_syscall.h"
 #include "../ft_utils.h"
 #include "xlat.h"
 #include <poll.h>

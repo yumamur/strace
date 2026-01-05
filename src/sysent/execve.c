@@ -1,5 +1,5 @@
-#include "../ft_common.h"
 #include "../ft_print.h"
+#include "../ft_syscall.h"
 #include "../ft_utils.h"
 #include "xlat.h"
 #include <inttypes.h>
@@ -16,9 +16,9 @@ size_t readv(t_td *td, __kernel_ulong_t addr, _Bool should_print)
 	}
 
 	size_t           ct = 0;
-	const size_t     wordbytes = td->abi == ABI_32BIT ? 4U : 8U;
+	const size_t     wordsize = current_wordsize;
 	__kernel_ulong_t prev_addr = 0;
-	union u_addrb    addr_buffer;
+	t_addr           addr_buffer;
 	while (1)
 	{
 		if (addr < prev_addr)
@@ -29,7 +29,7 @@ size_t readv(t_td *td, __kernel_ulong_t addr, _Bool should_print)
 			break;
 		}
 
-		if (umovemem(td, addr_buffer.raw, addr, wordbytes) == -1)
+		if (umovemem(td, addr_buffer.raw, addr, wordsize) == -1)
 		{
 			if (should_print)
 				printaddr(addr);
@@ -37,7 +37,7 @@ size_t readv(t_td *td, __kernel_ulong_t addr, _Bool should_print)
 		}
 
 		__kernel_ulong_t tword;
-		if (wordbytes == sizeof(addr_buffer.ws64))
+		if (wordsize == sizeof(addr_buffer.ws64))
 			tword = addr_buffer.ws64;
 		else
 			tword = (__kernel_ulong_t) addr_buffer.ws32;
@@ -52,7 +52,7 @@ size_t readv(t_td *td, __kernel_ulong_t addr, _Bool should_print)
 			else if (ct >= MAX_ARGS)
 			{
 				print_arg_sep();
-				printcomment("I probably should keep counting");
+				print_comment("I probably should keep counting");
 				break;
 			}
 			else
@@ -62,7 +62,7 @@ size_t readv(t_td *td, __kernel_ulong_t addr, _Bool should_print)
 		}
 		ct++;
 		prev_addr = addr;
-		addr += wordbytes;
+		addr += wordsize;
 	}
 	if (should_print)
 		print_arr_end();
@@ -73,7 +73,7 @@ void printenvp(t_td *td, __kernel_ulong_t addr)
 {
 	size_t ct = readv(td, addr, false);
 	printaddr(addr);
-	printcomment("%" PRIu64 " variables", ct);
+	print_comment("%" PRIu64 " variables", ct);
 }
 
 SYS_FUNC(execve)
