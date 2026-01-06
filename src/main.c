@@ -1,8 +1,8 @@
 #include "ft_common.h"
 #include "ft_print.h"
-#include "ft_syscall.h"
 #include "ft_utils.h"
 #include "regs.h"
+#include "syscall_ent.h"
 #include <bits/types/siginfo_t.h>
 #include <errno.h>
 #include <linux/elf.h>

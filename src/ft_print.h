@@ -10,7 +10,6 @@
 #define TPUTS(x) fputs(x, FT_OUTFILE)
 
 struct s_td;
-typedef struct s_td t_td;
 
 #ifdef DEBUG_ME
 #  define EXTEND_ARGNAME(argname) argname "="
@@ -32,11 +31,11 @@ void        printexit(int status);
 void        printkillsig(int sig);
 
 void        print_syscall_enter(const char *name);
-void        print_syscall_return(t_td *td);
+void        print_syscall_return(struct s_td *td);
 int         printaddr(__kernel_ulong_t addr);
-int         printpath(t_td *td, __kernel_ulong_t addr);
-int         printstr(t_td *td, __kernel_ulong_t addr);
-int         printnstr(t_td *td, __kernel_ulong_t addr, size_t n);
+int         printpath(struct s_td *td, __kernel_ulong_t addr);
+int         printstr(struct s_td *td, __kernel_ulong_t addr);
+int         printnstr(struct s_td *td, __kernel_ulong_t addr, size_t n);
 
 int         printflags(const t_xlat *xlat, uint64_t flags, const char *dflt);
 const char *snprintflags(char         *dst,
@@ -45,10 +44,11 @@ const char *snprintflags(char         *dst,
 						 uint64_t      flags,
 						 const char   *dflt);
 int         printmode(uint64_t mode);
-void        printdirfd(t_td *td, int fd);
+void        printdirfd(struct s_td *td, int fd);
 void        printfd(int fd);
 void        printdev_t(__dev_t dev);
 void        printtime(time_t sec, unsigned long nsec);
+int         printargs(struct s_td *td);
 
 int __attribute__((format(printf, 1, 2)))
 print_flush(const char *fmt, ...);

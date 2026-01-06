@@ -1,5 +1,6 @@
 #include "ft_printutils.h"
 #include "ft_utils.h"
+#include "syscall_ent.h"
 #include <inttypes.h>
 #include <linux/fcntl.h>
 #include <string.h>
@@ -10,7 +11,7 @@ int printaddr(__kernel_ulong_t addr)
 	return putnum(zero_extend_signed_to_ull(addr), HEX);
 }
 
-int printpath(t_td *td, __kernel_ulong_t addr)
+int printpath(struct s_td *td, __kernel_ulong_t addr)
 {
 	char path[4096];
 
@@ -25,7 +26,7 @@ int printpath(t_td *td, __kernel_ulong_t addr)
 	return null_idx;
 }
 
-int printstr(t_td *td, __kernel_ulong_t addr)
+int printstr(struct s_td *td, __kernel_ulong_t addr)
 {
 	if (!addr)
 		return -1;
@@ -39,7 +40,7 @@ int printstr(t_td *td, __kernel_ulong_t addr)
 	return null_idx;
 }
 
-int printnstr(t_td *td, __kernel_ulong_t addr, size_t n)
+int printnstr(struct s_td *td, __kernel_ulong_t addr, size_t n)
 {
 	if (!addr)
 		return -1;
@@ -168,7 +169,7 @@ void print_syscall_enter(const char *name)
 	putfmt("%s(", name);
 }
 
-void print_syscall_return(t_td *td)
+void print_syscall_return(struct s_td *td)
 {
 	if (td->sc_err)
 	{
@@ -180,7 +181,7 @@ void print_syscall_return(t_td *td)
 		putfmt(") = %" PRIu64, *(__kernel_ulong_t *) &td->sc_ret);
 }
 
-void printdirfd(t_td *td, int fd)
+void printdirfd(struct s_td *td, int fd)
 {
 	(void) td;
 	if (fd == AT_FDCWD)
@@ -223,4 +224,18 @@ void printtime(time_t sec, unsigned long nsec)
 	strftime(buf + pos, sizeof(buf) - pos, "%z", tp);
 
 	print_comment("%s", buf);
+}
+
+int printargs(struct s_td *td)
+{
+	unsigned int n = td->entry->nargs;
+	for (size_t i = 0; i < n; i++)
+	{
+		if (i)
+			NEXT_ARG("");
+		else
+			FIRST_ARG("");
+		printaddr(td->sc_args[i]);
+	}
+	return SC_DECODE_COMPLETE;
 }

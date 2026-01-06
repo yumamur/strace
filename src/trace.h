@@ -1,5 +1,5 @@
-#ifndef FT_TRACE
-#define FT_TRACE
+#ifndef TRACE_H
+#define TRACE_H
 
 #include "ft_common.h"
 #include "regs.h"
@@ -28,4 +28,4 @@ typedef struct s_td
 		struct timespec  stime;
 } t_td;
 
-#endif
+#endif /* TRACE_H */

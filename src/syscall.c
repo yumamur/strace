@@ -1,7 +1,7 @@
 #include "ft_print.h"
-#include "ft_syscall.h"
 #include "ft_utils.h"
 #include "regs.h"
+#include "syscall_ent.h"
 #include "trace.h"
 #include <stdbool.h>
 #include <string.h>
@@ -23,29 +23,23 @@ t_entry sysent0[] = {
 t_entry sysent1[] = {
 #include "syscall_ent_32.h"
 };
-t_entry sysent2[] = {
-#include "syscall_ent_32.h"
-};
 
 enum e_abi_sysent_size
 {
 	sysent_size0 = ARRAY_SIZE(sysent0),
 	sysent_size1 = ARRAY_SIZE(sysent1),
-	sysent_size2 = ARRAY_SIZE(sysent2)
 };
 
 enum e_abi_wordsize
 {
 	abi_wordsize0 = 8,
 	abi_wordsize1 = 4,
-	abi_wordsize2 = 4
 };
 
 enum e_abi_klongsize
 {
 	abi_klongsize0 = 8,
 	abi_klongsize1 = 4,
-	abi_klongsize2 = 8
 };
 
 const char *abi_names[] = {"64 bit", "32 bit"};
@@ -70,16 +64,22 @@ static const unsigned int klongsizes[] = {
 	[ABI_32BIT] = abi_klongsize1,
 };
 
-t_entry           *sysent = sysent0;
-unsigned int       sysent_size = sysent_size0;
+t_entry       *sysent = sysent0;
+unsigned int   sysent_size = sysent_size0;
 
-enum e_abi         current_abi = ABI_64BIT;
-unsigned int       current_wordsize = abi_wordsize0;
-unsigned int       current_klongsize = abi_klongsize0;
+enum e_abi     current_abi = ABI_64BIT;
+unsigned int   current_wordsize = abi_wordsize0;
+unsigned int   current_klongsize = abi_klongsize0;
 
-struct iovec       g_io = {.iov_base = &g_regs};
+struct iovec   g_io = {.iov_base = &g_regs};
 
-extern bool        g_flag_trace;
+extern bool    g_flag_trace;
+
+static t_entry sysent_stub = {
+	.call_name = "unkown",
+	.logger = printargs,
+	.traced = 0,
+};
 
 static inline void update_current_abi(struct s_td *td, enum e_abi abi)
 {
@@ -96,6 +96,9 @@ static inline void update_current_abi(struct s_td *td, enum e_abi abi)
 
 void set_sc_no(struct s_td *td)
 {
+	td->sc_no = -1;
+	td->entry = NULL;
+
 	if (IS_ABI_32)
 	{
 		td->sc_no = REGS_32.orig_eax;
@@ -106,6 +109,13 @@ void set_sc_no(struct s_td *td)
 		td->sc_no = REGS_64.orig_rax;
 		update_current_abi(td, ABI_64BIT);
 	}
+
+	if (!sysent[td->sc_no].logger)
+	{
+		td->entry = &sysent_stub;
+	}
+	else
+		td->entry = &sysent[td->sc_no];
 }
 
 // TODO: Find any other way than this
@@ -200,7 +210,7 @@ void syscallstart(struct s_td *td)
 {
 	set_sc_no(td);
 	get_syscall_args(td);
-	t_entry *ent = &sysent[td->sc_no];
+	t_entry *ent = td->entry;
 	if (g_flag_trace == ent->traced)
 	{
 		print_syscall_enter(ent->call_name);
@@ -212,7 +222,7 @@ void syscallstart(struct s_td *td)
 void syscallend(struct s_td *td)
 {
 	fill_trace_data_exiting(td);
-	t_entry *ent = &sysent[td->sc_no];
+	t_entry *ent = td->entry;
 	if (g_flag_trace == ent->traced)
 	{
 		if (td->flags & SC_AFTER_RETURN)

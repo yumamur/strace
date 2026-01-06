@@ -1,4 +1,4 @@
-#include "../ft_syscall.h"
+#include "../syscall_ent.h"
 
 #define SYS_STUB(n)                                              \
 	int __attribute__((weak)) SYS_FUNC_NAME(n)(struct s_td * td) \

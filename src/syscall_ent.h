@@ -1,5 +1,5 @@
-#ifndef FT_SYSCALL_H
-#define FT_SYSCALL_H
+#ifndef SYSCALL_ENT_H
+#define SYSCALL_ENT_H
 
 #include "ft_common.h"
 #include <stddef.h>
@@ -24,4 +24,4 @@ int mark_syscall_to_trace(const char *scname);
 void syscallstart(struct s_td *);
 void syscallend(struct s_td *);
 
-#endif
+#endif /* SYSCALL_ENT_H */
