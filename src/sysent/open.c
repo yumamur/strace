@@ -1,29 +1,28 @@
 #include "../ft_common.h"
 #include "../ft_print.h"
 #include "../syscall_ent.h"
-#include "xlat.h"
+#include "open.xlat.h"
 #include <linux/fcntl.h>
 #include <string.h>
 
 void print_open_flags(unsigned int flags)
 {
-	char               buffer[1024];
-	const unsigned int acf = flags & O_ACCMODE;
-	const char        *access_mode_name = search_xlat(open_access_flags, acf);
+	char        buffer[1024];
+	const char *access_mode_name = search_xlat(open_access_flags, flags & O_ACCMODE);
 
 	if (!access_mode_name)
 		access_mode_name = "O_???";
 
-	int          written = snprintf(buffer, sizeof(buffer), "%s", access_mode_name);
-	unsigned int remaining_flags = flags & ~O_ACCMODE;
+	int written = snprintf(buffer, sizeof(buffer), "%s", access_mode_name);
+	flags &= ~O_ACCMODE;
 
-	if (remaining_flags && (size_t) written < sizeof(buffer) - 1)
+	if (flags && (size_t) written < sizeof(buffer) - 1)
 	{
 		buffer[written++] = '|';
 		snprintflags(buffer + written,
 					 sizeof(buffer) - written,
 					 open_flags,
-					 remaining_flags,
+					 flags,
 					 "O_???");
 	}
 
@@ -44,7 +43,7 @@ SYS_FUNC(open)
 		printmode(td->sc_args[2]);
 	}
 
-	return SC_DECODE_COMPLETE;
+	return SF_DECODE_COMPLETE;
 }
 
 SYS_FUNC(openat)
@@ -64,7 +63,7 @@ SYS_FUNC(openat)
 		printmode(td->sc_args[3]);
 	}
 
-	return SC_DECODE_COMPLETE;
+	return SF_DECODE_COMPLETE;
 }
 
 SYS_FUNC(close)
@@ -72,5 +71,5 @@ SYS_FUNC(close)
 	FIRST_ARG("fd");
 	printfd(td->sc_args[0]);
 
-	return SC_DECODE_COMPLETE;
+	return SF_DECODE_COMPLETE;
 }

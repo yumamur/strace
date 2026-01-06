@@ -4,7 +4,7 @@
 	int __attribute__((weak)) SYS_FUNC_NAME(n)(struct s_td * td) \
 	{                                                            \
 		(void) td; /* TODO: unimplemented */                     \
-		return SC_DECODE_COMPLETE;                               \
+		return SF_DECODE_COMPLETE;                               \
 	}
 
 #include "xlat_stub.h"

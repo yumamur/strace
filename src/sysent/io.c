@@ -1,7 +1,5 @@
-#include "../syscall_ent.h"
 #include "../ft_common.h"
 #include "../ft_print.h"
-#include "xlat.h"
 #include <linux/fcntl.h>
 #include <string.h>
 
@@ -21,7 +19,7 @@ SYS_FUNC(read)
 		NEXT_ARG("count");
 		PRINT_ULL(td->sc_args[2]);
 
-		return SC_DECODE_COMPLETE;
+		return SF_DECODE_COMPLETE;
 	}
 }
 
@@ -36,5 +34,5 @@ SYS_FUNC(write)
 	NEXT_ARG("count");
 	PRINT_ULL(td->sc_args[2]);
 
-	return SC_DECODE_COMPLETE;
+	return SF_DECODE_COMPLETE;
 }

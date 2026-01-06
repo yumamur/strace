@@ -1,7 +1,7 @@
+#include "poll.xlat.h"
+
 #include "../ft_print.h"
-#include "../syscall_ent.h"
 #include "../ft_utils.h"
-#include "xlat.h"
 #include <poll.h>
 
 void print_pollfds(t_td *td)
@@ -60,70 +60,23 @@ void print_pollfds(t_td *td)
 	print_arr_end();
 }
 
-void print_updated_pollfds(t_td *td)
+int print_pollfd(void *buf)
 {
-	struct pollfd          buf;
-	size_t                 nmem = (size_t) zero_extend_signed_to_size_t(td->sc_args[1]);
+	struct pollfd *pt = (struct pollfd *) buf;
 
-	__kernel_ulong_t       start_addr = td->sc_args[0];
-	const size_t           size = nmem * sizeof(buf);
-	const __kernel_ulong_t end_addr = start_addr + size;
+	if (!(uint64_t) pt->revents)
+		return 0;
 
-	if (end_addr < start_addr || size / sizeof(buf) != nmem)
-	{
-		print_debug("size overflow");
-		printaddr(start_addr);
-		return;
-	}
+	print_struct_start();
 
-	__kernel_ulong_t cur_addr = start_addr;
-	int              read_bytes;
-	int              logged = 0;
+	print_struct_member("fd");
+	printfd(pt->fd);
 
-	for (cur_addr = start_addr;
-		 cur_addr < end_addr;
-		 cur_addr += sizeof(buf))
-	{
-		read_bytes = umovemem(td, &buf, cur_addr, sizeof(buf));
+	print_next_struct_member("revents");
+	printflags(pollfd_events, (uint64_t) pt->revents, "POLL???");
 
-		if (read_bytes < 0)
-		{
-			printaddr(cur_addr);
-			if (cur_addr != start_addr)
-				print_has_more();
-			break;
-		}
-
-		if (cur_addr < start_addr)
-		{
-			print_debug("memory wrap-around");
-			break;
-		}
-
-		if (!(uint64_t) buf.revents)
-			continue;
-
-		if (logged)
-			print_arg_sep();
-		else
-		{
-			print_arg_start();
-			print_arr_start();
-			logged = 1;
-		}
-
-		print_struct_start();
-
-		print_struct_member("fd");
-		printfd(buf.fd);
-
-		print_next_struct_member("revents");
-		printflags(pollfd_events, (uint64_t) buf.revents, "POLL???");
-
-		print_struct_end();
-	}
-	print_arr_end();
-	print_arg_end();
+	print_struct_end();
+	return 1;
 }
 
 SYS_FUNC(poll)
@@ -139,11 +92,20 @@ SYS_FUNC(poll)
 		NEXT_ARG("timeout");
 		PRINT_LL(td->sc_args[2]);
 
-		return SC_AFTER_RETURN;
+		return SF_AFTER_RETURN;
 	}
 	else
 	{
-		print_updated_pollfds(td);
-		return SC_DECODE_COMPLETE;
+		struct pollfd buf;
+		print_arg_start();
+		printarray(
+			td,
+			print_pollfd,
+			td->sc_args[0],
+			&buf,
+			td->sc_args[1],
+			sizeof(buf));
+		print_arg_end();
+		return SF_DECODE_COMPLETE;
 	}
 }

@@ -225,7 +225,7 @@ void syscallend(struct s_td *td)
 	t_entry *ent = td->entry;
 	if (g_flag_trace == ent->traced)
 	{
-		if (td->flags & SC_AFTER_RETURN)
+		if (td->flags & SF_AFTER_RETURN)
 		{
 			print_syscall_return(td);
 			print_space();
@@ -233,11 +233,11 @@ void syscallend(struct s_td *td)
 		}
 		else
 		{
-			if (!(td->flags & SC_DECODE_COMPLETE))
+			if (!(td->flags & SF_DECODE_COMPLETE))
 				td->flags |= ent->logger(td);
 			print_syscall_return(td);
 		}
-		td->flags &= ~SC_MASK;
+		td->flags &= ~SF_MASK;
 		print_syscall_end();
 		update_current_abi(td, td->abi);
 	}

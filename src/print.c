@@ -8,7 +8,10 @@
 
 int printaddr(__kernel_ulong_t addr)
 {
-	return putnum(zero_extend_signed_to_ull(addr), HEX);
+	if (addr)
+		return putnum(zero_extend_signed_to_ull(addr), HEX);
+	else
+		return putnull();
 }
 
 int printpath(struct s_td *td, __kernel_ulong_t addr)
@@ -175,7 +178,7 @@ void print_syscall_return(struct s_td *td)
 	{
 		putfmt(") = -1 %s", get_errmsg(-td->sc_err));
 	}
-	else if (td->flags & SC_PRINT_HEX)
+	else if (td->flags & SF_PRINT_HEX)
 		putfmt(") = %#0" PRIx64, *(__kernel_ulong_t *) &td->sc_ret);
 	else
 		putfmt(") = %" PRIu64, *(__kernel_ulong_t *) &td->sc_ret);
@@ -237,5 +240,58 @@ int printargs(struct s_td *td)
 			FIRST_ARG("");
 		printaddr(td->sc_args[i]);
 	}
-	return SC_DECODE_COMPLETE;
+	return SF_DECODE_COMPLETE;
+}
+
+void printarray(struct s_td     *td,
+				t_printer        printer,
+				__kernel_ulong_t start_addr,
+				void *const      mem_addr,
+				size_t           nmem,
+				size_t           mem_size)
+{
+	const size_t           size = nmem * mem_size;
+	const __kernel_ulong_t end_addr = start_addr + size;
+
+	if (end_addr < start_addr || size / mem_size != nmem)
+	{
+		print_debug("size overflow");
+		printaddr(start_addr);
+		return;
+	}
+	__kernel_ulong_t cur_addr = start_addr;
+	int              read_bytes;
+	int              logged = 0;
+
+	print_arr_start();
+	for (cur_addr = start_addr;
+		 cur_addr < end_addr;
+		 cur_addr += mem_size)
+	{
+		if (logged)
+			print_arg_sep();
+
+		read_bytes = umovemem(td, mem_addr, cur_addr, mem_size);
+
+		if (read_bytes < 0)
+		{
+			printaddr(cur_addr);
+			if (cur_addr != start_addr)
+				print_has_more();
+			break;
+		}
+
+		if (cur_addr < start_addr)
+		{
+			print_debug("memory wrap-around");
+			break;
+		}
+
+		if (printer)
+		{
+			if (printer(mem_addr))
+				logged = 1;
+		}
+	}
+	print_arr_end();
 }

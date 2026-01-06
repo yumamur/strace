@@ -1,5 +1,5 @@
-#ifndef FT_COMMON
-#define FT_COMMON
+#ifndef FT_COMMON_H
+#define FT_COMMON_H
 
 #ifdef DEBUG_ME
 #  define DONT_FORGET(msg)
@@ -37,6 +37,13 @@ die_(const char *fmt, ...);
 	 sizeof(v) == sizeof(long)  ? (long long) (long) (v) :  \
 								  (long long) (v))
 
+#define zero_extend_signed_to_l(v)                     \
+	(sizeof(v) == sizeof(char)  ? (long) (char) (v) :  \
+	 sizeof(v) == sizeof(short) ? (long) (short) (v) : \
+	 sizeof(v) == sizeof(int)   ? (long) (int) (v) :   \
+	 sizeof(v) == sizeof(long)  ? (long) (long) (v) :  \
+								  (long) (v))
+
 #define zero_extend_signed_to_size_t(v)                           \
 	(sizeof(v) == sizeof(char)  ? (size_t) (unsigned char) (v) :  \
 	 sizeof(v) == sizeof(short) ? (size_t) (unsigned short) (v) : \
@@ -56,10 +63,10 @@ typedef union u_addr
 #define TD_INSYSCALL   0x01
 #define TD_OUT_SUMMARY 0x02
 
-#define SC_DECODE_COMPLETE 0x10
-#define SC_PRINT_HEX       0x20
-#define SC_AFTER_RETURN    0x40
-#define SC_MASK            (SC_DECODE_COMPLETE | SC_PRINT_HEX | SC_AFTER_RETURN)
+#define SF_DECODE_COMPLETE 0x10
+#define SF_PRINT_HEX       0x20
+#define SF_AFTER_RETURN    0x40
+#define SF_MASK            (SF_DECODE_COMPLETE | SF_PRINT_HEX | SF_AFTER_RETURN)
 
 struct s_td;
 

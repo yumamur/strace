@@ -1,7 +1,7 @@
 #include "../ft_print.h"
-#include "../syscall_ent.h"
 #include "../ft_utils.h"
-#include "xlat.h"
+#include "../syscall_ent.h"
+#include "lseek.xlat.h"
 
 SYS_FUNC(lseek)
 {
@@ -13,5 +13,5 @@ SYS_FUNC(lseek)
 
 	NEXT_ARG("whence");
 	printflags(lseek_whence_values, td->sc_args[2], "UNKNOWN");
-	return SC_DECODE_COMPLETE;
+	return SF_DECODE_COMPLETE;
 }

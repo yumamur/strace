@@ -1,7 +1,7 @@
 #include "../ft_common.h"
 #include "../ft_print.h"
 #include "../syscall_ent.h"
-#include "xlat.h"
+#include "access.xlat.h"
 
 SYS_FUNC(access)
 {
@@ -11,7 +11,7 @@ SYS_FUNC(access)
 	NEXT_ARG("mode");
 	printflags(access_modes, td->sc_args[1], "?_OK");
 
-	return SC_DECODE_COMPLETE | SC_PRINT_HEX;
+	return SF_DECODE_COMPLETE | SF_PRINT_HEX;
 }
 
 SYS_FUNC(faccessat)
@@ -25,7 +25,7 @@ SYS_FUNC(faccessat)
 	NEXT_ARG("mode");
 	printflags(access_modes, td->sc_args[2], "?_OK");
 
-	return SC_DECODE_COMPLETE;
+	return SF_DECODE_COMPLETE;
 }
 
 SYS_FUNC(faccessat2)
@@ -42,5 +42,5 @@ SYS_FUNC(faccessat2)
 	NEXT_ARG("flags");
 	printflags(faccessat2_flags, td->sc_args[3], "AT_?");
 
-	return SC_DECODE_COMPLETE;
+	return SF_DECODE_COMPLETE;
 }

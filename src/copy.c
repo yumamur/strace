@@ -1,11 +1,6 @@
+#include "ft_utils.h"
 #include "trace.h"
 #include <string.h>
-
-/*
-	'process_vm_readv' exists since Linux 3.2 and glibc 2.15.
-	the project allows linux >3.4, so it's assumed safe to __USE_GNU for
-	'process_vm_readv' function declaration.
-*/
 #include <sys/uio.h>
 #include <syscall.h>
 #include <unistd.h>
@@ -54,18 +49,18 @@ static ssize_t process_read_mem(const pid_t  pid,
 	return process_vm_readv(pid, &local, 1, &remote, 1, 0);
 }
 
-int umovemem(struct s_td *const td, void *laddr, __kernel_ulong_t taddr, size_t len)
+ssize_t umovemem(struct s_td *const td, void *laddr, __kernel_ulong_t taddr, size_t len)
 {
 	return process_read_mem(td->pid, laddr, (void *) taddr, len);
 }
 
-int umovestr(struct s_td *const td, char *laddr, __kernel_ulong_t taddr, size_t len)
+ssize_t umovestr(struct s_td *const td, char *laddr, __kernel_ulong_t taddr, size_t len)
 {
 	const int    pid = td->pid;
-	const size_t page_size = getpagesize();
+	const size_t page_size = ft_getpagesize();
 	const size_t mask = page_size - 1;
 
-	size_t       total = 0;
+	ssize_t      total = 0;
 
 	if (!len)
 		return 0;
@@ -88,7 +83,7 @@ int umovestr(struct s_td *const td, char *laddr, __kernel_ulong_t taddr, size_t 
 		if (nul)
 		{
 			total += (size_t) (nul - laddr) + 1;
-			return (int) total;
+			return total;
 		}
 
 		taddr += (unsigned long) r;

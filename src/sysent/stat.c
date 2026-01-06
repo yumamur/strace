@@ -1,25 +1,9 @@
-#include "../ft_common.h"
 #include "../ft_print.h"
-#include "../syscall_ent.h"
 #include "../ft_utils.h"
-#include "xlat.h"
+#include "stat.xlat.h"
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-
-#ifdef __USE_XOPEN2K8
-#  undef __USE_XOPEN2K8
-#  define __DISABLED_USE_XOPEN2K8
-#else
-#  undef __DISABLED_USE_XOPEN2K8
-#endif
-#include <sys/stat.h>
-#ifdef __DISABLED_USE_XOPEN2K8
-#  define __USE_XOPEN2K8
-#  undef __DISABLED_USE_XOPEN2K8
-#endif
-#include <sys/sysmacros.h>
-#include <time.h>
 
 #define __MODE_T_ACC_MASK (__S_IFMT | __S_ISUID | __S_ISGID | __S_ISVTX)
 
@@ -139,11 +123,11 @@ SYS_FUNC(newfstatat)
 			printflags(fstatat_flags, td->sc_args[3], "AT_???");
 		}
 
-		return SC_DECODE_COMPLETE;
+		return SF_DECODE_COMPLETE;
 	}
 }
 
-SYS_FUNC(fstat)
+SYS_FUNC(newfstat)
 {
 	if (entering(*td))
 	{
@@ -158,7 +142,7 @@ SYS_FUNC(fstat)
 		NEXT_ARG("statbuf");
 		fetchstat(td, td->sc_args[1], &buf);
 		printstat(td, &buf);
-		return SC_DECODE_COMPLETE;
+		return SF_DECODE_COMPLETE;
 	}
 }
 
@@ -177,7 +161,7 @@ SYS_FUNC(lstat)
 		NEXT_ARG("statbuf");
 		fetchstat(td, td->sc_args[1], &buf);
 		printstat(td, &buf);
-		return SC_DECODE_COMPLETE;
+		return SF_DECODE_COMPLETE;
 	}
 }
 
@@ -196,6 +180,6 @@ SYS_FUNC(stat)
 		NEXT_ARG("statbuf");
 		fetchstat(td, td->sc_args[1], &buf);
 		printstat(td, &buf);
-		return SC_DECODE_COMPLETE;
+		return SF_DECODE_COMPLETE;
 	}
 }
