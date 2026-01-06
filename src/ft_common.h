@@ -73,7 +73,7 @@ enum e_abi
 {
 	ABI_64BIT = 0,
 	ABI_32BIT = 1,
-	ABI_X32 = 2
+	// ABI_X32 = 2  I can't even compile this, most distros does not support it
 };
 
 #define TOTAL_ABI 3
