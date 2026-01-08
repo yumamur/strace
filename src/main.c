@@ -212,7 +212,6 @@ int parse_trace_options(const char *arg)
 		 tok;
 		 tok = __strtok_r(NULL, ",", &inf_save))
 	{
-		print_debug("%s heheh  %p\n", tok, tok);
 		set_any = mark_syscall_to_trace(tok);
 		if (!set_any)
 			die("Invalid syscall name: %s", tok);

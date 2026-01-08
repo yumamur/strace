@@ -6,9 +6,7 @@
 #endif
 #define _GNU_SOURCE
 #include "xlat.h"
-#include <asm-generic/signal-defs.h>
-
-#include <signal.h>
+#include <asm/signal.h>
 
 #ifndef SA_RESTORER
 #  define SA_RESTORER 0x04000000
@@ -52,6 +50,7 @@ const char *signal_names[] = {
 #endif
 	XLAT_INDEXED(SIGPWR),
 	XLAT_INDEXED(SIGSYS),
+	XLAT_INDEXED(SIGRTMIN),
 };
 
 const t_xlat_data sigaction_sa_flags_data[] = {

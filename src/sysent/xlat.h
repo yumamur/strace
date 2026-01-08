@@ -4,10 +4,11 @@
 #include "../ft_common.h"
 #include <stdint.h>
 
-#define XLAT_INDEXED(val_)      [val_] = #val_
-#define XLAT(val_)              {.val = (uint64_t) (val_), .name = #val_}
-#define XLAT_NAMED(val_, name_) {.val = (uint64_t) (val_), .name = name_}
-#define XLAT_TYPED(type, val_)  {.val = (type) (val_), .name = #val_}
+#define XLAT_INDEXED(val_)              [val_] = #val_
+#define XLAT_INDEXED_NAMED(val_, name_) [val_] = name_
+#define XLAT(val_)                      {.val = (uint64_t) (val_), .name = #val_}
+#define XLAT_NAMED(val_, name_)         {.val = (uint64_t) (val_), .name = name_}
+#define XLAT_TYPED(type, val_)          {.val = (type) (val_), .name = #val_}
 
 #define WXLAT(name_)         \
 	const t_xlat name_[] = { \

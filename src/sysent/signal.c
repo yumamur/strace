@@ -2,7 +2,10 @@
 #include "../ft_utils.h"
 #include "signal.xlat.h"
 
-#define SA_MASK_SIZE (_SIGSET_NWORDS / sizeof(unsigned long int))
+#define SA_MASK_SIZE (NSIG / sizeof(unsigned long int))
+#ifndef _NSIG
+#  define _NSIG 8 * sizeof(unsigned long int)
+#endif
 
 void printsignal(int signum)
 {
@@ -14,26 +17,41 @@ void printsigset_t(struct s_td *td, __kernel_ulong_t set)
 	if (!set)
 		return print_null();
 
-	uint32_t buf;
+	uint64_t buf;
 	if (td)
 		umovemem(td, &buf, set, sizeof(buf));
 	else
-		buf = *(uint32_t *) set;
-	if (count_set_bits(&buf, sizeof(buf)) >= sizeof(buf) * 8 * 2 / 3)
+		buf = *(uint64_t *) set;
+	size_t ct = count_set_bits(&buf, sizeof(buf));
+	if (ct >= sizeof(buf) * 8 * 2 / 3)
 	{
 		buf = ~buf;
 		prints("~");
 	}
 	print_arr_start();
 	int logged = 0;
-	for (size_t i = 0; i < ARRAY_SIZE(signal_names); i++)
+	for (size_t i = 0; i <= 8 * sizeof(buf); i++)
 	{
-		if (signal_names[i] && sigismember((sigset_t *) &buf, (int) i))
+		if (i < SIGRTMIN)
 		{
-			if (logged)
-				print_or();
-			logged = 1;
-			prints(signal_names[i] + 3);
+			if (1 & (buf >> i))
+			{
+				if (logged)
+					print_space();
+				logged = 1;
+				prints(signal_names[i + 1] + 3);
+			}
+		}
+		else if (i <= SIGRTMAX)
+		{
+			if (1 & (buf >> i))
+			{
+				if (logged)
+					print_space();
+				logged = 1;
+				prints("RT_");
+				PRINT_LD(i - SIGRTMIN + 1);
+			}
 		}
 	}
 	print_arr_end();
