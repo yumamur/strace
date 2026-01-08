@@ -79,7 +79,31 @@ void printsigaction(t_td *td, __kernel_ulong_t addr)
 	if (!addr)
 		return print_null();
 
-	umovemem(td, &buf, addr, sizeof(buf));
+	if (current_wordsize < sizeof(buf.sa_handler_))
+	{
+		struct sigaction_32 buf32 = {};
+		if (umovemem(td, &buf32, addr, sizeof(buf32)) <= 0)
+			return printaddr(addr);
+
+		buf.sa_handler_ = buf32.sa_handler_;
+		buf.sa_flags = buf32.sa_flags;
+#ifdef SA_RESTORER
+		buf.sa_restorer = buf32.sa_restorer;
+#endif
+/**
+ * it's unsettling that this matters..
+ */
+#if defined(__BIG_ENDIAN__)
+		buf.sa_mask[0] = (uint64_t) buf32.sa_mask[1] | ((uint64_t) (buf32.sa_mask[0]) << 32);
+#elif defined(__LITTLE_ENDIAN__)
+		buf.sa_mask[0] = (uint64_t) buf32.sa_mask[0] | ((uint64_t) (buf32.sa_mask[1]) << 32);
+#endif
+	}
+	else
+	{
+		if (umovemem(td, &buf, addr, sizeof(buf)) <= 0)
+			return printaddr(addr);
+	}
 
 	print_struct_start();
 
