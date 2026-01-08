@@ -25,11 +25,11 @@ int sprintnum(char *ptr, size_t n, uint64_t num, enum e_putnum_fmt fmt)
 	return -1;
 }
 
-int putnum(uint64_t num, enum e_putnum_fmt fmt)
+void putnum(uint64_t num, enum e_putnum_fmt fmt)
 {
 	static char buf[sizeof(num) * 3];
 	sprintnum(buf, sizeof(buf), num, fmt);
-	return TPUTS(buf);
+	TPUTS(buf);
 }
 
 /**

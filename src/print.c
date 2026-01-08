@@ -1,17 +1,17 @@
+#include "ft_print.h"
 #include "ft_printutils.h"
 #include "ft_utils.h"
-#include "syscall_ent.h"
 #include <inttypes.h>
 #include <linux/fcntl.h>
 #include <string.h>
 #include <sys/sysmacros.h>
 
-int printaddr(__kernel_ulong_t addr)
+void printaddr(__kernel_ulong_t addr)
 {
 	if (addr)
-		return putnum(zero_extend_signed_to_ull(addr), HEX);
+		putnum(zero_extend_signed_to_ull(addr), HEX);
 	else
-		return putnull();
+		print_null();
 }
 
 int printpath(struct s_td *td, __kernel_ulong_t addr)
@@ -109,10 +109,11 @@ const char *snprintflags(char         *dst,
 int printflags(const t_xlat *xlat, uint64_t flags, const char *dflt)
 {
 	if (!(xlat && xlat->data && xlat->size))
+	{
+		putnum(flags, HEX);
+		print_comment(dflt);
 		return -1;
-
-	if (!flags)
-		return 0;
+	}
 
 	int ct = 0;
 	for (unsigned int i = 0; i < xlat->size; i++)
@@ -131,7 +132,6 @@ int printflags(const t_xlat *xlat, uint64_t flags, const char *dflt)
 			break;
 	}
 
-	// should not enter here under normal circumstances
 	if (ct)
 	{
 		if (flags)
@@ -147,14 +147,22 @@ int printflags(const t_xlat *xlat, uint64_t flags, const char *dflt)
 			putnum(flags, HEX);
 			print_comment(dflt);
 		}
+		else
+			TPUTS("0");
 	}
 
 	return ct;
 }
 
-int printmode(uint64_t mode)
+// int printflag(const t_xlat *xlat, uint64_t flag, const char *dflt)
+// {
+// 	if (!xlat)
+// 		search_xlat(xlat, flag);
+// }
+
+void printmode(uint64_t mode)
 {
-	return putnum(mode, OCTO3);
+	putnum(mode, OCTO3);
 }
 
 void printexit(int status)

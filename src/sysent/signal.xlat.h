@@ -10,14 +10,20 @@
 
 #include <signal.h>
 
+#ifndef SA_RESTORER
+#  define SA_RESTORER 0x04000000
+#endif
+
 const char *signal_names[] = {
 	XLAT_INDEXED(SIGHUP),
 	XLAT_INDEXED(SIGINT),
 	XLAT_INDEXED(SIGQUIT),
 	XLAT_INDEXED(SIGILL),
 	XLAT_INDEXED(SIGTRAP),
-	// XLAT_INDEXED(SIGABRT),
+	XLAT_INDEXED(SIGABRT),
+#if defined(SIGIOT) && SIGIOT != SIGABRT
 	XLAT_INDEXED(SIGIOT),
+#endif
 	XLAT_INDEXED(SIGBUS),
 	XLAT_INDEXED(SIGFPE),
 	XLAT_INDEXED(SIGKILL),
@@ -40,8 +46,10 @@ const char *signal_names[] = {
 	XLAT_INDEXED(SIGVTALRM),
 	XLAT_INDEXED(SIGPROF),
 	XLAT_INDEXED(SIGWINCH),
+	XLAT_INDEXED(SIGPOLL),
+#if defined(SIGIO) && SIGIO != SIGPOLL
 	XLAT_INDEXED(SIGIO),
-	// XLAT_INDEXED(SIGPOLL),
+#endif
 	XLAT_INDEXED(SIGPWR),
 	XLAT_INDEXED(SIGSYS),
 };
@@ -56,8 +64,13 @@ const t_xlat_data sigaction_sa_flags_data[] = {
 	XLAT(SA_RESTART),
 	XLAT(SA_NODEFER),
 	XLAT(SA_RESETHAND),
+#if defined(SA_NOMASK) && SA_NOMASK != SA_NODEFER
 	XLAT(SA_NOMASK),
+#endif
+#if defined(SA_RESETHAND) && SA_RESETHAND != SA_ONESHOT
 	XLAT(SA_ONESHOT),
+#endif
+	XLAT(SA_RESTORER),
 };
 WXLAT(sigaction_sa_flags);
 
@@ -67,5 +80,12 @@ const t_xlat_data sa_handlers_data[] = {
 	XLAT_TYPED(unsigned long, SIG_IGN),
 };
 WXLAT(sa_handlers);
+
+const t_xlat_data sigproc_how_data[] = {
+	XLAT(SIG_BLOCK),
+	XLAT(SIG_UNBLOCK),
+	XLAT(SIG_SETMASK),
+};
+WXLAT(sigproc_how);
 
 #endif

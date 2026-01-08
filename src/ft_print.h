@@ -35,7 +35,7 @@ void        printkillsig(int sig);
 
 void        print_syscall_enter(const char *name);
 void        print_syscall_return(struct s_td *td);
-int         printaddr(__kernel_ulong_t addr);
+void        printaddr(__kernel_ulong_t addr);
 int         printpath(struct s_td *td, __kernel_ulong_t addr);
 int         printstr(struct s_td *td, __kernel_ulong_t addr);
 int         printnstr(struct s_td *td, __kernel_ulong_t addr, size_t n);
@@ -55,7 +55,7 @@ const char *snprintflags(char         *dst,
 						 uint64_t      flags,
 						 const char   *dflt);
 
-int         printmode(uint64_t mode);
+void        printmode(uint64_t mode);
 void        printdirfd(struct s_td *td, int fd);
 void        printfd(int fd);
 void        printdev_t(__dev_t dev);
@@ -102,6 +102,7 @@ static inline int prints(const char *s)
 	}
 
 FT_SIVP_(space, " ")
+FT_SIVP_(null, "NULL")
 FT_SIVP_(arg_start, "(")
 FT_SIVP_(arg_sep, ", ")
 FT_SIVP_(arg_end, ")")
@@ -116,7 +117,7 @@ FT_SIVP_(shift_right, ">>")
 FT_SIVP_(shift_left, "<<")
 FT_SIVP_(has_more, "...")
 FT_SIVP_A(struct_member, "=")
-FT_SIVP_BA(next_struct_member, ",", "=")
+FT_SIVP_BA(next_struct_member, ", ", "=")
 FT_SIVP_(struct_member_sep, ", ")
 FT_SIVP_(syscall_end, "\n")
 

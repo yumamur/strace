@@ -1,6 +1,5 @@
 #include "../ft_common.h"
 #include "../ft_print.h"
-#include "../syscall_ent.h"
 #include "access.xlat.h"
 
 SYS_FUNC(access)

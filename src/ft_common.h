@@ -2,6 +2,8 @@
 #define FT_COMMON_H
 
 #include <linux/posix_types.h>
+#include <stdint.h>
+#include <time.h>
 
 void __attribute__((__noreturn__, __format__(__printf__, 2, 3)))
 perror_and_die_(int errno_, const char *fmt, ...);
@@ -45,13 +47,6 @@ die_(const char *fmt, ...);
 	 sizeof(v) == sizeof(long)  ? (size_t) (unsigned long) (v) :  \
 								  (size_t) (v))
 
-typedef union u_addr
-{
-		unsigned int     ws32;
-		__kernel_ulong_t ws64;
-		unsigned char    raw[sizeof(__kernel_ulong_t)];
-} t_addr;
-
 #define MAX_ERRNO_VAL 600
 
 #define TD_INSYSCALL   0x01
@@ -62,13 +57,24 @@ typedef union u_addr
 #define SF_AFTER_RETURN    0x40
 #define SF_MASK            (SF_DECODE_COMPLETE | SF_PRINT_HEX | SF_AFTER_RETURN)
 
+// forward declare
 struct s_td;
 
-#define SYS_FUNC_NAME(syscall_name) sys_##syscall_name
-
 // Now I see that some syscalls require more decoding after syscall return
-#define SYS_FUNC(syscall_name) \
-	int SYS_FUNC_NAME(syscall_name)(struct s_td * td)
+#define SYS_FUNC_NAME(syscall_name) sys_##syscall_name
+#define SYS_FUNC(syscall_name)      int SYS_FUNC_NAME(syscall_name)(struct s_td * td)
+
+#include "decoders.h"
+
+typedef struct s_entry
+{
+		unsigned int nargs;
+		int          (*logger)(struct s_td *);
+		const char  *call_name;
+		unsigned int traced : 1;
+} t_entry;
+
+#define TOTAL_ABI 2
 
 enum e_abi
 {
@@ -77,7 +83,31 @@ enum e_abi
 	// ABI_X32 = 2  I can't even compile this, most distros does not support it
 };
 
-#define TOTAL_ABI 3
+#define MAX_ARGS 6
+
+typedef struct s_td
+{
+		enum e_abi       abi;
+		unsigned int     flags;
+		int              pid;
+		struct s_entry  *entry;
+		__kernel_ulong_t sc_no;
+		__kernel_ulong_t sc_args[MAX_ARGS];
+		__kernel_ulong_t sc_ret;
+		uint32_t         sc_err;
+		struct timespec  ptime;
+		struct timespec  stime;
+} t_td;
+
+#define entering(td_) (!((td_).flags & TD_INSYSCALL))
+#define exiting(td_)  ((td_).flags & TD_INSYSCALL)
+
+typedef union u_addr
+{
+		unsigned int     ws32;
+		__kernel_ulong_t ws64;
+		unsigned char    raw[sizeof(__kernel_ulong_t)];
+} t_addr;
 
 extern unsigned int sysent_size;
 extern unsigned int current_wordsize;

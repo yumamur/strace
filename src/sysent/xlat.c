@@ -7,3 +7,12 @@ const char *search_xlat(const t_xlat *xlat, const uint64_t val)
 			return xlat->data[i].name;
 	return 0;
 }
+
+#define SYS_STUB(n)                                              \
+	int __attribute__((weak)) SYS_FUNC_NAME(n)(struct s_td * td) \
+	{                                                            \
+		(void) td; /* TODO: unimplemented */                     \
+		return SF_DECODE_COMPLETE;                               \
+	}
+
+#include "xlat.stub.h"

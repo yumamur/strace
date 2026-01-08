@@ -1,3 +1,6 @@
+#ifndef DECODERS_H
+#define DECODERS_H
+
 extern SYS_FUNC(accept);
 extern SYS_FUNC(accept4);
 extern SYS_FUNC(access);
@@ -417,3 +420,5 @@ extern SYS_FUNC(waitid);
 extern SYS_FUNC(waitpid);
 extern SYS_FUNC(write);
 extern SYS_FUNC(writev);
+
+#endif /* DECODERS_H */

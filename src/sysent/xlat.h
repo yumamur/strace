@@ -1,7 +1,7 @@
 #ifndef FT_XLAT_H
 #define FT_XLAT_H
 
-#include "../trace.h"
+#include "../ft_common.h"
 #include <stdint.h>
 
 #define XLAT_INDEXED(val_)      [val_] = #val_

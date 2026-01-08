@@ -2,7 +2,6 @@
 #include "ft_print.h"
 #include "ft_utils.h"
 #include "regs.h"
-#include "syscall_ent.h"
 #include <bits/types/siginfo_t.h>
 #include <errno.h>
 #include <linux/elf.h>
@@ -22,14 +21,15 @@
 #  define NT_PRSTATUS 1
 #endif
 
-#define MAX_SYSCALL 512
-
 #define IS_SET(flag_) ((flag_) != 0)
 
-extern const char *signal_names[];
-
 //
+extern const char  *signal_names[];
 extern struct iovec g_io;
+
+extern bool         mark_syscall_to_trace(const char *scname);
+extern void         syscallstart(struct s_td *);
+extern void         syscallend(struct s_td *);
 
 // flags
 bool g_flag_trace = false;
@@ -140,7 +140,7 @@ void trace_syscalls(pid_t child)
 				if (ptrace(PTRACE_GETSIGINFO, child, 0, &si) == 0)
 				{
 					sig = si.si_signo;
-					printf("--- We had a signal: %s ---\n", signal_names[sig]);
+					// printf("--- We had a signal: %s ---\n", signal_names[sig]);
 				}
 				else
 					sig = stopsig;
@@ -206,13 +206,20 @@ int parse_trace_options(const char *arg)
 	char *copied = strdup(arg);
 	char *inf_save = NULL;
 
+	bool  set_any = false;
+
 	for (const char *tok = __strtok_r(copied, ",", &inf_save);
 		 tok;
 		 tok = __strtok_r(NULL, ",", &inf_save))
 	{
-		if (!mark_syscall_to_trace(tok))
+		print_debug("%s heheh  %p\n", tok, tok);
+		set_any = mark_syscall_to_trace(tok);
+		if (!set_any)
 			die("Invalid syscall name: %s", tok);
 	}
+
+	if (!set_any)
+		die("No valid syscall names provided");
 
 	g_flag_trace = true;
 	free(copied);
@@ -236,9 +243,9 @@ int main(int argc, char *const *argv, char *const *envp)
 
 	if (!get_executable(argv[args_start], path, sizeof(path)))
 		perror_and_die(errno, "Cannot find executable '%s'", argv[args_start]);
-	
+
 	setvbuf(FT_OUTFILE, NULL, _IOLBF, 0);
-	
+
 	pid_t pid = fork();
 
 	if (pid == -1)

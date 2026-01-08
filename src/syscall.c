@@ -1,8 +1,7 @@
+#include "ft_common.h"
 #include "ft_print.h"
 #include "ft_utils.h"
 #include "regs.h"
-#include "syscall_ent.h"
-#include "trace.h"
 #include <stdbool.h>
 #include <string.h>
 
@@ -119,8 +118,10 @@ void set_sc_no(struct s_td *td)
 }
 
 // TODO: Find any other way than this
-int mark_syscall_to_trace(const char *scname)
+bool mark_syscall_to_trace(const char *scname)
 {
+	if (scname[0] == '\0')
+		return 0;
 	int matched_any = 0;
 	for (size_t i = 0; i < ARRAY_SIZE(sysents); ++i)
 	{

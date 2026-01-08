@@ -1,5 +1,5 @@
-#ifndef FT__UTILS
-#define FT__UTILS
+#ifndef FT_UTILS
+#define FT_UTILS
 
 #include "ft_common.h"
 #include <asm/posix_types.h>
@@ -12,5 +12,6 @@ struct s_td;
 
 ssize_t umovestr(struct s_td *const td, char *laddr, __kernel_ulong_t addr, size_t len);
 ssize_t umovemem(struct s_td *const td, void *laddr, __kernel_ulong_t taddr, size_t len);
+size_t  count_set_bits(void *addr, size_t size);
 
-#endif
+#endif /* FT_UTILS */

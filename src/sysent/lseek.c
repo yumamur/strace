@@ -1,6 +1,5 @@
 #include "../ft_print.h"
 #include "../ft_utils.h"
-#include "../syscall_ent.h"
 #include "lseek.xlat.h"
 
 SYS_FUNC(lseek)

@@ -1,5 +1,4 @@
 #include "ft_utils.h"
-#include "trace.h"
 #include <string.h>
 #include <sys/uio.h>
 #include <syscall.h>
