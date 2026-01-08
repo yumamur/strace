@@ -26,6 +26,8 @@
 
 #define IS_SET(flag_) ((flag_) != 0)
 
+extern const char *signal_names[];
+
 //
 extern struct iovec g_io;
 
@@ -136,7 +138,10 @@ void trace_syscalls(pid_t child)
 			else
 			{
 				if (ptrace(PTRACE_GETSIGINFO, child, 0, &si) == 0)
+				{
 					sig = si.si_signo;
+					printf("--- We had a signal: %s ---\n", signal_names[sig]);
+				}
 				else
 					sig = stopsig;
 
@@ -231,6 +236,9 @@ int main(int argc, char *const *argv, char *const *envp)
 
 	if (!get_executable(argv[args_start], path, sizeof(path)))
 		perror_and_die(errno, "Cannot find executable '%s'", argv[args_start]);
+	
+	setvbuf(FT_OUTFILE, NULL, _IOLBF, 0);
+	
 	pid_t pid = fork();
 
 	if (pid == -1)

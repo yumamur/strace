@@ -46,7 +46,7 @@ int fetchstat(t_td *td, __kernel_ulong_t addr, struct stat *buf)
 
 void printstat(t_td *td, struct stat *statbuf)
 {
-	DONT_FORGET("handle 32bit");
+// #warning "handle 32bit";
 	(void) td;
 
 	print_struct_start();

@@ -1,12 +1,6 @@
 #ifndef FT_COMMON_H
 #define FT_COMMON_H
 
-#ifdef DEBUG_ME
-#  define DONT_FORGET(msg)
-#else
-#  define DONT_FORGET(msg) _Pragma(#msg);
-#endif
-
 #include <linux/posix_types.h>
 
 void __attribute__((__noreturn__, __format__(__printf__, 2, 3)))
