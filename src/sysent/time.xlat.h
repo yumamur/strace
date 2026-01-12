@@ -1,0 +1,29 @@
+#ifndef STAT_XLAT_H
+#define STAT_XLAT_H
+
+#include "xlat.h"
+
+#include <linux/time.h>
+
+const t_xlat_data timer_which_data[] = {
+	XLAT(ITIMER_REAL),
+	XLAT(ITIMER_VIRTUAL),
+	XLAT(ITIMER_PROF),
+};
+WXLAT(timer_which);
+
+const t_xlat_data clock_ids_data[] = {
+	XLAT(CLOCK_REALTIME),
+	XLAT(CLOCK_MONOTONIC),
+	XLAT(CLOCK_PROCESS_CPUTIME_ID),
+	XLAT(CLOCK_THREAD_CPUTIME_ID),
+	XLAT(CLOCK_MONOTONIC_RAW),
+	XLAT(CLOCK_REALTIME_COARSE),
+	XLAT(CLOCK_MONOTONIC_COARSE),
+	XLAT(CLOCK_BOOTTIME),
+	XLAT(CLOCK_REALTIME_ALARM),
+	XLAT(CLOCK_BOOTTIME_ALARM),
+};
+WXLAT(clock_ids);
+
+#endif

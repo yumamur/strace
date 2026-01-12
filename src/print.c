@@ -154,11 +154,19 @@ int printflags(const t_xlat *xlat, uint64_t flags, const char *dflt)
 	return ct;
 }
 
-// int printflag(const t_xlat *xlat, uint64_t flag, const char *dflt)
-// {
-// 	if (!xlat)
-// 		search_xlat(xlat, flag);
-// }
+int printflag(const t_xlat *xlat, uint64_t flag, const char *dflt)
+{
+	const char *xval = search_xlat(xlat, flag);
+	if (xval)
+		TPUTS(xval);
+	else
+	{
+		putnum(flag, HEX);
+		if (dflt)
+			print_comment(dflt);
+	}
+	return 0;
+}
 
 void printmode(uint64_t mode)
 {
@@ -206,6 +214,20 @@ void printfd(int fd)
 	putnum(fd, DEC);
 }
 
+int printnum_addr_long(struct s_td *td, __kernel_ulong_t addr)
+{
+	long buf;
+	if (umovemem(td, &buf, addr, sizeof(buf)) == -1)
+	{
+		printaddr(addr);
+		return -1;
+	}
+	print_arg_start();
+	PRINT_LD(buf);
+	print_arg_end();
+	return 0;
+}
+
 void printdev_t(__dev_t dev)
 {
 	unsigned long maj = major(dev);
@@ -217,24 +239,6 @@ void printdev_t(__dev_t dev)
 	print_arg_sep();
 	PRINT_X(min);
 	print_arg_end();
-}
-
-void printtime(time_t sec, unsigned long nsec)
-{
-	static char      buf[sizeof("2000-10-11T17:17:17.171717171+0300") + 5];
-
-	size_t           pos = 0;
-	const struct tm *tp = localtime(&sec);
-
-	pos = strftime(buf, sizeof(buf), "%FT%T", tp);
-	if (!pos)
-		return;
-
-	if (nsec)
-		pos += snprintf(buf + pos, sizeof(buf) - pos, ".%09lu", nsec);
-	strftime(buf + pos, sizeof(buf) - pos, "%z", tp);
-
-	print_comment("%s", buf);
 }
 
 int printargs(struct s_td *td)
@@ -297,7 +301,7 @@ void printarray(struct s_td     *td,
 
 		if (printer)
 		{
-			if (printer(mem_addr))
+			if (printer(td, mem_addr))
 				logged = 1;
 		}
 	}

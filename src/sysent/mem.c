@@ -173,8 +173,9 @@ SYS_FUNC(msync)
 	return SF_DECODE_COMPLETE;
 }
 
-int print_mincore_mem(void *buf)
+int print_mincore_mem(struct s_td *td, void *buf)
 {
+	(void) td;
 	uint8_t val = (*(uint8_t *) buf) & 1;
 	return PRINT_ULL(val);
 }

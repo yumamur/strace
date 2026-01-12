@@ -1,4 +1,5 @@
 #include "ft_utils.h"
+#include <errno.h>
 #include <string.h>
 #include <sys/uio.h>
 #include <syscall.h>
@@ -50,7 +51,15 @@ static ssize_t process_read_mem(const pid_t  pid,
 
 ssize_t umovemem(struct s_td *const td, void *laddr, __kernel_ulong_t taddr, size_t len)
 {
-	return process_read_mem(td->pid, laddr, (void *) taddr, len);
+	if (td->sc_err)
+		return -1;
+	int read = process_read_mem(td->pid, laddr, (void *) taddr, len);
+	if (len == (size_t) read)
+		return 0;
+	perror_func(errno,
+				"vm_readv error: (expected:%zu, got:%d) addr: 0x%lx",
+				len, read, taddr);
+	return -1;
 }
 
 ssize_t umovestr(struct s_td *const td, char *laddr, __kernel_ulong_t taddr, size_t len)

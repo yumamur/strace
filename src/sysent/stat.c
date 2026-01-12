@@ -40,13 +40,9 @@ int fetchstat(t_td *td, __kernel_ulong_t addr, struct stat *buf)
 	return 0;
 }
 
-#define PRINT_MEMBER(holder_, field_, fun_) \
-	print_struct_member(#field_);           \
-	fun_((holder_)->field_)
-
 void printstat(t_td *td, struct stat *statbuf)
 {
-// #warning "handle 32bit";
+	// #warning "handle 32bit";
 	(void) td;
 
 	print_struct_start();

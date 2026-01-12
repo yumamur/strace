@@ -4,6 +4,7 @@
 #include "regs.h"
 #include <stdbool.h>
 #include <string.h>
+#include <sys/ptrace.h>
 
 static union
 {
@@ -11,10 +12,10 @@ static union
 		t_reg32 r32;
 } g_regs;
 
-#define REGS_64 g_regs.r64
-#define REGS_32 g_regs.r32
-
 #define IS_ABI_32 (g_io.iov_len == sizeof(REGS_32))
+#define REGS_64   g_regs.r64
+#define REGS_32   g_regs.r32
+#define REG_SP    (IS_ABI_32 ? (REGS_32.esp) : (REGS_64.rsp))
 
 t_entry sysent0[] = {
 #include "syscall_ent_64.h"
@@ -22,6 +23,11 @@ t_entry sysent0[] = {
 t_entry sysent1[] = {
 #include "syscall_ent_32.h"
 };
+
+t_reg64 *get_reg_64(void)
+{
+	return &(g_regs.r64);
+}
 
 enum e_abi_sysent_size
 {
@@ -41,11 +47,11 @@ enum e_abi_klongsize
 	abi_klongsize1 = 4,
 };
 
-const char *abi_names[] = {"64 bit", "32 bit"};
+#define ABI_STR current_abi == ABI_64BIT ? "64 bit" : "32 bit"
 
-t_entry    *sysents[] = {
-    [ABI_64BIT] = sysent0,
-    [ABI_32BIT] = sysent1,
+t_entry *sysents[] = {
+	[ABI_64BIT] = sysent0,
+	[ABI_32BIT] = sysent1,
 };
 
 static const unsigned int sysent_sizes[] = {
@@ -85,12 +91,27 @@ static inline void update_current_abi(struct s_td *td, enum e_abi abi)
 	if (current_abi == abi)
 		return;
 
-	print_flush("[ Process PID=%d is running in %s mode ] \n", td->pid, abi_names[abi]);
+	print_flush("[ Process PID=%d is running in %s mode ] \n", td->pid, ABI_STR);
 	(td->abi) = current_abi = abi;
 	sysent = sysents[current_abi];
 	sysent_size = sysent_sizes[current_abi];
 	current_wordsize = wordsizes[current_abi];
 	current_klongsize = klongsizes[current_abi];
+}
+
+long get_reg_set(struct s_td *td)
+{
+	g_io.iov_len = sizeof(g_regs);
+	return ptrace(PTRACE_GETREGSET, td->pid, NT_PRSTATUS, &g_io);
+}
+
+// this operation can get an error
+int set_stack_pointer_to(struct s_td *td, __kernel_ulong_t *sp)
+{
+	if (get_reg_set(td) == -1)
+		return -1;
+	*sp = (__kernel_ulong_t) REG_SP;
+	return 0;
 }
 
 void set_sc_no(struct s_td *td)
@@ -133,7 +154,7 @@ bool mark_syscall_to_trace(const char *scname)
 				print_debug("Marking %ld numbered syscall (%s) to trace in %s mode\n",
 							ii,
 							cur->call_name,
-							abi_names[i]);
+							ABI_STR);
 				matched_any = cur->traced = 1;
 			}
 		}
@@ -218,6 +239,7 @@ void syscallstart(struct s_td *td)
 		td->flags |= ent->logger(td);
 	}
 	td->flags |= TD_INSYSCALL;
+	fflush(FT_OUTFILE);
 }
 
 void syscallend(struct s_td *td)

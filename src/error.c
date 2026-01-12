@@ -1,9 +1,62 @@
 #include "ft_common.h"
 #include <errno.h>
 #include <stdarg.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#ifndef ERESTARTSYS
+#  define ERESTARTSYS 512
+#endif
+#ifndef ERESTARTNOINTR
+#  define ERESTARTNOINTR 513
+#endif
+#ifndef ERESTARTNOHAND
+#  define ERESTARTNOHAND 514
+#endif
+#ifndef ENOIOCTLCMD
+#  define ENOIOCTLCMD 515
+#endif
+#ifndef ERESTART_RESTARTBLOCK
+#  define ERESTART_RESTARTBLOCK 516
+#endif
+#ifndef EPROBE_DEFER
+#  define EPROBE_DEFER 517
+#endif
+#ifndef EOPENSTALE
+#  define EOPENSTALE 518
+#endif
+#ifndef EBADHANDLE
+#  define EBADHANDLE 521
+#endif
+#ifndef ENOTSYNC
+#  define ENOTSYNC 522
+#endif
+#ifndef EBADCOOKIE
+#  define EBADCOOKIE 523
+#endif
+#ifndef ENOTSUPP
+#  define ENOTSUPP 524
+#endif
+#ifndef ETOOSMALL
+#  define ETOOSMALL 525
+#endif
+#ifndef ESERVERFAULT
+#  define ESERVERFAULT 526
+#endif
+#ifndef EBADTYPE
+#  define EBADTYPE 527
+#endif
+#ifndef EJUKEBOX
+#  define EJUKEBOX 528
+#endif
+#ifndef EIOCBQUEUED
+#  define EIOCBQUEUED 529
+#endif
+#ifndef ERECALLCONFLICT
+#  define ERECALLCONFLICT 530
+#endif
 
 void __attribute__((__noreturn__, __format__(__printf__, 2, 3)))
 perror_and_die_(int errno_, const char *fmt, ...)
@@ -28,6 +81,18 @@ die_(const char *fmt, ...)
 	fflush(stderr);
 	va_end(va);
 	exit(1);
+}
+
+void __attribute__((__format__(__printf__, 2, 3)))
+perror_(int errno_, const char *fmt, ...)
+{
+	va_list va;
+	va_start(va, fmt);
+	fflush(NULL);
+	vfprintf(stderr, fmt, va);
+	fprintf(stderr, ": %s\n", strerror(errno_));
+	fflush(stderr);
+	va_end(va);
 }
 
 const char *err_msgs[] = {
@@ -161,11 +226,36 @@ const char *err_msgs[] = {
 	[EOWNERDEAD] = "EOWNERDEAD (Owner died)",
 	[ENOTRECOVERABLE] = "ENOTRECOVERABLE (State not recoverable)",
 	[ERFKILL] = "ERFKILL (Operation not possible due to RF-kill)",
-	[EHWPOISON] = "EHWPOISON (Memory page has hardware error)"};
+	[EHWPOISON] = "EHWPOISON (Memory page has hardware error)",
+	[ERESTARTSYS] = "ERESTARTSYS (To be restarted if SA_RESTART is set)",
+	[ERESTARTNOINTR] = "ERESTARTNOINTR (To be restarted)",
+	[ERESTARTNOHAND] = "ERESTARTNOHAND (To be restarted if no handler)",
+	[ENOIOCTLCMD] = "ENOIOCTLCMD (No ioctl command)",
+	[ERESTART_RESTARTBLOCK] = "ERESTART_RESTARTBLOCK (Restart if block)",
+	[EPROBE_DEFER] = "EPROBE_DEFER (Probe deferred)",
+	[EOPENSTALE] = "EOPENSTALE (Stale NFS file handle)",
+	[EBADHANDLE] = "EBADHANDLE (Bad handle)",
+	[ENOTSYNC] = "ENOTSYNC (State not synchronized)",
+	[EBADCOOKIE] = "EBADCOOKIE (Cookie not valid)",
+	[ENOTSUPP] = "ENOTSUPP (Operation not supported)",
+	[ETOOSMALL] = "ETOOSMALL (Argument list too long)",
+	[ESERVERFAULT] = "ESERVERFAULT (Server fault)",
+	[EBADTYPE] = "EBADTYPE",
+	[EJUKEBOX] = "EJUKEBOX",
+	[EIOCBQUEUED] = "EIOCBQUEUED",
+	[ERECALLCONFLICT] = "ERECALLCONFLICT"};
 
 const char *get_errmsg(unsigned int num)
 {
 	if (num >= ARRAY_SIZE(err_msgs))
 		return "unknown error";
 	return err_msgs[num];
+}
+
+bool is_error_erestart(unsigned int err)
+{
+	return err == ERESTARTSYS
+		   || err == ERESTARTNOINTR
+		   || err == ERESTARTNOHAND
+		   || err == ERESTART_RESTARTBLOCK;
 }

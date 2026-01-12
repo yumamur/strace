@@ -60,13 +60,14 @@ void print_pollfds(t_td *td)
 	print_arr_end();
 }
 
-int print_pollfd(void *buf)
+int print_pollfd(struct s_td *td, void *buf)
 {
 	struct pollfd *pt = (struct pollfd *) buf;
 
 	if (!(uint64_t) pt->revents)
 		return 0;
 
+	(void) td;
 	print_struct_start();
 
 	print_struct_member("fd");

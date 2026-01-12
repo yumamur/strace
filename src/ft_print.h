@@ -21,14 +21,19 @@
 #define NEXT_ARG(argname)  TPUTS(", " EXTEND_ARGNAME(argname))
 
 #define PRINT_ULL(num) fprintf(FT_OUTFILE, "%llu", zero_extend_signed_to_ull(num))
-#define PRINT_LD(num)  fprintf(FT_OUTFILE, "%ld", zero_extend_signed_to_l(num))
 #define PRINT_LL(num)  fprintf(FT_OUTFILE, "%lld", zero_extend_signed_to_ll(num))
-#define PRINT_X(num)   fprintf(FT_OUTFILE, "%#llx", zero_extend_signed_to_ull(num))
+#define PRINT_LD(num)  fprintf(FT_OUTFILE, "%ld", zero_extend_signed_to_l(num))
+#define PRINT_LU(num)  fprintf(FT_OUTFILE, "%lu", zero_extend_signed_to_ul(num))
+#define PRINT_U(num)   fprintf(FT_OUTFILE, "%u", (unsigned) num)
 #define PRINT_D(num)   fprintf(FT_OUTFILE, "%d", (int) num)
+#define PRINT_X(num)   fprintf(FT_OUTFILE, "%#llx", zero_extend_signed_to_ull(num))
 
 struct s_td;
+struct timespec;
+struct timeval;
+struct itimerval;
 
-typedef int (*t_printer)(void *);
+typedef int (*t_printer)(struct s_td *, void *);
 
 void        printexit(int status);
 void        printkillsig(int sig);
@@ -47,6 +52,7 @@ void        printarray(struct s_td     *td,
 					   size_t           nmem,
 					   size_t           mem_size);
 
+int         printflag(const t_xlat *xlat, uint64_t flag, const char *dflt);
 int         printflags(const t_xlat *xlat, uint64_t flags, const char *dflt);
 
 const char *snprintflags(char         *dst,
@@ -59,8 +65,19 @@ void        printmode(uint64_t mode);
 void        printdirfd(struct s_td *td, int fd);
 void        printfd(int fd);
 void        printdev_t(__dev_t dev);
-void        printtime(time_t sec, unsigned long nsec);
+void        printsigmask(struct s_td *td, __kernel_ulong_t set);
+void        printsigset_t(uint64_t set);
 int         printargs(struct s_td *td);
+
+void        printtime(time_t sec, unsigned long nsec);
+void        printtimespec_struct(struct timespec *pt);
+void        printitimerval_struct(struct itimerval *pt);
+void        printtimeval_struct(struct timeval *pt);
+void        printitimerval(struct s_td *td, __kernel_ulong_t addr);
+void        printtimeval(struct s_td *td, __kernel_ulong_t addr);
+void        printtimespec(struct s_td *td, __kernel_ulong_t addr);
+
+int         printnum_addr_long(struct s_td *td, __kernel_ulong_t addr);
 
 int __attribute__((format(printf, 1, 2)))
 print_flush(const char *fmt, ...);
@@ -101,6 +118,11 @@ static inline int prints(const char *s)
 		TPUTS(after_);                             \
 	}
 
+static inline void print_quot_char(unsigned int ch)
+{
+	fprintf(FT_OUTFILE, "'%c'", ch);
+}
+
 FT_SIVP_(space, " ")
 FT_SIVP_(null, "NULL")
 FT_SIVP_(arg_start, "(")
@@ -120,6 +142,16 @@ FT_SIVP_A(struct_member, "=")
 FT_SIVP_BA(next_struct_member, ", ", "=")
 FT_SIVP_(struct_member_sep, ", ")
 FT_SIVP_(syscall_end, "\n")
+FT_SIVP_(new_line, "\n")
+FT_SIVP_B(val_change, " => ")
+
+#define PRINT_MEMBER(holder_, field_, fun_) \
+	print_struct_member(#field_);           \
+	fun_((holder_)->field_)
+
+#define PRINT_MEMBER_ADDR(holder_, field_, fun_) \
+	print_struct_member(#field_);                \
+	fun_(&(holder_)->field_)
 
 #undef FT_SIVP_
 

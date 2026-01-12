@@ -17,16 +17,13 @@
 #include <syscall.h>
 #include <unistd.h>
 
-#ifndef NT_PRSTATUS
-#  define NT_PRSTATUS 1
-#endif
-
 #define IS_SET(flag_) ((flag_) != 0)
 
 //
 extern const char  *signal_names[];
 extern struct iovec g_io;
 
+extern long         get_reg_set(struct s_td *td);
 extern bool         mark_syscall_to_trace(const char *scname);
 extern void         syscallstart(struct s_td *);
 extern void         syscallend(struct s_td *);
@@ -114,7 +111,7 @@ void trace_syscalls(pid_t child)
 			{
 				g_io.iov_len = sizeof(struct user_regs_struct);
 
-				if (ptrace(PTRACE_GETREGSET, child, NT_PRSTATUS, &g_io) == -1)
+				if (get_reg_set(&td) == -1)
 				{
 					if (errno == ESRCH)
 						break;

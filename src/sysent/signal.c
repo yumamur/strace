@@ -2,6 +2,8 @@
 #include "../ft_utils.h"
 #include "signal.xlat.h"
 
+#include "../regs.h"
+
 #define SA_MASK_SIZE (NSIG / sizeof(unsigned long int))
 #ifndef _NSIG
 #  define _NSIG 8 * sizeof(unsigned long int)
@@ -12,29 +14,21 @@ void printsignal(int signum)
 	prints(signal_names[signum]);
 }
 
-void printsigset_t(struct s_td *td, __kernel_ulong_t set)
+void printsigset_t(uint64_t set)
 {
-	if (!set)
-		return print_null();
-
-	uint64_t buf;
-	if (td)
-		umovemem(td, &buf, set, sizeof(buf));
-	else
-		buf = *(uint64_t *) set;
-	size_t ct = count_set_bits(&buf, sizeof(buf));
-	if (ct >= sizeof(buf) * 8 * 2 / 3)
+	size_t ct = count_set_bits(&set, sizeof(set));
+	if (ct >= sizeof(set) * 8 * 2 / 3)
 	{
-		buf = ~buf;
+		set = ~set;
 		prints("~");
 	}
 	print_arr_start();
 	int logged = 0;
-	for (size_t i = 0; i <= 8 * sizeof(buf); i++)
+	for (size_t i = 0; i <= 8 * sizeof(set); i++)
 	{
 		if (i < SIGRTMIN)
 		{
-			if (1 & (buf >> i))
+			if (1 & (set >> i))
 			{
 				if (logged)
 					print_space();
@@ -42,9 +36,9 @@ void printsigset_t(struct s_td *td, __kernel_ulong_t set)
 				prints(signal_names[i + 1] + 3);
 			}
 		}
-		else if (i <= SIGRTMAX)
+		else if (i < SIGRTMAX)
 		{
-			if (1 & (buf >> i))
+			if (1 & (set >> i))
 			{
 				if (logged)
 					print_space();
@@ -55,6 +49,89 @@ void printsigset_t(struct s_td *td, __kernel_ulong_t set)
 		}
 	}
 	print_arr_end();
+}
+
+void printsigmask(struct s_td *td, __kernel_ulong_t addr)
+{
+	if (!addr)
+		return print_null();
+
+	uint64_t buf;
+	if (umovemem(td, &buf, addr, sizeof(buf)) < 0)
+		return printaddr(addr);
+
+	printsigset_t(buf);
+}
+// void printsigset_t(struct s_td *td, __kernel_ulong_t addr)
+// {
+// 	if (!addr)
+// 	{
+// 		print_null();
+// 		return;
+// 	}
+
+// 	uint64_t buf = 0;
+// 	if (td)
+// 	{
+// 		if (umovemem(td, &buf, addr, sizeof(buf)) < 0)
+// 		{
+// 			printaddr(addr);
+// 			return;
+// 		}
+// 	}
+// 	else
+// 	{
+// 		buf = *(const uint64_t *) (uintptr_t) addr;
+// 	}
+
+// 	const unsigned int total_bits = 64;
+// 	const unsigned int ct = count_set_bits(&buf, sizeof(buf));
+// 	const unsigned int threshold = total_bits * 2 / 3;
+
+// 	if (ct >= threshold)
+// 	{
+// 		buf = ~buf;
+// 		prints("~");
+// 	}
+
+// 	print_arr_start();
+// 	int logged = 0;
+
+// 	for (unsigned int bit = 0; bit < 64; ++bit)
+// 	{
+// 		if (!(buf & (1ULL << bit)))
+// 			continue;
+
+// 		const unsigned int sig = bit + 1;
+
+// 		if (logged)
+// 			print_space();
+// 		logged = 1;
+
+// 		if (sig >= (unsigned) SIGRTMIN && sig <= (unsigned) SIGRTMAX)
+// 		{
+// 			prints("RT_");
+// 			PRINT_LD(sig - SIGRTMIN); /* RT_0 at SIGRTMIN */
+// 		}
+// 		else if (sig < ARRAY_SIZE(signal_names) && signal_names[sig])
+// 		{
+// 			prints(signal_names[sig] + 3);
+// 		}
+// 		else
+// 		{
+// 			PRINT_LD(sig);
+// 		}
+// 	}
+
+// 	print_arr_end();
+// }
+
+void printsigset_struct(struct s_td *td, __kernel_ulong_t addr)
+{
+	print_struct_start();
+	print_struct_member("mask");
+	printsigmask(td, addr);
+	print_struct_end();
 }
 
 void printsa_handler(void *handler)
@@ -129,7 +206,7 @@ void printsigaction(t_td *td, __kernel_ulong_t addr)
 	printsa_handler((void *) buf.sa_handler_);
 
 	print_next_struct_member("sa_mask");
-	printsigset_t(NULL, (__kernel_ulong_t) buf.sa_mask);
+	printsigset_t((__kernel_ulong_t) buf.sa_mask);
 
 	print_next_struct_member("sa_flags");
 	printflags(sigaction_sa_flags, (unsigned) buf.sa_flags, "SA_???");
@@ -180,13 +257,13 @@ SYS_FUNC(rt_sigprocmask)
 		printflags(sigproc_how, (unsigned) td->sc_args[0], "SIG_???");
 
 		NEXT_ARG("set");
-		printsigset_t(td, td->sc_args[1] /* , td->sc_args[3] */);
+		printsigmask(td, td->sc_args[1] /* , td->sc_args[3] */);
 		return 0;
 	}
 	else
 	{
 		NEXT_ARG("oldset");
-		printsigset_t(td, td->sc_args[2] /* , td->sc_args[3] */);
+		printsigmask(td, td->sc_args[2] /* , td->sc_args[3] */);
 
 		NEXT_ARG("sigsetsize");
 		PRINT_ULL(td->sc_args[3]);

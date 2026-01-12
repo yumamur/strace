@@ -1,9 +1,14 @@
 #ifndef FT_COMMON_H
 #define FT_COMMON_H
 
+#include <inttypes.h>
 #include <linux/posix_types.h>
+#include <stdbool.h>
 #include <stdint.h>
 #include <time.h>
+
+void __attribute__((__format__(__printf__, 2, 3)))
+perror_(int errno, const char *fmt, ...);
 
 void __attribute__((__noreturn__, __format__(__printf__, 2, 3)))
 perror_and_die_(int errno_, const char *fmt, ...);
@@ -11,8 +16,11 @@ perror_and_die_(int errno_, const char *fmt, ...);
 void __attribute__((__noreturn__, __format__(__printf__, 1, 2)))
 die_(const char *fmt, ...);
 
+#define perror_func(erno_, fmt_, ...)   perror_(erno_, "%s: " fmt_, __func__, ##__VA_ARGS__)
 #define perror_and_die(erno_, fmt, ...) perror_and_die_(erno_, "%s: " fmt, __func__, ##__VA_ARGS__)
 #define die(fmt_, ...)                  die_("%s: " fmt_, __func__, ##__VA_ARGS__)
+
+bool is_error_erestart(unsigned int err);
 
 #define MIN(x, y) ((x) < (y) ? (x) : (y))
 #define MAX(x, y) ((x) > (y) ? (x) : (y))
@@ -25,6 +33,13 @@ die_(const char *fmt, ...);
 	 sizeof(v) == sizeof(int)   ? (unsigned long long) (unsigned int) (v) :   \
 	 sizeof(v) == sizeof(long)  ? (unsigned long long) (unsigned long) (v) :  \
 								  (unsigned long long) (v))
+
+#define zero_extend_signed_to_ul(v)                                      \
+	(sizeof(v) == sizeof(char)  ? (unsigned long) (unsigned char) (v) :  \
+	 sizeof(v) == sizeof(short) ? (unsigned long) (unsigned short) (v) : \
+	 sizeof(v) == sizeof(int)   ? (unsigned long) (unsigned int) (v) :   \
+	 sizeof(v) == sizeof(long)  ? (unsigned long) (unsigned long) (v) :  \
+								  (unsigned long) (v))
 
 #define zero_extend_signed_to_ll(v)                         \
 	(sizeof(v) == sizeof(char)  ? (long long) (char) (v) :  \
@@ -56,6 +71,10 @@ die_(const char *fmt, ...);
 #define SF_PRINT_HEX       0x20
 #define SF_AFTER_RETURN    0x40
 #define SF_MASK            (SF_DECODE_COMPLETE | SF_PRINT_HEX | SF_AFTER_RETURN)
+
+#ifndef NT_PRSTATUS
+#  define NT_PRSTATUS 1
+#endif
 
 // forward declare
 struct s_td;
@@ -114,5 +133,7 @@ extern unsigned int current_wordsize;
 extern unsigned int current_klongsize;
 
 const char         *get_errmsg(unsigned int num);
+
+__kernel_ulong_t    get_sp_reg(void);
 
 #endif
