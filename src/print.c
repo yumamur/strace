@@ -214,6 +214,20 @@ void printfd(int fd)
 	putnum(fd, DEC);
 }
 
+int printnum_addr_uint(struct s_td *td, __kernel_ulong_t addr)
+{
+	unsigned int buf;
+	if (umovemem(td, &buf, addr, sizeof(buf)) == -1)
+	{
+		printaddr(addr);
+		return -1;
+	}
+	print_arg_start();
+	PRINT_U(buf);
+	print_arg_end();
+	return 0;
+}
+
 int printnum_addr_long(struct s_td *td, __kernel_ulong_t addr)
 {
 	long buf;

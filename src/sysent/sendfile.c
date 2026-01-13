@@ -24,7 +24,7 @@ SYS_FUNC(sendfile64)
 	{
 		if (!td->sc_err && td->sc_ret)
 		{
-			print_val_change("offset");
+			print_val_change();
 
 			printnum_addr_long(td, td->sc_args[2]);
 		}

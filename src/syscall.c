@@ -228,6 +228,16 @@ void fill_trace_data_exiting(struct s_td *td)
 	}
 }
 
+static void clear_td(struct s_td *td)
+{
+	td->flags = 0;
+	td->sc_no = -1;
+	td->entry = NULL;
+	td->sc_err = 0;
+	td->sc_ret = 0;
+	td_free_carry(td);
+}
+
 void syscallstart(struct s_td *td)
 {
 	set_sc_no(td);
@@ -266,4 +276,5 @@ void syscallend(struct s_td *td)
 	}
 	td->flags &= ~TD_INSYSCALL;
 	td->sc_err = 0;
+	clear_td(td);
 }

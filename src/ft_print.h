@@ -143,7 +143,7 @@ FT_SIVP_BA(next_struct_member, ", ", "=")
 FT_SIVP_(struct_member_sep, ", ")
 FT_SIVP_(syscall_end, "\n")
 FT_SIVP_(new_line, "\n")
-FT_SIVP_B(val_change, " => ")
+FT_SIVP_(val_change, " => ")
 
 #define PRINT_MEMBER(holder_, field_, fun_) \
 	print_struct_member(#field_);           \

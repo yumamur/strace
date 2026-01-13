@@ -104,6 +104,8 @@ enum e_abi
 
 #define MAX_ARGS 6
 
+typedef int (*free_carry_func)(void *);
+
 typedef struct s_td
 {
 		enum e_abi       abi;
@@ -116,10 +118,43 @@ typedef struct s_td
 		uint32_t         sc_err;
 		struct timespec  ptime;
 		struct timespec  stime;
+		void            *carry;
+		free_carry_func  free_carry;
+
 } t_td;
 
 #define entering(td_) (!((td_).flags & TD_INSYSCALL))
 #define exiting(td_)  ((td_).flags & TD_INSYSCALL)
+
+static inline void td_carry(struct s_td *td, void *carry, free_carry_func free_func)
+{
+	td_free_carry(td);
+	td->carry = carry;
+	td->free_carry = free_func;
+}
+
+static inline void td_free_carry(struct s_td *td)
+{
+	if (td->carry && td->free_carry)
+		td->free_carry(td->carry);
+	td->carry = NULL;
+	td->free_carry = NULL;
+}
+
+static inline void td_carry_ulong(struct s_td *td, unsigned long val)
+{
+	td_carry(td, (void *) (uintptr_t) val, NULL);
+}
+
+#define TD_CARRY_GET_FUNC(name_, type_)                       \
+	static inline type_ td_carry_get_##name_(struct s_td *td) \
+	{                                                         \
+		return (type_) td->carry;                             \
+	}
+
+TD_CARRY_GET_FUNC(ulong, unsigned long);
+
+#undef TD_CARRY_GET_FUNC
 
 typedef union u_addr
 {
