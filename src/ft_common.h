@@ -78,20 +78,29 @@ bool is_error_erestart(unsigned int err);
 
 // forward declare
 struct s_td;
+typedef int (*t_logger)(struct s_td *);
 
 // Now I see that some syscalls require more decoding after syscall return
 #define SYS_FUNC_NAME(syscall_name) sys_##syscall_name
 #define SYS_FUNC(syscall_name)      int SYS_FUNC_NAME(syscall_name)(struct s_td * td)
+// #define SYS_FUNC_ARGS(index_)       (&syscall_argnames[index_])
 
 #include "decoders.h"
+
+#define sys_stat  sys_newstat
+#define sys_fstat sys_newfstat
+#define sys_lstat sys_newlstat
 
 typedef struct s_entry
 {
 		unsigned int nargs;
-		int          (*logger)(struct s_td *);
+		t_logger     logger;
 		const char  *call_name;
-		unsigned int traced : 1;
+		unsigned int flags : 2;
 } t_entry;
+
+#define SENFL_TRACE   0x1
+#define SENFL_VERBOSE 0x2
 
 #define TOTAL_ABI 2
 
@@ -123,15 +132,10 @@ typedef struct s_td
 
 } t_td;
 
-#define entering(td_) (!((td_).flags & TD_INSYSCALL))
-#define exiting(td_)  ((td_).flags & TD_INSYSCALL)
-
-static inline void td_carry(struct s_td *td, void *carry, free_carry_func free_func)
-{
-	td_free_carry(td);
-	td->carry = carry;
-	td->free_carry = free_func;
-}
+#define entering(td_)   (!((td_).flags & TD_INSYSCALL))
+#define exiting(td_)    ((td_).flags & TD_INSYSCALL)
+#define is_traced(td_)  ((td_).entry && (td_).entry->flags & SENFL_TRACE)
+#define is_verbose(td_) ((td_).entry && (td_).entry->flags & SENFL_VERBOSE)
 
 static inline void td_free_carry(struct s_td *td)
 {
@@ -139,6 +143,13 @@ static inline void td_free_carry(struct s_td *td)
 		td->free_carry(td->carry);
 	td->carry = NULL;
 	td->free_carry = NULL;
+}
+
+static inline void td_carry(struct s_td *td, void *carry, free_carry_func free_func)
+{
+	td_free_carry(td);
+	td->carry = carry;
+	td->free_carry = free_func;
 }
 
 static inline void td_carry_ulong(struct s_td *td, unsigned long val)
@@ -162,6 +173,12 @@ typedef union u_addr
 		__kernel_ulong_t ws64;
 		unsigned char    raw[sizeof(__kernel_ulong_t)];
 } t_addr;
+
+#ifdef __x86_64__
+#  define KLONG_SIZE 8
+#else
+#  define KLONG_SIZE 4
+#endif
 
 extern unsigned int sysent_size;
 extern unsigned int current_wordsize;

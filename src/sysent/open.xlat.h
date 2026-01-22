@@ -3,6 +3,7 @@
 
 #include "xlat.h"
 #include <linux/fcntl.h>
+#include <unistd.h>
 
 const t_xlat_data open_access_flags_data[] = {
 	XLAT(O_RDWR),
@@ -31,5 +32,20 @@ const t_xlat_data open_flags_data[] = {
 	XLAT_NAMED(__O_TMPFILE, "O_TMPFILE"),
 };
 WXLAT(open_flags);
+
+const t_xlat_data access_modes_data[] = {
+	XLAT(F_OK),
+	XLAT(R_OK),
+	XLAT(W_OK),
+	XLAT(X_OK),
+};
+WXLAT(access_modes);
+
+const t_xlat_data faccessat2_flags_data[] = {
+	XLAT(AT_EACCESS),
+	XLAT(AT_EMPTY_PATH),
+	XLAT(AT_SYMLINK_NOFOLLOW),
+};
+WXLAT(faccessat2_flags);
 
 #endif

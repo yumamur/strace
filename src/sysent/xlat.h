@@ -1,5 +1,5 @@
-#ifndef FT_XLAT_H
-#define FT_XLAT_H
+#ifndef XLAT_H
+#define XLAT_H
 
 #include "../ft_common.h"
 #include <stdint.h>

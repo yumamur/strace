@@ -25,6 +25,8 @@ extern struct iovec g_io;
 
 extern long         get_reg_set(struct s_td *td);
 extern bool         mark_syscall_to_trace(const char *scname);
+extern bool         mark_syscall_to_verbose(const char *scname);
+extern void         mark_syscall_verbose_all(void);
 extern void         syscallstart(struct s_td *);
 extern void         syscallend(struct s_td *);
 
@@ -195,21 +197,21 @@ char *get_executable(const char *cmd, char *buf, size_t buflen)
 	return (NULL);
 }
 
-int parse_trace_options(const char *arg)
+void parse_tokens(const char *arg, const char *sep, bool (*marker)(const char *))
 {
 	if (!*arg)
-		return -1;
+		return;
 
 	char *copied = strdup(arg);
 	char *inf_save = NULL;
 
 	bool  set_any = false;
 
-	for (const char *tok = __strtok_r(copied, ",", &inf_save);
+	for (const char *tok = __strtok_r(copied, sep, &inf_save);
 		 tok;
-		 tok = __strtok_r(NULL, ",", &inf_save))
+		 tok = __strtok_r(NULL, sep, &inf_save))
 	{
-		set_any = mark_syscall_to_trace(tok);
+		set_any = marker(tok);
 		if (!set_any)
 			die("Invalid syscall name: %s", tok);
 	}
@@ -219,23 +221,42 @@ int parse_trace_options(const char *arg)
 
 	g_flag_trace = true;
 	free(copied);
-	return (0);
+}
+
+void verify_flag(const char *flag_str)
+{
+	if (!flag_str)
+		return;
+	if (strncmp(flag_str, "--trace=", 8UL) == 0)
+		parse_tokens(flag_str + 8UL, ",", mark_syscall_to_trace);
+	else if (strncmp(flag_str, "-v", 2UL) == 0)
+		mark_syscall_verbose_all();
+	else if (strncmp(flag_str, "--verbose=", 10UL) == 0)
+		parse_tokens(flag_str + 10UL, ",", mark_syscall_to_verbose);
 }
 
 int main(int argc, char *const *argv, char *const *envp)
 {
-	if (argc < 2)
+	char path[4096];
+	int  args_start = 1;
+
+	while (args_start < argc)
+	{
+		if (argv[args_start][0] != '-')
+			break;
+		verify_flag(argv[args_start]);
+		args_start++;
+	}
+
+	// if (argv[1][0] == '-' && strncmp(argv[1], "--trace=", 8) == 0)
+	// {
+	// 	parse_trace_options(argv[1] + 8);
+	// 	args_start = 2;
+	// }
+
+	if (argc - args_start < 1)
 		die("Usage: %s [--trace=<syscall_name[,syscall_name...]>] <program> [args...]",
 			argv[0]);
-
-	char         path[4096];
-	unsigned int args_start = 1;
-
-	if (argv[1][0] == '-' && strncmp(argv[1], "--trace=", 8) == 0)
-	{
-		parse_trace_options(argv[1] + 8);
-		args_start = 2;
-	}
 
 	if (!get_executable(argv[args_start], path, sizeof(path)))
 		perror_and_die(errno, "Cannot find executable '%s'", argv[args_start]);

@@ -5,12 +5,13 @@
 #include <string.h>
 #include <time.h>
 
-void printtime(time_t sec, unsigned long nsec)
+void printtime(unsigned long sec, unsigned long nsec)
 {
 	static char      buf[sizeof("2000-10-11T17:17:17.171717171+0300") + 5];
 
 	size_t           pos = 0;
-	const struct tm *tp = localtime(&sec);
+	time_t           local = (time_t) sec;
+	const struct tm *tp = localtime(&local);
 
 	pos = strftime(buf, sizeof(buf), "%FT%T", tp);
 	if (!pos)
@@ -53,7 +54,7 @@ void printitimerval_struct(struct itimerval *pt)
 void printitimerval(struct s_td *td, __kernel_ulong_t addr)
 {
 	struct itimerval buf = {};
-	if (umovemem(td, &buf, addr, sizeof(buf)) <= 0)
+	if (umovemem(td, &buf, addr, sizeof(buf)) != sizeof(buf))
 	{
 		printaddr(addr);
 		return;
@@ -64,7 +65,7 @@ void printitimerval(struct s_td *td, __kernel_ulong_t addr)
 void printtimeval(struct s_td *td, __kernel_ulong_t addr)
 {
 	struct timeval buf = {};
-	if (umovemem(td, &buf, addr, sizeof(buf)) <= 0)
+	if (umovemem(td, &buf, addr, sizeof(buf)) != sizeof(buf))
 	{
 		printaddr(addr);
 		return;
@@ -75,7 +76,7 @@ void printtimeval(struct s_td *td, __kernel_ulong_t addr)
 void printtimespec(struct s_td *td, __kernel_ulong_t addr)
 {
 	struct timespec buf = {};
-	if (umovemem(td, &buf, addr, sizeof(buf)) <= 0)
+	if (umovemem(td, &buf, addr, sizeof(buf)) != sizeof(buf))
 	{
 		printaddr(addr);
 		return;

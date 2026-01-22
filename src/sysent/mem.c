@@ -98,7 +98,8 @@ SYS_FUNC(mmap_pgoff)
 	NEXT_ARG("offset");
 	long pagesize = ft_getpagesize();
 	PRINT_X(td->sc_args[5] * pagesize);
-	print_comment("%li x %li", td->sc_args[5], pagesize);
+	if (td->sc_args[5])
+		print_comment("%li x %li", td->sc_args[5], pagesize);
 
 	return SF_DECODE_COMPLETE | SF_PRINT_HEX;
 }

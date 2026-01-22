@@ -1,6 +1,7 @@
 #include "../ft_common.h"
 #include "../ft_print.h"
 #include "../ft_utils.h"
+#include "select.xlat.h"
 #include <sys/select.h>
 
 #include <time.h>
@@ -16,10 +17,8 @@ void printsigset_kernel(struct s_td *td, __kernel_ulong_t addr)
 	struct kernel_sigset_argpack buf = {};
 
 	if (umovemem(td, &buf, addr, sizeof(buf)) < 0)
-	{
-		printaddr(addr);
-		return;
-	}
+		return printaddr(addr);
+
 	print_struct_start();
 	print_struct_member("sigmask");
 	printsigmask(td, (__kernel_ulong_t) buf.sigmask);
@@ -28,28 +27,32 @@ void printsigset_kernel(struct s_td *td, __kernel_ulong_t addr)
 	print_struct_end();
 }
 
-void printfd_set(struct s_td *td, __kernel_ulong_t addr, unsigned long len)
+int printfd_set(struct s_td     *td,
+				__kernel_ulong_t addr,
+				unsigned long    readsize,
+				int              expected_max_n_bit)
 {
-	if (len > sizeof(fd_set))
-		len = sizeof(fd_set);
+	if (readsize > sizeof(fd_set))
+		readsize = sizeof(fd_set);
 
 	unsigned long buf[FD_SETSIZE / sizeof(long)];
 
 	FD_ZERO((fd_set *) buf);
 
-	if (umovemem(td, buf, addr, len) <= 0)
+	if (umovemem(td, buf, addr, readsize) <= 0)
 	{
 		printaddr(addr);
-		return;
+		return 0;
 	}
 
 	print_arr_start();
 
 	int i;
 	int first = 1;
-	int nbits = len * 8;
+	int nbits = readsize * 8;
+	int total_set = 0;
 
-	for (i = 0; i < nbits; i++)
+	for (i = 0; i < nbits && expected_max_n_bit > 0; i++)
 	{
 		int index = i / (sizeof(unsigned long) * 8);
 		int bit = i % (sizeof(unsigned long) * 8);
@@ -60,9 +63,91 @@ void printfd_set(struct s_td *td, __kernel_ulong_t addr, unsigned long len)
 				print_space();
 
 			printfd(i);
+			++total_set;
+			--expected_max_n_bit;
 			first = 0;
 		}
 	}
+
+	print_arr_end();
+
+	return total_set;
+}
+
+int print_pollfd(struct s_td *td, void *buf)
+{
+	struct pollfd *pt = (struct pollfd *) buf;
+
+	if (!(uint64_t) pt->revents)
+		return 0;
+
+	(void) td;
+	print_struct_start();
+
+	print_struct_member("fd");
+	printfd(pt->fd);
+
+	print_next_struct_member("revents");
+	printflags(pollfd_events, (uint64_t) pt->revents, "POLL???");
+
+	print_struct_end();
+
+	return 1;
+}
+
+SYS_FUNC(poll)
+{
+	struct pollfd buf;
+	if (entering(*td))
+	{
+		FIRST_ARG("fds");
+		printarray(
+			td,
+			print_pollfd,
+			td->sc_args[0],
+			&buf,
+			td->sc_args[1],
+			sizeof(buf));
+
+		NEXT_ARG("nfds");
+		PRINT_ULL(td->sc_args[1]);
+
+		NEXT_ARG("timeout");
+		PRINT_LL(td->sc_args[2]);
+
+		return SF_AFTER_RETURN;
+	}
+	else
+	{
+		print_arg_start();
+		printarray(
+			td,
+			print_pollfd,
+			td->sc_args[0],
+			&buf,
+			td->sc_args[1],
+			sizeof(buf));
+		print_arg_end();
+
+		return SF_DECODE_COMPLETE;
+	}
+}
+
+void do_select_exiting(struct s_td *td, __kernel_ulong_t fdss[], int nfds, int nmax)
+{
+	if (nmax == 0)
+		return print_comment("Timeout");
+
+	print_arg_start();
+
+	print_struct_member("in");
+	nmax -= printfd_set(td, fdss[0], nfds, nmax);
+
+	print_next_struct_member("out");
+	nmax -= printfd_set(td, fdss[1], nfds, nmax);
+
+	print_next_struct_member("exc");
+	nmax -= printfd_set(td, fdss[2], nfds, nmax);
 
 	print_arr_end();
 }
@@ -81,13 +166,13 @@ SYS_FUNC(select)
 		PRINT_D(nfds);
 
 		NEXT_ARG("readfds");
-		printfd_set(td, td->sc_args[1], nfds);
+		printfd_set(td, td->sc_args[1], nfds, nfds);
 
 		NEXT_ARG("writefds");
-		printfd_set(td, td->sc_args[2], nfds);
+		printfd_set(td, td->sc_args[2], nfds, nfds);
 
 		NEXT_ARG("exceptfds");
-		printfd_set(td, td->sc_args[3], nfds);
+		printfd_set(td, td->sc_args[3], nfds, nfds);
 
 		NEXT_ARG("timeout");
 		printtimeval(td, td->sc_args[4]);
@@ -96,6 +181,8 @@ SYS_FUNC(select)
 	}
 	else
 	{
+		do_select_exiting(td, &td->sc_args[1], nfds, td->sc_ret);
+
 		return SF_DECODE_COMPLETE;
 	}
 }
@@ -114,13 +201,13 @@ SYS_FUNC(pselect6)
 		PRINT_D(nfds);
 
 		NEXT_ARG("readfds");
-		printfd_set(td, td->sc_args[1], nfds);
+		printfd_set(td, td->sc_args[1], nfds, nfds);
 
 		NEXT_ARG("writefds");
-		printfd_set(td, td->sc_args[2], nfds);
+		printfd_set(td, td->sc_args[2], nfds, nfds);
 
 		NEXT_ARG("exceptfds");
-		printfd_set(td, td->sc_args[3], nfds);
+		printfd_set(td, td->sc_args[3], nfds, nfds);
 
 		NEXT_ARG("timeout");
 		printtimeval(td, td->sc_args[4]);
@@ -132,6 +219,49 @@ SYS_FUNC(pselect6)
 	}
 	else
 	{
+		do_select_exiting(td, &td->sc_args[1], nfds, td->sc_ret);
+
+		return SF_DECODE_COMPLETE;
+	}
+}
+
+SYS_FUNC(ppoll)
+{
+	struct pollfd buf;
+	if (entering(*td))
+	{
+		FIRST_ARG("fds");
+		printarray(
+			td,
+			print_pollfd,
+			td->sc_args[0],
+			&buf,
+			td->sc_args[1],
+			sizeof(buf));
+
+		NEXT_ARG("nfds");
+		PRINT_ULL(td->sc_args[1]);
+
+		NEXT_ARG("timeout");
+		printtimeval(td, td->sc_args[2]);
+
+		NEXT_ARG("sigmask");
+		printsigset_kernel(td, td->sc_args[3]);
+
+		return SF_AFTER_RETURN;
+	}
+	else
+	{
+		print_arg_start();
+		printarray(
+			td,
+			print_pollfd,
+			td->sc_args[0],
+			&buf,
+			td->sc_args[1],
+			sizeof(buf));
+		print_arg_end();
+
 		return SF_DECODE_COMPLETE;
 	}
 }

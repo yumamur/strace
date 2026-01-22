@@ -17,6 +17,19 @@ static union
 #define REGS_32   g_regs.r32
 #define REG_SP    (IS_ABI_32 ? (REGS_32.esp) : (REGS_64.rsp))
 
+#ifdef DEBUG_ME
+#  define UGLY_ABI_FIND(e)                                                                    \
+	  (__kernel_ulong_t) e >= (__kernel_ulong_t) & sysent0[0]                                 \
+			  && (__kernel_ulong_t) e < ((__kernel_ulong_t) & sysent0[0]) + sizeof(sysent0) ? \
+		  "64 bit" :                                                                          \
+		  "32 bit"
+#  define UGLY_ABI_MARK(ent_, opr_) \
+	  print_debug("Marking <%s> in %s abi for \"%s\"\n", ent_->call_name, UGLY_ABI_FIND(ent_), opr_)
+#else
+#  define UGLY_ABI_FIND(e)
+#  define UGLY_ABI_MARK(ent_, opr_)
+#endif
+
 t_entry sysent0[] = {
 #include "syscall_ent_64.h"
 };
@@ -47,7 +60,7 @@ enum e_abi_klongsize
 	abi_klongsize1 = 4,
 };
 
-#define ABI_STR current_abi == ABI_64BIT ? "64 bit" : "32 bit"
+#define ABI_STR IS_ABI_32 ? "32 bit" : "64 bit"
 
 t_entry *sysents[] = {
 	[ABI_64BIT] = sysent0,
@@ -83,7 +96,7 @@ extern bool    g_flag_trace;
 static t_entry sysent_stub = {
 	.call_name = "unkown",
 	.logger = printargs,
-	.traced = 0,
+	.flags = 0,
 };
 
 static inline void update_current_abi(struct s_td *td, enum e_abi abi)
@@ -138,28 +151,58 @@ void set_sc_no(struct s_td *td)
 		td->entry = &sysent[td->sc_no];
 }
 
-// TODO: Find any other way than this
-bool mark_syscall_to_trace(const char *scname)
+bool entry_iter(const char *name, void (*f)(t_entry *))
 {
-	if (scname[0] == '\0')
-		return 0;
-	int matched_any = 0;
+	bool matched_any = false;
 	for (size_t i = 0; i < ARRAY_SIZE(sysents); ++i)
 	{
 		for (size_t ii = 0; ii < sysent_sizes[i]; ii++)
 		{
 			t_entry *cur = &sysents[i][ii];
-			if (cur->call_name && strcmp(scname, cur->call_name) == 0)
+			if (cur->call_name && strcmp(name, cur->call_name) == 0)
 			{
-				print_debug("Marking %ld numbered syscall (%s) to trace in %s mode\n",
-							ii,
-							cur->call_name,
-							ABI_STR);
-				matched_any = cur->traced = 1;
+				f(cur);
+				matched_any = true;
 			}
 		}
 	}
 	return matched_any;
+}
+
+static void entr_op_trace(t_entry *e)
+{
+	UGLY_ABI_MARK(e, "trace");
+	e->flags |= SENFL_TRACE;
+}
+
+static void entr_op_verbose(t_entry *e)
+{
+	UGLY_ABI_MARK(e, "verbose");
+	e->flags |= SENFL_VERBOSE;
+}
+
+bool mark_syscall_to_trace(const char *scname)
+{
+	return scname[0] != '\0' && entry_iter(scname, entr_op_trace);
+}
+
+bool mark_syscall_to_verbose(const char *scname)
+{
+	return scname[0] != '\0' && entry_iter(scname, entr_op_verbose);
+}
+
+void mark_syscall_verbose_all(void)
+{
+	print_debug("Marking all for \"verbose\"\n");
+	for (size_t i = 0; i < ARRAY_SIZE(sysents); ++i)
+	{
+		for (size_t ii = 0; ii < sysent_sizes[i]; ii++)
+		{
+			t_entry *cur = &sysents[i][ii];
+			if (cur->call_name)
+				cur->flags |= SENFL_VERBOSE;
+		}
+	}
 }
 
 void get_syscall_args(struct s_td *td)
@@ -242,9 +285,9 @@ void syscallstart(struct s_td *td)
 {
 	set_sc_no(td);
 	get_syscall_args(td);
-	t_entry *ent = td->entry;
-	if (g_flag_trace == ent->traced)
+	if (g_flag_trace == is_traced(*td))
 	{
+		t_entry *ent = td->entry;
 		print_syscall_enter(ent->call_name);
 		td->flags |= ent->logger(td);
 	}
@@ -255,9 +298,9 @@ void syscallstart(struct s_td *td)
 void syscallend(struct s_td *td)
 {
 	fill_trace_data_exiting(td);
-	t_entry *ent = td->entry;
-	if (g_flag_trace == ent->traced)
+	if (g_flag_trace == is_traced(*td))
 	{
+		t_entry *ent = td->entry;
 		if (td->flags & SF_AFTER_RETURN)
 		{
 			print_syscall_return(td);

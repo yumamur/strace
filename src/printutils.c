@@ -32,11 +32,7 @@ void putnum(uint64_t num, enum e_putnum_fmt fmt)
 	TPUTS(buf);
 }
 
-/**
- * @param src: ascii only, up to `len` OR NULL
- * @param dst: caller is responsible for sufficient size
- */
-int inprintquotstr(const char *src, char *dst, size_t len, int truncated)
+static int inprintquot(const char *src, char *dst, size_t len, int truncated, bool print_terminating_zero)
 {
 	size_t i_src = 0;
 	size_t i_dst = 1;
@@ -85,7 +81,7 @@ int inprintquotstr(const char *src, char *dst, size_t len, int truncated)
 		default:
 			if (isprint((unsigned char) ch))
 				dst[i_dst++] = ch;
-			else if (i_src < len - 1)
+			else if (i_src < len || print_terminating_zero)
 			{
 				dst[i_dst++] = '\\';
 				if (ch >> 3)
@@ -111,7 +107,7 @@ int inprintquotstr(const char *src, char *dst, size_t len, int truncated)
 	return 0;
 }
 
-int putquotstr(const char *str, size_t len)
+int putquot_(const char *str, size_t len, bool print_terminating_zero)
 {
 	static char *buf;
 	size_t       bufsize;
@@ -123,7 +119,7 @@ int putquotstr(const char *str, size_t len)
 		buf = malloc(bufsize);
 	if (!buf)
 		perror_and_die(errno, "Memory allocation failed");
-	inprintquotstr(str, buf, len, len > MAX_PRINTSTR_LEN);
+	inprintquot(str, buf, len, len > MAX_PRINTSTR_LEN, print_terminating_zero);
 	return TPUTS(buf);
 }
 

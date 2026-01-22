@@ -14,40 +14,47 @@ void printsignal(int signum)
 	prints(signal_names[signum]);
 }
 
-void printsigset_t(uint64_t set)
+void printsigset_t(const uint64_t *addr)
 {
-	size_t ct = count_set_bits(&set, sizeof(set));
-	if (ct >= sizeof(set) * 8 * 2 / 3)
+	if (!addr)
+		return print_null();
+
+	uint64_t           buf = *addr;
+	const unsigned int total_bits = 64;
+	const unsigned int ct = count_set_bits(&buf, sizeof(buf));
+	const unsigned int threshold = total_bits * 2 / 3;
+
+	if (ct >= threshold)
 	{
-		set = ~set;
+		buf = ~buf;
 		prints("~");
 	}
+
 	print_arr_start();
 	int logged = 0;
-	for (size_t i = 0; i <= 8 * sizeof(set); i++)
+
+	for (unsigned int bit = 0; bit < 64; ++bit)
 	{
-		if (i < SIGRTMIN)
+		if (!(buf & (1ULL << bit)))
+			continue;
+
+		const unsigned int sig = bit + 1;
+
+		if (logged)
+			print_space();
+		logged = 1;
+
+		if (sig >= (unsigned) SIGRTMIN && sig <= (unsigned) SIGRTMAX)
 		{
-			if (1 & (set >> i))
-			{
-				if (logged)
-					print_space();
-				logged = 1;
-				prints(signal_names[i + 1] + 3);
-			}
+			prints("RT_");
+			PRINT_LD(sig - SIGRTMIN);
 		}
-		else if (i < SIGRTMAX)
-		{
-			if (1 & (set >> i))
-			{
-				if (logged)
-					print_space();
-				logged = 1;
-				prints("RT_");
-				PRINT_LD(i - SIGRTMIN + 1);
-			}
-		}
+		else if (sig < ARRAY_SIZE(signal_names) && signal_names[sig])
+			prints(signal_names[sig] + 3);
+		else
+			PRINT_LD(sig);
 	}
+
 	print_arr_end();
 }
 
@@ -60,71 +67,8 @@ void printsigmask(struct s_td *td, __kernel_ulong_t addr)
 	if (umovemem(td, &buf, addr, sizeof(buf)) < 0)
 		return printaddr(addr);
 
-	printsigset_t(buf);
+	printsigset_t(&buf);
 }
-// void printsigset_t(struct s_td *td, __kernel_ulong_t addr)
-// {
-// 	if (!addr)
-// 	{
-// 		print_null();
-// 		return;
-// 	}
-
-// 	uint64_t buf = 0;
-// 	if (td)
-// 	{
-// 		if (umovemem(td, &buf, addr, sizeof(buf)) < 0)
-// 		{
-// 			printaddr(addr);
-// 			return;
-// 		}
-// 	}
-// 	else
-// 	{
-// 		buf = *(const uint64_t *) (uintptr_t) addr;
-// 	}
-
-// 	const unsigned int total_bits = 64;
-// 	const unsigned int ct = count_set_bits(&buf, sizeof(buf));
-// 	const unsigned int threshold = total_bits * 2 / 3;
-
-// 	if (ct >= threshold)
-// 	{
-// 		buf = ~buf;
-// 		prints("~");
-// 	}
-
-// 	print_arr_start();
-// 	int logged = 0;
-
-// 	for (unsigned int bit = 0; bit < 64; ++bit)
-// 	{
-// 		if (!(buf & (1ULL << bit)))
-// 			continue;
-
-// 		const unsigned int sig = bit + 1;
-
-// 		if (logged)
-// 			print_space();
-// 		logged = 1;
-
-// 		if (sig >= (unsigned) SIGRTMIN && sig <= (unsigned) SIGRTMAX)
-// 		{
-// 			prints("RT_");
-// 			PRINT_LD(sig - SIGRTMIN); /* RT_0 at SIGRTMIN */
-// 		}
-// 		else if (sig < ARRAY_SIZE(signal_names) && signal_names[sig])
-// 		{
-// 			prints(signal_names[sig] + 3);
-// 		}
-// 		else
-// 		{
-// 			PRINT_LD(sig);
-// 		}
-// 	}
-
-// 	print_arr_end();
-// }
 
 void printsigset_struct(struct s_td *td, __kernel_ulong_t addr)
 {
@@ -177,7 +121,7 @@ void printsigaction(t_td *td, __kernel_ulong_t addr)
 	if (current_wordsize < sizeof(buf.sa_handler_))
 	{
 		struct sigaction_32 buf32 = {};
-		if (umovemem(td, &buf32, addr, sizeof(buf32)) <= 0)
+		if (umovemem(td, &buf32, addr, sizeof(buf32)) < 0)
 			return printaddr(addr);
 
 		buf.sa_handler_ = buf32.sa_handler_;
@@ -196,7 +140,7 @@ void printsigaction(t_td *td, __kernel_ulong_t addr)
 	}
 	else
 	{
-		if (umovemem(td, &buf, addr, sizeof(buf)) <= 0)
+		if (umovemem(td, &buf, addr, sizeof(buf)) < 0)
 			return printaddr(addr);
 	}
 
@@ -206,7 +150,7 @@ void printsigaction(t_td *td, __kernel_ulong_t addr)
 	printsa_handler((void *) buf.sa_handler_);
 
 	print_next_struct_member("sa_mask");
-	printsigset_t((__kernel_ulong_t) buf.sa_mask);
+	printsigset_t(buf.sa_mask);
 
 	print_next_struct_member("sa_flags");
 	printflags(sigaction_sa_flags, (unsigned) buf.sa_flags, "SA_???");

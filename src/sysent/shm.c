@@ -72,3 +72,10 @@ SYS_FUNC(shmctl)
 
 	return SF_DECODE_COMPLETE | SF_PRINT_HEX;
 }
+
+SYS_FUNC(shmdt)
+{
+	FIRST_ARG("shmaddr");
+	printaddr(td->sc_args[0]);
+	return SF_DECODE_COMPLETE;
+}

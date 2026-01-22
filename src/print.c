@@ -4,6 +4,7 @@
 #include <inttypes.h>
 #include <linux/fcntl.h>
 #include <string.h>
+#include <strings.h>
 #include <sys/sysmacros.h>
 
 void printaddr(__kernel_ulong_t addr)
@@ -14,27 +15,12 @@ void printaddr(__kernel_ulong_t addr)
 		print_null();
 }
 
-int printpath(struct s_td *td, __kernel_ulong_t addr)
-{
-	char path[4096];
-
-	if (!addr)
-		return -1;
-
-	int null_idx = umovestr(td, path, addr, sizeof(path) - 1);
-	if (null_idx < 0)
-		putnum(addr, HEX);
-	else
-		putquotstr(path, (size_t) null_idx ?: sizeof(path));
-	return null_idx;
-}
-
 int printstr(struct s_td *td, __kernel_ulong_t addr)
 {
 	if (!addr)
 		return -1;
 
-	char str[MAX_PRINTSTR_LEN + 2];
+	char str[MAX_PRINTSTR_LEN + 3];
 	int  null_idx = umovestr(td, str, addr, sizeof(str) - 1);
 	if (null_idx < 0)
 		putnum(addr, HEX);
@@ -43,13 +29,29 @@ int printstr(struct s_td *td, __kernel_ulong_t addr)
 	return null_idx;
 }
 
+int printmem(struct s_td *td, __kernel_ulong_t addr, size_t n)
+{
+	if (!addr)
+		return -1;
+
+	char str[MAX_PRINTSTR_LEN + 3];
+	bzero(str, sizeof(str));
+	int r = umovemem(td, str, addr, MIN(sizeof(str) - 1, n));
+	if (r < 0)
+		putnum(addr, HEX);
+	else
+		putquotmem(str, (size_t) r ?: sizeof(str));
+	return r;
+}
+
 int printnstr(struct s_td *td, __kernel_ulong_t addr, size_t n)
 {
 	if (!addr)
 		return -1;
 
-	char str[MAX_PRINTSTR_LEN + 2];
-	int  read = umovemem(td, str, addr, MIN(sizeof(str) - 1, n));
+	char str[MAX_PRINTSTR_LEN + 3];
+	bzero(str, sizeof(str));
+	int read = umovemem(td, str, addr, MIN(sizeof(str) - 1, n));
 	if (read < 0)
 		putnum(addr, HEX);
 	else
@@ -286,20 +288,17 @@ void printarray(struct s_td     *td,
 		return;
 	}
 	__kernel_ulong_t cur_addr = start_addr;
-	int              read_bytes;
-	int              logged = 0;
+	int              put_sep = 0;
 
 	print_arr_start();
 	for (cur_addr = start_addr;
 		 cur_addr < end_addr;
 		 cur_addr += mem_size)
 	{
-		if (logged)
+		if (put_sep)
 			print_arg_sep();
 
-		read_bytes = umovemem(td, mem_addr, cur_addr, mem_size);
-
-		if (read_bytes < 0)
+		if (umovemem(td, mem_addr, cur_addr, mem_size) < 0)
 		{
 			printaddr(cur_addr);
 			if (cur_addr != start_addr)
@@ -315,8 +314,9 @@ void printarray(struct s_td     *td,
 
 		if (printer)
 		{
-			if (printer(td, mem_addr))
-				logged = 1;
+			put_sep = printer(td, mem_addr);
+			if (put_sep < 0)
+				break;
 		}
 	}
 	print_arr_end();

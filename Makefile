@@ -9,8 +9,11 @@ CFLAGS := -Wall -Wextra -Werror
 
 all: $(NAME)
 
-debug: CFLAGS += -g -DDEBUG_ME -fsanitize=address
-debug: fclean all
+de: CFLAGS += -g -DDEBUG_ME
+de: fclean all
+
+san: CFLAGS += -fsanitize=address
+san: de
 
 $(NAME): $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $(OBJS)
@@ -27,7 +30,5 @@ fclean: clean
 	rm -rf $(OBJDIR)
 
 re: fclean all
-
-de: debug
 
 .PHONY: all clean fclean re debug de

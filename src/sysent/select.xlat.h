@@ -1,5 +1,5 @@
-#ifndef POLL_XLAT_H
-#define POLL_XLAT_H
+#ifndef SELECT_XLAT_H
+#define SELECT_XLAT_H
 
 #include "xlat.h"
 #include <sys/poll.h>

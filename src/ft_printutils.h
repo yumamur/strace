@@ -6,7 +6,11 @@
 #include "ft_string.h"
 #include "sysent/xlat.h"
 
-#define MAX_PRINTSTR_LEN 32
+#ifdef DEBUG_ME
+#  define MAX_PRINTSTR_LEN 64
+#else
+#  define MAX_PRINTSTR_LEN 32
+#endif
 
 enum e_putnum_fmt
 {
@@ -20,7 +24,10 @@ enum e_putnum_fmt
 
 int  sprintnum(char *ptr, size_t n, uint64_t num, enum e_putnum_fmt fmt);
 void putnum(uint64_t num, enum e_putnum_fmt fmt);
-int  putquotstr(const char *str, size_t len);
+
+int  putquot_(const char *str, size_t len, bool print_terminating_zero);
+#define putquotstr(str_, len_) putquot_(str_, len_, false)
+#define putquotmem(mem_, len_) putquot_((const char *) (mem_), len_, true)
 
 int __attribute__((format(printf, 2, 3)))
 fputfmt(FILE *file, const char *fmt, ...);

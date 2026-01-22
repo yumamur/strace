@@ -41,10 +41,20 @@ void        printkillsig(int sig);
 void        print_syscall_enter(const char *name);
 void        print_syscall_return(struct s_td *td);
 void        printaddr(__kernel_ulong_t addr);
-int         printpath(struct s_td *td, __kernel_ulong_t addr);
+
+int         printargs(struct s_td *td);
 int         printstr(struct s_td *td, __kernel_ulong_t addr);
 int         printnstr(struct s_td *td, __kernel_ulong_t addr, size_t n);
+int         printmem(struct s_td *td, __kernel_ulong_t addr, size_t n);
 
+#define printpath printstr
+
+/**
+ * printer returns:
+ *   == 0 => continue
+ *   >  0  => add separator (", ") inbetween elements
+ *   <  0  => stop
+ */
 void        printarray(struct s_td     *td,
 					   t_printer        printer,
 					   __kernel_ulong_t start_addr,
@@ -66,10 +76,12 @@ void        printdirfd(struct s_td *td, int fd);
 void        printfd(int fd);
 void        printdev_t(__dev_t dev);
 void        printsigmask(struct s_td *td, __kernel_ulong_t set);
-void        printsigset_t(uint64_t set);
-int         printargs(struct s_td *td);
+void        printsigset_t(const uint64_t *addr);
 
-void        printtime(time_t sec, unsigned long nsec);
+void        printiov(struct s_td *td, __kernel_ulong_t iovp, size_t iovcn, t_printer);
+int         printiov_str(struct s_td *td, void *iovp);
+
+void        printtime(unsigned long sec, unsigned long nsec);
 void        printtimespec_struct(struct timespec *pt);
 void        printitimerval_struct(struct itimerval *pt);
 void        printtimeval_struct(struct timeval *pt);

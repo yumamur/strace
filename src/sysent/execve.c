@@ -28,7 +28,7 @@ size_t readv(t_td *td, __kernel_ulong_t addr, _Bool should_print)
 			break;
 		}
 
-		if (umovemem(td, addr_buffer.raw, addr, wordsize) == -1)
+		if (umovemem(td, addr_buffer.raw, addr, wordsize) != (__ssize_t) wordsize)
 		{
 			if (should_print)
 				printaddr(addr);
@@ -48,12 +48,12 @@ size_t readv(t_td *td, __kernel_ulong_t addr, _Bool should_print)
 		{
 			if (!ct)
 				print_arr_start();
-			else if (ct >= MAX_ARGS)
-			{
-				print_arg_sep();
-				print_comment("I probably should keep counting");
-				break;
-			}
+			// else if (ct >= MAX_ARGS)
+			// {
+			// 	print_arg_sep();
+			// 	print_comment("I probably should keep counting");
+			// 	break;
+			// }
 			else
 				print_arg_sep();
 
@@ -70,9 +70,14 @@ size_t readv(t_td *td, __kernel_ulong_t addr, _Bool should_print)
 
 void printenvp(t_td *td, __kernel_ulong_t addr)
 {
-	size_t ct = readv(td, addr, false);
-	printaddr(addr);
-	print_comment("%" PRIu64 " variables", ct);
+	if (is_verbose(*td))
+		readv(td, addr, true);
+	else
+	{
+		size_t ct = readv(td, addr, false);
+		printaddr(addr);
+		print_comment("%" PRIu64 " variables", ct);
+	}
 }
 
 SYS_FUNC(execve)
