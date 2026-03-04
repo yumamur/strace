@@ -12,9 +12,11 @@
 #ifdef DEBUG_ME
 #  define EXTEND_ARGNAME(argname) argname "="
 #  define print_debug(msg, ...)   fprintf(FT_OUTFILE, msg, ##__VA_ARGS__)
+#  define MAX_PRINTSTR_LEN        64
 #else
 #  define EXTEND_ARGNAME(argname) ""
 #  define print_debug(msg, ...)
+#  define MAX_PRINTSTR_LEN 32
 #endif
 
 #define FIRST_ARG(argname) TPUTS(EXTEND_ARGNAME(argname))
@@ -27,6 +29,39 @@
 #define PRINT_U(num)   fprintf(FT_OUTFILE, "%u", (unsigned) num)
 #define PRINT_D(num)   fprintf(FT_OUTFILE, "%d", (int) num)
 #define PRINT_X(num)   fprintf(FT_OUTFILE, "%#llx", zero_extend_signed_to_ull(num))
+
+#define FETCH_PRINT_F_NAME(name_) printnum_addr_##name_
+#define FETCH_PRINT_F_DEC(name_) \
+	int FETCH_PRINT_F_NAME(name_)(struct s_td * td, __kernel_ulong_t addr)
+
+FETCH_PRINT_F_DEC(int32);
+FETCH_PRINT_F_DEC(uint32);
+FETCH_PRINT_F_DEC(int64);
+FETCH_PRINT_F_DEC(uint64);
+
+enum e_putnum_fmt
+{
+	DEC,
+	UND,
+	OCT,
+	OCTO3,
+	HEX,
+	UPHEX,
+};
+
+int  sprintnum(char *ptr, size_t n, uint64_t num, enum e_putnum_fmt fmt);
+void putnum(uint64_t num, enum e_putnum_fmt fmt);
+
+int  putquot_(const char *str, size_t len, bool print_terminating_zero);
+#define putquotstr(str_, len_) putquot_(str_, len_, false)
+#define putquotmem(mem_, len_) putquot_((const char *) (mem_), len_, true)
+
+int __attribute__((format(printf, 2, 3)))
+fputfmt(FILE *file, const char *fmt, ...);
+
+#define inprint(buf, fmt, ...) snprintf(buf, sizeof(buf), fmt, ##__VA_ARGS__)
+#define putfmt(fmt, ...)       fputfmt(FT_OUTFILE, fmt, ##__VA_ARGS__)
+#define putfmterr(fmt, ...)    fputfmt(stderr, fmt, ##__VA_ARGS__)
 
 struct s_td;
 struct timespec;
@@ -71,12 +106,13 @@ const char *snprintflags(char         *dst,
 						 uint64_t      flags,
 						 const char   *dflt);
 
-void        printmode(uint64_t mode);
+void        printumode(uint64_t mode);
 void        printdirfd(struct s_td *td, int fd);
 void        printfd(int fd);
 void        printdev_t(__dev_t dev);
 void        printsigmask(struct s_td *td, __kernel_ulong_t set);
 void        printsigset_t(const uint64_t *addr);
+void        printsignal(int signum);
 
 void        printiov(struct s_td *td, __kernel_ulong_t iovp, size_t iovcn, t_printer);
 int         printiov_str(struct s_td *td, void *iovp);
@@ -88,8 +124,7 @@ void        printtimeval_struct(struct timeval *pt);
 void        printitimerval(struct s_td *td, __kernel_ulong_t addr);
 void        printtimeval(struct s_td *td, __kernel_ulong_t addr);
 void        printtimespec(struct s_td *td, __kernel_ulong_t addr);
-
-int         printnum_addr_long(struct s_td *td, __kernel_ulong_t addr);
+void        printkey_t(int32_t key);
 
 int __attribute__((format(printf, 1, 2)))
 print_flush(const char *fmt, ...);
@@ -164,6 +199,10 @@ FT_SIVP_(val_change, " => ")
 #define PRINT_MEMBER_ADDR(holder_, field_, fun_) \
 	print_struct_member(#field_);                \
 	fun_(&(holder_)->field_)
+
+#define PRINT_MEMBER_STRQ(holder_, field_) \
+	print_struct_member(#field_);          \
+	putquotstr((holder_).field_, sizeof((holder_).field_))
 
 #undef FT_SIVP_
 

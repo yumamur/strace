@@ -12,8 +12,13 @@
 
 #define WXLAT(name_)         \
 	const t_xlat name_[] = { \
-		{.data = name_##_data, .size = ARRAY_SIZE(name_##_data)} \
+		{.data = name_##_data, .size = ARRAY_SIZE(name_##_data), .sorting = XLAT_DEFAULT} \
     }
+#define WIXLAT(name_)        \
+	const t_xlat name_[] = { \
+		{.data = name_##_data, .size = ARRAY_SIZE(name_##_data), .sorting = XLAT_INDEXED} \
+    }
+
 typedef struct s_xlat_data
 {
 		uint64_t    val;
@@ -22,7 +27,12 @@ typedef struct s_xlat_data
 
 typedef struct s_xlat
 {
-		unsigned int       size;
+		unsigned int size;
+		enum
+		{
+			XLAT_DEFAULT = 0,
+			XLAT_INDEXED = 1,
+		} sorting;
 		const t_xlat_data *data;
 } t_xlat;
 

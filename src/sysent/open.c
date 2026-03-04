@@ -39,7 +39,7 @@ SYS_FUNC(open)
 	if (td->sc_args[1] & (O_CREAT | O_TMPFILE))
 	{
 		NEXT_ARG("mode");
-		printmode(td->sc_args[2]);
+		printumode(td->sc_args[2]);
 	}
 
 	return SF_DECODE_COMPLETE;
@@ -59,7 +59,7 @@ SYS_FUNC(openat)
 	if (td->sc_args[2] & (O_CREAT | O_TMPFILE))
 	{
 		NEXT_ARG("mode");
-		printmode(td->sc_args[3]);
+		printumode(td->sc_args[3]);
 	}
 
 	return SF_DECODE_COMPLETE;

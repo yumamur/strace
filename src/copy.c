@@ -55,7 +55,7 @@ ssize_t umovemem(struct s_td *const td, void *laddr, __kernel_ulong_t taddr, siz
 		return -1;
 	int read = process_read_mem(td->pid, laddr, (void *) taddr, len);
 	if (read >= 0 && len != (size_t) read)
-		perror_func(errno,
+		perror_and_cont(errno,
 					"vm_readv error: (expected:%zu, got:%d) addr: 0x%lx",
 					len, read, taddr);
 	return read;

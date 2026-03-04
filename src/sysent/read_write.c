@@ -171,7 +171,7 @@ SYS_FUNC(sendfile64)
 		printfd(td->sc_args[1]);
 
 		NEXT_ARG("offset");
-		if (printnum_addr_long(td, td->sc_args[2]) == -1)
+		if (printnum_addr_int64(td, td->sc_args[2]) == -1)
 		{
 			NEXT_ARG("count");
 			PRINT_ULL(td->sc_args[3]);
@@ -185,7 +185,7 @@ SYS_FUNC(sendfile64)
 		{
 			print_val_change();
 
-			printnum_addr_long(td, td->sc_args[2]);
+			printnum_addr_int64(td, td->sc_args[2]);
 		}
 
 		NEXT_ARG("count");

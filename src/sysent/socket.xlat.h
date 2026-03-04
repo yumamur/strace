@@ -4,7 +4,7 @@
 #include "xlat.h"
 #include <sys/socket.h>
 
-#define SOCK_MAX 020
+#define SOCK_MAX 0xf
 
 const t_xlat_data protocol_families_data[] = {
 	XLAT(PF_UNSPEC),
@@ -173,5 +173,76 @@ const t_xlat_data msg_flags_data[] = {
 	XLAT(MSG_CMSG_CLOEXEC),
 };
 WXLAT(msg_flags);
+
+const t_xlat_data shutdown_how_data[] = {
+	XLAT(SHUT_RD),
+	XLAT(SHUT_WR),
+	XLAT(SHUT_RDWR),
+};
+WXLAT(shutdown_how);
+
+#ifndef __USE_MISC
+#  define __USE_MISC
+#endif
+#include <asm-generic/socket.h>
+#include <linux/can/raw.h>
+#include <netatalk/at.h>
+#include <netinet/in.h>
+#include <netinet/tcp.h>
+#include <netinet/udp.h>
+#include <netipx/ipx.h>
+#include <netrom/netrom.h>
+#include <netrose/rose.h>
+
+const t_xlat_data socket_option_levels_data[] = {
+	XLAT(SOL_AAL),
+	XLAT(SOL_ALG),
+	XLAT(SOL_ATALK),
+	XLAT(SOL_ATM),
+	XLAT(SOL_AX25),
+	XLAT(SOL_BLUETOOTH),
+	XLAT(SOL_CAIF),
+	XLAT(SOL_CAN_BASE),
+	XLAT(SOL_CAN_RAW),
+	XLAT(SOL_DCCP),
+	XLAT(SOL_DECNET),
+	XLAT(SOL_ICMPV6),
+	XLAT(SOL_IP),
+	XLAT(SOL_IPV6),
+	XLAT(SOL_IPX),
+	XLAT(SOL_IRDA),
+	XLAT(SOL_IUCV),
+	XLAT(SOL_KCM),
+	XLAT(SOL_LLC),
+	XLAT(SOL_MCTP),
+	XLAT(SOL_MPTCP),
+	XLAT(SOL_NETBEUI),
+	XLAT(SOL_NETLINK),
+	XLAT(SOL_NETROM),
+	XLAT(SOL_NFC),
+	XLAT(SOL_PACKET),
+	XLAT(SOL_PNPIPE),
+	XLAT(SOL_PPPOL2TP),
+	XLAT(SOL_RAW),
+	XLAT(SOL_RDS),
+	XLAT(SOL_ROSE),
+	XLAT(SOL_RXRPC),
+#ifdef SOL_SCTP
+	XLAT(SOL_SCTP),
+#endif
+	XLAT(SOL_SMC),
+	XLAT(SOL_SOCKET),
+	XLAT(SOL_TCP),
+	XLAT(SOL_TIPC),
+	XLAT(SOL_TLS),
+	XLAT(SOL_UDP),
+#ifdef SOL_UDPLITE
+	XLAT(SOL_UDPLITE),
+#endif
+	XLAT(SOL_VSOCK),
+	XLAT(SOL_X25),
+	XLAT(SOL_XDP),
+};
+WXLAT(socket_option_levels);
 
 #endif

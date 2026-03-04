@@ -1,5 +1,4 @@
 #include "ft_print.h"
-#include "ft_printutils.h"
 #include "ft_utils.h"
 #include <inttypes.h>
 #include <linux/fcntl.h>
@@ -170,7 +169,7 @@ int printflag(const t_xlat *xlat, uint64_t flag, const char *dflt)
 	return 0;
 }
 
-void printmode(uint64_t mode)
+void printumode(uint64_t mode)
 {
 	putnum(mode, OCTO3);
 }
@@ -216,33 +215,27 @@ void printfd(int fd)
 	putnum(fd, DEC);
 }
 
-int printnum_addr_uint(struct s_td *td, __kernel_ulong_t addr)
-{
-	unsigned int buf;
-	if (umovemem(td, &buf, addr, sizeof(buf)) == -1)
-	{
-		printaddr(addr);
-		return -1;
+#define FETCH_PRINT_F(name_, type_, printer_)            \
+	FETCH_PRINT_F_DEC(name_)                             \
+	{                                                    \
+		type_ buf;                                       \
+		if (umovemem(td, &buf, addr, sizeof(buf)) == -1) \
+		{                                                \
+			printaddr(addr);                             \
+			return -1;                                   \
+		}                                                \
+		print_arg_start();                               \
+		printer_(buf);                                   \
+		print_arg_end();                                 \
+		return 0;                                        \
 	}
-	print_arg_start();
-	PRINT_U(buf);
-	print_arg_end();
-	return 0;
-}
 
-int printnum_addr_long(struct s_td *td, __kernel_ulong_t addr)
-{
-	long buf;
-	if (umovemem(td, &buf, addr, sizeof(buf)) == -1)
-	{
-		printaddr(addr);
-		return -1;
-	}
-	print_arg_start();
-	PRINT_LD(buf);
-	print_arg_end();
-	return 0;
-}
+FETCH_PRINT_F(int32, int32_t, PRINT_D)
+FETCH_PRINT_F(uint32, int32_t, PRINT_U)
+FETCH_PRINT_F(int64, int64_t, PRINT_LL)
+FETCH_PRINT_F(uint64, uint64_t, PRINT_LU)
+
+#undef FETCH_PRINT_F
 
 void printdev_t(__dev_t dev)
 {

@@ -1,12 +1,15 @@
-#ifndef SHM_XLAT_H
-#define SHM_XLAT_H
+#ifndef SEM_XLAT_H
+#define SEM_XLAT_H
 
 #include "xlat.h"
 
-#include <linux/shm.h>
-
-const t_xlat_data ipc_key_data[] = {XLAT(IPC_PRIVATE)};
-WXLAT(ipc_key);
+#ifndef __USE_GNU
+#  define __USE_GNU
+#endif
+#ifndef __USE_MISC
+#  define __USE_MISC
+#endif
+#include <sys/shm.h>
 
 const t_xlat_data shm_resource_flags_data[] = {
 	XLAT(IPC_CREAT),
@@ -28,5 +31,9 @@ const t_xlat_data shmctl_ops_data[] = {
 	XLAT(SHM_STAT_ANY),
 };
 WXLAT(shmctl_ops);
+
+extern const t_xlat *ipc_key;
+extern const t_xlat *ipc_mode_flags;
+extern const t_xlat *ipc_cmd_flags;
 
 #endif

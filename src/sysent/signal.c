@@ -11,7 +11,19 @@
 
 void printsignal(int signum)
 {
-	prints(signal_names[signum]);
+	if (signum > 0)
+	{
+		const unsigned int us = signum;
+		if (us < ARRAY_SIZE(signal_names))
+			prints(signal_names[us]);
+		else if (us >= SIGRTMIN && us <= SIGRTMAX)
+		{
+			prints("SIGRT_");
+			PRINT_D(us - SIGRTMIN);
+		}
+	}
+	else
+		PRINT_D(signum);
 }
 
 void printsigset_t(const uint64_t *addr)
@@ -214,4 +226,15 @@ SYS_FUNC(rt_sigprocmask)
 
 		return SF_DECODE_COMPLETE;
 	}
+}
+
+SYS_FUNC(kill)
+{
+	FIRST_ARG("pid");
+	PRINT_LL(td->sc_args[0]);
+
+	NEXT_ARG("sig");
+	printsignal(td->sc_args[1]);
+
+	return SF_DECODE_COMPLETE;
 }

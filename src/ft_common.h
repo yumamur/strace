@@ -16,9 +16,9 @@ perror_and_die_(int errno_, const char *fmt, ...);
 void __attribute__((__noreturn__, __format__(__printf__, 1, 2)))
 die_(const char *fmt, ...);
 
-#define perror_func(erno_, fmt_, ...)   perror_(erno_, "%s: " fmt_, __func__, ##__VA_ARGS__)
-#define perror_and_die(erno_, fmt, ...) perror_and_die_(erno_, "%s: " fmt, __func__, ##__VA_ARGS__)
-#define die(fmt_, ...)                  die_("%s: " fmt_, __func__, ##__VA_ARGS__)
+#define perror_and_cont(erno_, fmt_, ...) perror_(erno_, "%s: " fmt_, __func__, ##__VA_ARGS__)
+#define perror_and_die(erno_, fmt, ...)   perror_and_die_(erno_, "%s: " fmt, __func__, ##__VA_ARGS__)
+#define die(fmt_, ...)                    die_("%s: " fmt_, __func__, ##__VA_ARGS__)
 
 bool is_error_erestart(unsigned int err);
 
@@ -90,6 +90,12 @@ typedef int (*t_logger)(struct s_td *);
 #define sys_stat  sys_newstat
 #define sys_fstat sys_newfstat
 #define sys_lstat sys_newlstat
+
+// same thing?
+#define sys_bind        sys_connect
+#define sys_getsockname sys_accept
+#define sys_getpeername sys_accept
+#define sys_exit_group  sys_exit
 
 typedef struct s_entry
 {
@@ -181,6 +187,7 @@ typedef union u_addr
 #endif
 
 extern unsigned int sysent_size;
+extern enum e_abi   current_abi;
 extern unsigned int current_wordsize;
 extern unsigned int current_klongsize;
 

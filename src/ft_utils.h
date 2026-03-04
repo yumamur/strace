@@ -10,8 +10,27 @@ unsigned long ft_getpagesize(void);
 
 struct s_td;
 
-__ssize_t umovestr(struct s_td *const td, char *laddr, __kernel_ulong_t addr, size_t len);
-__ssize_t umovemem(struct s_td *const td, void *laddr, __kernel_ulong_t taddr, size_t len);
-size_t    count_set_bits(void *addr, size_t size);
+__ssize_t    umovestr(struct s_td *const td, char *laddr, __kernel_ulong_t addr, size_t len);
+__ssize_t    umovemem(struct s_td *const td, void *laddr, __kernel_ulong_t taddr, size_t len);
+size_t       count_set_bits(void *addr, size_t size);
+
+// typedef void (*f_map_ent_free)(void *);
+
+// struct s_map
+// {
+// 		unsigned cap;
+// 		unsigned size;
+// 		unsigned key_size;
+// 		unsigned val_size;
+// 		void    *nodes;
+// };
+
+// struct s_map      *map_create(unsigned cap, unsigned key_size, unsigned val_size);
+// void              map_destroy(struct s_map);
+
+// bool              map_has_key(struct s_map, uint64_t);
+// struct s_map_ent *map_get_node(struct s_map, uint64_t);
+// struct s_map_ent *map_add_node(struct s_map, uint64_t, void *, size_t n);
+// void              map_del_node(struct s_map, uint64_t);
 
 #endif /* FT_UTILS */

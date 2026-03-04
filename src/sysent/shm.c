@@ -1,5 +1,4 @@
 #include "../ft_print.h"
-
 #include "shm.xlat.h"
 
 void printshm_flags(__kernel_ulong_t flags)
@@ -25,7 +24,7 @@ void printshm_flags(__kernel_ulong_t flags)
 
 	if (flags || huge_size)
 		print_or();
-	printmode(acc_mode);
+	printumode(acc_mode);
 }
 
 SYS_FUNC(shmget)
