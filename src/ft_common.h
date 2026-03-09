@@ -96,6 +96,16 @@ typedef int (*t_logger)(struct s_td *);
 #define sys_getsockname sys_accept
 #define sys_getpeername sys_accept
 #define sys_exit_group  sys_exit
+#define sys_fsync       sys_close
+#define sys_fdatasync   sys_close
+#define sys_fchdir      sys_close
+#define sys_rmdir       sys_chdir
+#define sys_creat       sys_mkdir
+#define sys_link        sys_rename
+#define sys_unlink      sys_chdir
+#define sys_symlink     sys_rename
+#define sys_chmod       sys_mkdir
+#define sys_lchown      sys_chown
 
 typedef struct s_entry
 {

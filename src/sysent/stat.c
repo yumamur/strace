@@ -70,22 +70,22 @@ void printstat(t_td *td, struct stat *statbuf)
 	{
 		PRINT_MEMBER(statbuf, st_dev, printdev_t);
 		print_struct_member_sep();
-		PRINT_MEMBER(statbuf, st_ino, PRINT_ULL);
+		PRINT_MEMBER(statbuf, st_ino, PRINT_LLU);
 		print_struct_member_sep();
 	}
 	PRINT_MEMBER(statbuf, st_mode, printmode_t);
 	if (is_verbose(*td))
 	{
 		print_struct_member_sep();
-		PRINT_MEMBER(statbuf, st_nlink, PRINT_ULL);
+		PRINT_MEMBER(statbuf, st_nlink, PRINT_LLU);
 		print_struct_member_sep();
-		PRINT_MEMBER(statbuf, st_uid, PRINT_ULL);
+		PRINT_MEMBER(statbuf, st_uid, PRINT_LLU);
 		print_struct_member_sep();
-		PRINT_MEMBER(statbuf, st_gid, PRINT_ULL);
+		PRINT_MEMBER(statbuf, st_gid, PRINT_LLU);
 		print_struct_member_sep();
-		PRINT_MEMBER(statbuf, st_blksize, PRINT_ULL);
+		PRINT_MEMBER(statbuf, st_blksize, PRINT_LLU);
 		print_struct_member_sep();
-		PRINT_MEMBER(statbuf, st_blocks, PRINT_ULL);
+		PRINT_MEMBER(statbuf, st_blocks, PRINT_LLU);
 		print_struct_member_sep();
 	}
 	if (statbuf->st_mode & (__S_IFCHR | __S_IFBLK))
@@ -94,28 +94,28 @@ void printstat(t_td *td, struct stat *statbuf)
 	}
 	else
 	{
-		PRINT_MEMBER(statbuf, st_size, PRINT_ULL);
+		PRINT_MEMBER(statbuf, st_size, PRINT_LLU);
 	}
 
 	if (is_verbose(*td))
 	{
 		print_struct_member_sep();
-		PRINT_MEMBER(statbuf, st_atime, PRINT_ULL);
+		PRINT_MEMBER(statbuf, st_atime, PRINT_LLU);
 		printtime(statbuf->st_atime, statbuf->st_atimensec);
 		print_struct_member_sep();
-		PRINT_MEMBER(statbuf, st_atimensec, PRINT_ULL);
+		PRINT_MEMBER(statbuf, st_atimensec, PRINT_LLU);
 
 		print_struct_member_sep();
-		PRINT_MEMBER(statbuf, st_mtime, PRINT_ULL);
+		PRINT_MEMBER(statbuf, st_mtime, PRINT_LLU);
 		printtime(statbuf->st_mtime, statbuf->st_mtimensec);
 		print_struct_member_sep();
-		PRINT_MEMBER(statbuf, st_mtimensec, PRINT_ULL);
+		PRINT_MEMBER(statbuf, st_mtimensec, PRINT_LLU);
 
 		print_struct_member_sep();
-		PRINT_MEMBER(statbuf, st_ctime, PRINT_ULL);
+		PRINT_MEMBER(statbuf, st_ctime, PRINT_LLU);
 		printtime(statbuf->st_ctime, statbuf->st_ctimensec);
 		print_struct_member_sep();
-		PRINT_MEMBER(statbuf, st_ctimensec, PRINT_ULL);
+		PRINT_MEMBER(statbuf, st_ctimensec, PRINT_LLU);
 	}
 
 	if (!is_verbose(*td))
@@ -212,4 +212,26 @@ SYS_FUNC(newstat)
 
 		return SF_DECODE_COMPLETE;
 	}
+}
+
+SYS_FUNC(readlink)
+{
+	if (entering(*td))
+	{
+		FIRST_ARG("pathname");
+		printpath(td, td->sc_args[0]);
+
+		return 0;
+	}
+
+	NEXT_ARG("buf");
+	if (td->sc_err)
+		printaddr(td->sc_args[1]);
+	else
+		printnstr(td, td->sc_args[1], td->sc_ret);
+
+	NEXT_ARG("bufsiz");
+	PRINT_LLU(td->sc_args[2]);
+
+	return SF_DECODE_COMPLETE;
 }

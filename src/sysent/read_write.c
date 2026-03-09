@@ -53,7 +53,7 @@ SYS_FUNC(read)
 		printnstr(td, td->sc_args[1], td->sc_ret);
 
 		NEXT_ARG("count");
-		PRINT_ULL(td->sc_args[2]);
+		PRINT_LLU(td->sc_args[2]);
 
 		return SF_DECODE_COMPLETE;
 	}
@@ -68,7 +68,7 @@ SYS_FUNC(write)
 	printstr(td, td->sc_args[1]);
 
 	NEXT_ARG("count");
-	PRINT_ULL(td->sc_args[2]);
+	PRINT_LLU(td->sc_args[2]);
 
 	return SF_DECODE_COMPLETE;
 }
@@ -100,10 +100,10 @@ SYS_FUNC(pread64)
 		printnstr(td, td->sc_args[1], td->sc_ret);
 
 		NEXT_ARG("count");
-		PRINT_ULL(td->sc_args[2]);
+		PRINT_LLU(td->sc_args[2]);
 
 		NEXT_ARG("offset");
-		PRINT_ULL(td->sc_args[3]);
+		PRINT_LLU(td->sc_args[3]);
 
 		return SF_DECODE_COMPLETE;
 	}
@@ -118,10 +118,10 @@ SYS_FUNC(pwrite64)
 	printstr(td, td->sc_args[1]);
 
 	NEXT_ARG("count");
-	PRINT_ULL(td->sc_args[2]);
+	PRINT_LLU(td->sc_args[2]);
 
 	NEXT_ARG("offset");
-	PRINT_ULL(td->sc_args[3]);
+	PRINT_LLU(td->sc_args[3]);
 
 	return SF_DECODE_COMPLETE;
 }
@@ -140,7 +140,7 @@ SYS_FUNC(readv)
 		printiov(td, td->sc_args[1], td->sc_args[2], printiov_str);
 
 		NEXT_ARG("iovcnt");
-		PRINT_ULL(td->sc_args[2]);
+		PRINT_LLU(td->sc_args[2]);
 
 		return SF_DECODE_COMPLETE;
 	}
@@ -155,7 +155,7 @@ SYS_FUNC(writev)
 	printiov(td, td->sc_args[1], td->sc_args[2], printiov_str);
 
 	NEXT_ARG("iovcnt");
-	PRINT_ULL(td->sc_args[2]);
+	PRINT_LLU(td->sc_args[2]);
 
 	return SF_DECODE_COMPLETE;
 }
@@ -174,7 +174,7 @@ SYS_FUNC(sendfile64)
 		if (printnum_addr_int64(td, td->sc_args[2]) == -1)
 		{
 			NEXT_ARG("count");
-			PRINT_ULL(td->sc_args[3]);
+			PRINT_LLU(td->sc_args[3]);
 
 			return SF_DECODE_COMPLETE;
 		}
@@ -189,7 +189,7 @@ SYS_FUNC(sendfile64)
 		}
 
 		NEXT_ARG("count");
-		PRINT_ULL(td->sc_args[3]);
+		PRINT_LLU(td->sc_args[3]);
 	}
 	return 0;
 }
@@ -208,7 +208,7 @@ int decode_preadv(struct s_td *td)
 		printiov(td, td->sc_args[1], td->sc_args[2], printiov_str);
 
 		NEXT_ARG("iovcnt");
-		PRINT_ULL(td->sc_args[2]);
+		PRINT_LLU(td->sc_args[2]);
 
 		NEXT_ARG("offset");
 		if (current_klongsize < KLONG_SIZE)
@@ -245,7 +245,7 @@ static void decode_pwritev(struct s_td *td)
 	printiov(td, td->sc_args[1], td->sc_args[2], printiov_str);
 
 	NEXT_ARG("iovcnt");
-	PRINT_ULL(td->sc_args[2]);
+	PRINT_LLU(td->sc_args[2]);
 
 	NEXT_ARG("offset");
 	if (current_klongsize < KLONG_SIZE)

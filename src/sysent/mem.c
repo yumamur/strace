@@ -61,7 +61,7 @@ SYS_FUNC(mmap)
 	printaddr(td->sc_args[0]);
 
 	NEXT_ARG("length");
-	PRINT_ULL(td->sc_args[1]);
+	PRINT_LLU(td->sc_args[1]);
 
 	NEXT_ARG("prot");
 	printflags(mmap_prots, td->sc_args[2], "PROT_???");
@@ -73,7 +73,7 @@ SYS_FUNC(mmap)
 	PRINT_D(td->sc_args[4]);
 
 	NEXT_ARG("offset");
-	PRINT_X(td->sc_args[5]);
+	PRINT_LLX(td->sc_args[5]);
 
 	return SF_DECODE_COMPLETE | SF_PRINT_HEX;
 }
@@ -84,7 +84,7 @@ SYS_FUNC(mmap_pgoff)
 	printaddr(td->sc_args[0]);
 
 	NEXT_ARG("length");
-	PRINT_ULL(td->sc_args[1]);
+	PRINT_LLU(td->sc_args[1]);
 
 	NEXT_ARG("prot");
 	printflags(mmap_prots, td->sc_args[2], "PROT_???");
@@ -97,7 +97,7 @@ SYS_FUNC(mmap_pgoff)
 
 	NEXT_ARG("offset");
 	long pagesize = ft_getpagesize();
-	PRINT_X(td->sc_args[5] * pagesize);
+	PRINT_LLX(td->sc_args[5] * pagesize);
 	if (td->sc_args[5])
 		print_comment("%li x %li", td->sc_args[5], pagesize);
 
@@ -110,7 +110,7 @@ SYS_FUNC(mprotect)
 	printaddr(td->sc_args[0]);
 
 	NEXT_ARG("size");
-	PRINT_ULL(td->sc_args[1]);
+	PRINT_LLU(td->sc_args[1]);
 
 	NEXT_ARG("prot");
 	printflags(mprotect_prots, td->sc_args[2], "PROT_???");
@@ -124,7 +124,7 @@ SYS_FUNC(munmap)
 	printaddr(td->sc_args[0]);
 
 	NEXT_ARG("length");
-	PRINT_ULL(td->sc_args[1]);
+	PRINT_LLU(td->sc_args[1]);
 
 	return SF_DECODE_COMPLETE;
 }
@@ -143,10 +143,10 @@ SYS_FUNC(mremap)
 	printaddr(td->sc_args[0]);
 
 	NEXT_ARG("old_size");
-	PRINT_ULL(td->sc_args[1]);
+	PRINT_LLU(td->sc_args[1]);
 
 	NEXT_ARG("new_size");
-	PRINT_ULL(td->sc_args[2]);
+	PRINT_LLU(td->sc_args[2]);
 
 	NEXT_ARG("flags");
 	printflags(mremap_flags, td->sc_args[3], "MREMAP_???");
@@ -166,7 +166,7 @@ SYS_FUNC(msync)
 	printaddr(td->sc_args[0]);
 
 	NEXT_ARG("length");
-	PRINT_ULL(td->sc_args[1]);
+	PRINT_LLU(td->sc_args[1]);
 
 	NEXT_ARG("flags");
 	printflags(msync_flags, td->sc_args[2], "MS_???");
@@ -178,7 +178,7 @@ int print_mincore_mem(struct s_td *td, void *buf)
 {
 	(void) td;
 	uint8_t val = (*(uint8_t *) buf) & 1;
-	return PRINT_ULL(val);
+	return PRINT_LLU(val);
 }
 
 SYS_FUNC(mincore)
@@ -189,7 +189,7 @@ SYS_FUNC(mincore)
 		printaddr(td->sc_args[0]);
 
 		NEXT_ARG("length");
-		PRINT_ULL(td->sc_args[1]);
+		PRINT_LLU(td->sc_args[1]);
 
 		return 0;
 	}
@@ -219,7 +219,7 @@ SYS_FUNC(madvise)
 	printaddr(td->sc_args[0]);
 
 	NEXT_ARG("size");
-	PRINT_ULL(td->sc_args[1]);
+	PRINT_LLU(td->sc_args[1]);
 
 	NEXT_ARG("flags");
 	printflags(madvise_values, td->sc_args[2], "MADV_???");

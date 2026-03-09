@@ -17,9 +17,9 @@ void printshm_flags(__kernel_ulong_t flags)
 	{
 		if (flags)
 			print_or();
-		PRINT_ULL(huge_size);
+		PRINT_LLU(huge_size);
 		print_shift_left();
-		PRINT_ULL(SHM_HUGE_SHIFT);
+		PRINT_LLU(SHM_HUGE_SHIFT);
 	}
 
 	if (flags || huge_size)
@@ -33,7 +33,7 @@ SYS_FUNC(shmget)
 	printflag(ipc_key, td->sc_args[0], NULL);
 
 	NEXT_ARG("size");
-	PRINT_ULL(td->sc_args[1]);
+	PRINT_LLU(td->sc_args[1]);
 
 	NEXT_ARG("shmflg");
 	printshm_flags(td->sc_args[2]);

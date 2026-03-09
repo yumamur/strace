@@ -14,15 +14,35 @@ void printaddr(__kernel_ulong_t addr)
 		print_null();
 }
 
+int printpath(struct s_td *td, __kernel_ulong_t addr)
+{
+	if (!addr)
+	{
+		print_null();
+		return -1;
+	}
+
+	char str[MAX_PATH_LEN];
+	int  null_idx = umovestr(td, str, addr, sizeof(str) - 1);
+	if (null_idx < 0)
+		putnum(zero_extend_signed_to_ull(addr), HEX);
+	else
+		putquotstr(str, (size_t) null_idx ?: sizeof(str));
+	return null_idx;
+}
+
 int printstr(struct s_td *td, __kernel_ulong_t addr)
 {
 	if (!addr)
+	{
+		print_null();
 		return -1;
+	}
 
 	char str[MAX_PRINTSTR_LEN + 3];
 	int  null_idx = umovestr(td, str, addr, sizeof(str) - 1);
 	if (null_idx < 0)
-		putnum(addr, HEX);
+		putnum(zero_extend_signed_to_ull(addr), HEX);
 	else
 		putquotstr(str, (size_t) null_idx ?: sizeof(str));
 	return null_idx;
@@ -31,13 +51,16 @@ int printstr(struct s_td *td, __kernel_ulong_t addr)
 int printmem(struct s_td *td, __kernel_ulong_t addr, size_t n)
 {
 	if (!addr)
+	{
+		print_null();
 		return -1;
+	}
 
 	char str[MAX_PRINTSTR_LEN + 3];
 	bzero(str, sizeof(str));
 	int r = umovemem(td, str, addr, MIN(sizeof(str) - 1, n));
 	if (r < 0)
-		putnum(addr, HEX);
+		putnum(zero_extend_signed_to_ull(addr), HEX);
 	else
 		putquotmem(str, (size_t) r ?: sizeof(str));
 	return r;
@@ -46,13 +69,16 @@ int printmem(struct s_td *td, __kernel_ulong_t addr, size_t n)
 int printnstr(struct s_td *td, __kernel_ulong_t addr, size_t n)
 {
 	if (!addr)
+	{
+		print_null();
 		return -1;
+	}
 
 	char str[MAX_PRINTSTR_LEN + 3];
 	bzero(str, sizeof(str));
 	int read = umovemem(td, str, addr, MIN(sizeof(str) - 1, n));
 	if (read < 0)
-		putnum(addr, HEX);
+		putnum(zero_extend_signed_to_ull(addr), HEX);
 	else
 		putquotstr(str, (size_t) read ?: sizeof(str));
 	return read;
@@ -244,9 +270,9 @@ void printdev_t(__dev_t dev)
 
 	prints("makedev");
 	print_arg_start();
-	PRINT_X(maj);
+	PRINT_LLX(maj);
 	print_arg_sep();
-	PRINT_X(min);
+	PRINT_LLX(min);
 	print_arg_end();
 }
 

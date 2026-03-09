@@ -199,7 +199,7 @@ SYS_FUNC(rt_sigaction)
 		printsigaction(td, td->sc_args[2]);
 
 		NEXT_ARG("sigsetsize");
-		PRINT_ULL(td->sc_args[3]);
+		PRINT_LLU(td->sc_args[3]);
 
 		return SF_DECODE_COMPLETE;
 	}
@@ -222,7 +222,7 @@ SYS_FUNC(rt_sigprocmask)
 		printsigmask(td, td->sc_args[2] /* , td->sc_args[3] */);
 
 		NEXT_ARG("sigsetsize");
-		PRINT_ULL(td->sc_args[3]);
+		PRINT_LLU(td->sc_args[3]);
 
 		return SF_DECODE_COMPLETE;
 	}

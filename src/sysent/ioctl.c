@@ -16,16 +16,16 @@ void printioctl_op(unsigned int op)
 	print_struct_start();
 
 	print_struct_member("dir");
-	PRINT_ULL(dir);
+	PRINT_LLU(dir);
 
 	print_struct_member("type");
 	print_quot_char(type);
 
 	print_next_struct_member("nr");
-	PRINT_ULL(nr);
+	PRINT_LLU(nr);
 
 	print_next_struct_member("size");
-	PRINT_ULL(size);
+	PRINT_LLU(size);
 
 	print_struct_end();
 }

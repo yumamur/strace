@@ -80,7 +80,7 @@ void printmsghdr(struct s_td *td, __kernel_ulong_t addr, const unsigned int *bef
 	printiov(td, (__kernel_ulong_t) buf.msg_iov, buf.msg_iovlen, printiov_str);
 
 	print_next_struct_member("msg_iovlen");
-	PRINT_ULL(buf.msg_iovlen);
+	PRINT_LLU(buf.msg_iovlen);
 
 	print_struct_end();
 }
@@ -108,7 +108,7 @@ void decode_socket(struct s_td *td)
 	printsocket_type(td->sc_args[1]);
 
 	NEXT_ARG("protocol");
-	PRINT_ULL(td->sc_args[2]);
+	PRINT_LLU(td->sc_args[2]);
 	if (td->sc_args[0] < ARRAY_SIZE(af_proto_names))
 		print_comment(af_proto_names[td->sc_args[0]]);
 }
@@ -215,7 +215,7 @@ SYS_FUNC(sendto)
 	printnstr(td, td->sc_args[1], td->sc_args[2]);
 
 	NEXT_ARG("size");
-	PRINT_ULL(td->sc_args[2]);
+	PRINT_LLU(td->sc_args[2]);
 
 	NEXT_ARG("flags");
 	printflags(msg_flags, td->sc_args[3], "MSG_???");
@@ -250,7 +250,7 @@ SYS_FUNC(recvfrom)
 			printnstr(td, td->sc_args[1], td->sc_args[2]);
 
 		NEXT_ARG("size");
-		PRINT_ULL(td->sc_args[2]);
+		PRINT_LLU(td->sc_args[2]);
 
 		NEXT_ARG("flags");
 		printflags(msg_flags, td->sc_args[3], "MSG_???");

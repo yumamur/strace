@@ -19,16 +19,19 @@
 #  define MAX_PRINTSTR_LEN 32
 #endif
 
+#define MAX_PATH_LEN 4096
+
 #define FIRST_ARG(argname) TPUTS(EXTEND_ARGNAME(argname))
 #define NEXT_ARG(argname)  TPUTS(", " EXTEND_ARGNAME(argname))
 
-#define PRINT_ULL(num) fprintf(FT_OUTFILE, "%llu", zero_extend_signed_to_ull(num))
+#define PRINT_LLU(num) fprintf(FT_OUTFILE, "%llu", zero_extend_signed_to_ull(num))
 #define PRINT_LL(num)  fprintf(FT_OUTFILE, "%lld", zero_extend_signed_to_ll(num))
 #define PRINT_LD(num)  fprintf(FT_OUTFILE, "%ld", zero_extend_signed_to_l(num))
 #define PRINT_LU(num)  fprintf(FT_OUTFILE, "%lu", zero_extend_signed_to_ul(num))
 #define PRINT_U(num)   fprintf(FT_OUTFILE, "%u", (unsigned) num)
 #define PRINT_D(num)   fprintf(FT_OUTFILE, "%d", (int) num)
-#define PRINT_X(num)   fprintf(FT_OUTFILE, "%#llx", zero_extend_signed_to_ull(num))
+#define PRINT_LX(num)  fprintf(FT_OUTFILE, "%#lx", zero_extend_signed_to_ll(num))
+#define PRINT_LLX(num) fprintf(FT_OUTFILE, "%#llx", zero_extend_signed_to_ull(num))
 
 #define FETCH_PRINT_F_NAME(name_) printnum_addr_##name_
 #define FETCH_PRINT_F_DEC(name_) \
@@ -67,6 +70,7 @@ struct s_td;
 struct timespec;
 struct timeval;
 struct itimerval;
+struct timezone;
 
 typedef int (*t_printer)(struct s_td *, void *);
 
@@ -78,11 +82,10 @@ void        print_syscall_return(struct s_td *td);
 void        printaddr(__kernel_ulong_t addr);
 
 int         printargs(struct s_td *td);
+int         printpath(struct s_td *td, __kernel_ulong_t addr);
 int         printstr(struct s_td *td, __kernel_ulong_t addr);
 int         printnstr(struct s_td *td, __kernel_ulong_t addr, size_t n);
 int         printmem(struct s_td *td, __kernel_ulong_t addr, size_t n);
-
-#define printpath printstr
 
 /**
  * printer returns:
@@ -90,15 +93,18 @@ int         printmem(struct s_td *td, __kernel_ulong_t addr, size_t n);
  *   >  0  => add separator (", ") inbetween elements
  *   <  0  => stop
  */
-void        printarray(struct s_td     *td,
-					   t_printer        printer,
-					   __kernel_ulong_t start_addr,
-					   void *const      mem_addr,
-					   size_t           nmem,
-					   size_t           mem_size);
+void printarray(struct s_td     *td,
+				t_printer        printer,
+				__kernel_ulong_t start_addr,
+				void *const      mem_addr,
+				size_t           nmem,
+				size_t           mem_size);
 
-int         printflag(const t_xlat *xlat, uint64_t flag, const char *dflt);
-int         printflags(const t_xlat *xlat, uint64_t flags, const char *dflt);
+int  printflag(const t_xlat *xlat, uint64_t flag, const char *dflt);
+int  printflags(const t_xlat *xlat, uint64_t flags, const char *dflt);
+
+#define printflag_indexed(xlat, flag, dflt) \
+	flag < ARRAY_SIZE(xlat) && xlat[flag] ? TPUTS(xlat[flag]) : TPUTS(dflt)
 
 const char *snprintflags(char         *dst,
 						 size_t        n,
@@ -121,9 +127,15 @@ void        printtime(unsigned long sec, unsigned long nsec);
 void        printtimespec_struct(struct timespec *pt);
 void        printitimerval_struct(struct itimerval *pt);
 void        printtimeval_struct(struct timeval *pt);
+void        printtimezone_struct(struct timezone *pt);
 void        printitimerval(struct s_td *td, __kernel_ulong_t addr);
 void        printtimeval(struct s_td *td, __kernel_ulong_t addr);
 void        printtimespec(struct s_td *td, __kernel_ulong_t addr);
+void        printtimezone(struct s_td *td, __kernel_ulong_t addr);
+
+void        printrusage(struct s_td *td, __kernel_ulong_t addr);
+void        printrlimit(struct s_td *td, __kernel_ulong_t addr);
+
 void        printkey_t(int32_t key);
 
 int __attribute__((format(printf, 1, 2)))

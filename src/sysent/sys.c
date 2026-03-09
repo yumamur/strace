@@ -1,5 +1,8 @@
 #include "../ft_print.h"
 #include "../ft_utils.h"
+#include "sys.xlat.h"
+#include <sys/sysinfo.h>
+#include <sys/times.h>
 #include <sys/utsname.h>
 
 SYS_FUNC(newuname)
@@ -36,4 +39,148 @@ SYS_FUNC(newuname)
 		print_struct_end();
 	}
 	return SF_DECODE_COMPLETE;
+}
+
+SYS_FUNC(umask)
+{
+	FIRST_ARG("mask");
+	printumode(td->sc_args[0]);
+
+	return SF_DECODE_COMPLETE;
+}
+
+void printrlimit(struct s_td *td, __kernel_ulong_t addr)
+{
+	struct rlimit buf = {};
+	if (umovemem(td, &buf, addr, sizeof(buf)) < 0)
+		printaddr(addr);
+	else
+	{
+		print_struct_start();
+		PRINT_MEMBER(&buf, rlim_cur, PRINT_LU);
+		print_struct_member_sep();
+		PRINT_MEMBER(&buf, rlim_max, PRINT_LU);
+		print_struct_end();
+	}
+}
+
+SYS_FUNC(getrlimit)
+{
+	if (entering(*td))
+	{
+		FIRST_ARG("resource");
+		printflag_indexed(rlimit_resources, td->sc_args[0], "RLIMIT_???");
+
+		return 0;
+	}
+	else
+	{
+		NEXT_ARG("rlim");
+		if (td->sc_err)
+			printaddr(td->sc_args[1]);
+		else
+			printrlimit(td, td->sc_args[1]);
+
+		return SF_DECODE_COMPLETE;
+	}
+}
+
+SYS_FUNC(getrusage)
+{
+	if (entering(*td))
+	{
+		FIRST_ARG("who");
+		printflag(rusage_who, td->sc_args[0], "RUSAGE_???");
+
+		return 0;
+	}
+	else
+	{
+		NEXT_ARG("rusage");
+		if (td->sc_err)
+			printaddr(td->sc_args[1]);
+		else
+			printrusage(td, td->sc_args[1]);
+
+		return SF_DECODE_COMPLETE;
+	}
+}
+
+void printsysinfo(struct s_td *td, __kernel_ulong_t addr)
+{
+	struct sysinfo buf = {};
+	if (umovemem(td, &buf, addr, sizeof(buf)) < 0)
+		printaddr(addr);
+	else
+	{
+		print_struct_start();
+		PRINT_MEMBER(&buf, uptime, PRINT_LD);
+		print_next_struct_member("loads");
+		print_arr_start();
+		PRINT_LLU(buf.loads[0]);
+		print_comment("1min");
+		print_arg_sep();
+		PRINT_LLU(buf.loads[1]);
+		print_comment("5min");
+		print_arg_sep();
+		PRINT_LLU(buf.loads[2]);
+		print_comment("15min");
+		print_arr_end();
+		print_struct_member_sep();
+		PRINT_MEMBER(&buf, totalram, PRINT_LU);
+		print_struct_member_sep();
+		PRINT_MEMBER(&buf, freeram, PRINT_LU);
+		print_struct_member_sep();
+		PRINT_MEMBER(&buf, sharedram, PRINT_LU);
+		print_struct_member_sep();
+		PRINT_MEMBER(&buf, bufferram, PRINT_LU);
+		print_struct_member_sep();
+		PRINT_MEMBER(&buf, totalswap, PRINT_LU);
+		print_struct_member_sep();
+		PRINT_MEMBER(&buf, freeswap, PRINT_LU);
+		print_struct_member_sep();
+		PRINT_MEMBER(&buf, procs, PRINT_U);
+		print_struct_end();
+	}
+}
+
+SYS_FUNC(sysinfo)
+{
+	if (exiting(*td))
+	{
+		FIRST_ARG("info");
+		printsysinfo(td, td->sc_args[0]);
+	}
+
+	return 0;
+}
+
+void printtms(struct s_td *td, __kernel_ulong_t addr)
+{
+	struct tms buf = {};
+	if (umovemem(td, &buf, addr, sizeof(buf)) < 0)
+		printaddr(addr);
+	else
+	{
+		print_struct_start();
+		PRINT_MEMBER(&buf, tms_utime, PRINT_LD);
+		print_struct_member_sep();
+		PRINT_MEMBER(&buf, tms_stime, PRINT_LD);
+		print_struct_member_sep();
+		PRINT_MEMBER(&buf, tms_cutime, PRINT_LD);
+		print_struct_member_sep();
+		PRINT_MEMBER(&buf, tms_cstime, PRINT_LD);
+		print_struct_end();
+	}
+}
+
+SYS_FUNC(times)
+{
+	if (exiting(*td))
+	{
+		FIRST_ARG("tms");
+		printtms(td, td->sc_args[0]);
+	}
+
+	return 0;
 }

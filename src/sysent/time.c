@@ -51,6 +51,15 @@ void printitimerval_struct(struct itimerval *pt)
 	print_struct_end();
 }
 
+void printtimezone_struct(struct timezone *pt)
+{
+	print_struct_start();
+	PRINT_MEMBER(pt, tz_minuteswest, PRINT_D);
+	print_struct_member_sep();
+	PRINT_MEMBER(pt, tz_dsttime, PRINT_D);
+	print_struct_end();
+}
+
 void printitimerval(struct s_td *td, __kernel_ulong_t addr)
 {
 	struct itimerval buf = {};
@@ -82,6 +91,17 @@ void printtimespec(struct s_td *td, __kernel_ulong_t addr)
 		return;
 	}
 	printtimespec_struct(&buf);
+}
+
+void printtimezone(struct s_td *td, __kernel_ulong_t addr)
+{
+	struct timezone buf = {};
+	if (umovemem(td, &buf, addr, sizeof(buf)) != sizeof(buf))
+	{
+		printaddr(addr);
+		return;
+	}
+	printtimezone_struct(&buf);
 }
 
 SYS_FUNC(nanosleep)
@@ -139,6 +159,21 @@ SYS_FUNC(setitimer)
 	{
 		NEXT_ARG("old_value");
 		printitimerval(td, td->sc_args[2]);
+	}
+	return 0;
+}
+
+SYS_FUNC(gettimeofday)
+{
+	if (exiting(*td))
+	{
+		FIRST_ARG("tv");
+		printtimeval(td, td->sc_args[0]);
+
+		NEXT_ARG("tz");
+		printtimezone(td, td->sc_args[1]);
+
+		return SF_DECODE_COMPLETE;
 	}
 	return 0;
 }

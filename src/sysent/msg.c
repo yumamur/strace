@@ -44,18 +44,18 @@ void printmsqid_ds(struct s_td *td, __kernel_ulong_t addr, unsigned int op)
 	if (op == IPC_SET)
 	{
 		print_struct_member_sep();
-		PRINT_MEMBER(&ds, msg_qbytes, PRINT_ULL);
+		PRINT_MEMBER(&ds, msg_qbytes, PRINT_LLU);
 	}
 	else
 	{
 		print_struct_member_sep();
-		PRINT_MEMBER(&ds, msg_stime, PRINT_ULL);
+		PRINT_MEMBER(&ds, msg_stime, PRINT_LLU);
 		print_struct_member_sep();
-		PRINT_MEMBER(&ds, msg_rtime, PRINT_ULL);
+		PRINT_MEMBER(&ds, msg_rtime, PRINT_LLU);
 		print_struct_member_sep();
-		PRINT_MEMBER(&ds, msg_ctime, PRINT_ULL);
+		PRINT_MEMBER(&ds, msg_ctime, PRINT_LLU);
 		print_struct_member_sep();
-		PRINT_MEMBER(&ds, msg_qnum, PRINT_ULL);
+		PRINT_MEMBER(&ds, msg_qnum, PRINT_LLU);
 		print_struct_member_sep();
 		PRINT_MEMBER(&ds, msg_lspid, PRINT_D);
 		print_struct_member_sep();
@@ -111,7 +111,7 @@ SYS_FUNC(msgrcv)
 		printmsgbuf(td, td->sc_args[1], td->sc_args[2]);
 
 		NEXT_ARG("msgsz");
-		PRINT_ULL(td->sc_args[2]);
+		PRINT_LLU(td->sc_args[2]);
 
 		NEXT_ARG("msgtyp");
 		if (current_klongsize < sizeof(long))

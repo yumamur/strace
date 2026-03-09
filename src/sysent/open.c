@@ -1,7 +1,6 @@
 #include "../ft_common.h"
 #include "../ft_print.h"
 #include "open.xlat.h"
-#include <linux/fcntl.h>
 #include <string.h>
 
 void print_open_flags(unsigned int flags)
@@ -111,6 +110,75 @@ SYS_FUNC(close)
 {
 	FIRST_ARG("fd");
 	printfd(td->sc_args[0]);
+
+	return SF_DECODE_COMPLETE;
+}
+
+SYS_FUNC(truncate)
+{
+	FIRST_ARG("path");
+	printpath(td, td->sc_args[0]);
+
+	NEXT_ARG("length");
+	PRINT_LL(td->sc_args[1]);
+
+	return SF_DECODE_COMPLETE;
+}
+
+SYS_FUNC(ftruncate)
+{
+	FIRST_ARG("fd");
+	printfd(td->sc_args[0]);
+
+	NEXT_ARG("length");
+	PRINT_LL(td->sc_args[1]);
+
+	return SF_DECODE_COMPLETE;
+}
+
+SYS_FUNC(chdir)
+{
+	FIRST_ARG("path");
+	printpath(td, td->sc_args[0]);
+
+	return SF_DECODE_COMPLETE;
+}
+
+SYS_FUNC(fchmod)
+{
+	FIRST_ARG("fd");
+	printfd(td->sc_args[0]);
+
+	NEXT_ARG("mode");
+	printumode(td->sc_args[1]);
+
+	return SF_DECODE_COMPLETE;
+}
+
+SYS_FUNC(chown)
+{
+	FIRST_ARG("pathname");
+	printpath(td, td->sc_args[0]);
+
+	NEXT_ARG("owner");
+	PRINT_U(td->sc_args[1]);
+
+	NEXT_ARG("group");
+	PRINT_U(td->sc_args[2]);
+
+	return SF_DECODE_COMPLETE;
+}
+
+SYS_FUNC(fchown)
+{
+	FIRST_ARG("fd");
+	printfd(td->sc_args[0]);
+
+	NEXT_ARG("owner");
+	PRINT_U(td->sc_args[1]);
+
+	NEXT_ARG("group");
+	PRINT_U(td->sc_args[2]);
 
 	return SF_DECODE_COMPLETE;
 }

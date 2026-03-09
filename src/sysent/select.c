@@ -110,7 +110,7 @@ SYS_FUNC(poll)
 			sizeof(buf));
 
 		NEXT_ARG("nfds");
-		PRINT_ULL(td->sc_args[1]);
+		PRINT_LLU(td->sc_args[1]);
 
 		NEXT_ARG("timeout");
 		PRINT_LL(td->sc_args[2]);
@@ -240,7 +240,7 @@ SYS_FUNC(ppoll)
 			sizeof(buf));
 
 		NEXT_ARG("nfds");
-		PRINT_ULL(td->sc_args[1]);
+		PRINT_LLU(td->sc_args[1]);
 
 		NEXT_ARG("timeout");
 		printtimeval(td, td->sc_args[2]);
