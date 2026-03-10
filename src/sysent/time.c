@@ -27,36 +27,36 @@ void printtime(unsigned long sec, unsigned long nsec)
 void printtimespec_struct(struct timespec *pt)
 {
 	print_struct_start();
-	PRINT_MEMBER(pt, tv_sec, PRINT_LL);
+	PRINT_MEMBER(*pt, tv_sec, PRINT_LL);
 	print_struct_member_sep();
-	PRINT_MEMBER(pt, tv_nsec, PRINT_LL);
+	PRINT_MEMBER(*pt, tv_nsec, PRINT_LL);
 	print_struct_end();
 }
 
 void printtimeval_struct(struct timeval *pt)
 {
 	print_struct_start();
-	PRINT_MEMBER(pt, tv_sec, PRINT_LL);
+	PRINT_MEMBER(*pt, tv_sec, PRINT_LL);
 	print_struct_member_sep();
-	PRINT_MEMBER(pt, tv_usec, PRINT_LL);
+	PRINT_MEMBER(*pt, tv_usec, PRINT_LL);
 	print_struct_end();
 }
 
 void printitimerval_struct(struct itimerval *pt)
 {
 	print_struct_start();
-	PRINT_MEMBER_ADDR(pt, it_interval, printtimeval_struct);
+	PRINT_MEMBER_ADDR(*pt, it_interval, printtimeval_struct);
 	print_struct_member_sep();
-	PRINT_MEMBER_ADDR(pt, it_value, printtimeval_struct);
+	PRINT_MEMBER_ADDR(*pt, it_value, printtimeval_struct);
 	print_struct_end();
 }
 
 void printtimezone_struct(struct timezone *pt)
 {
 	print_struct_start();
-	PRINT_MEMBER(pt, tz_minuteswest, PRINT_D);
+	PRINT_MEMBER(*pt, tz_minuteswest, PRINT_D);
 	print_struct_member_sep();
-	PRINT_MEMBER(pt, tz_dsttime, PRINT_D);
+	PRINT_MEMBER(*pt, tz_dsttime, PRINT_D);
 	print_struct_end();
 }
 

@@ -14,13 +14,13 @@ void printsiginfo(struct s_td *td, __kernel_ulong_t addr)
 
 	print_struct_start();
 
-	PRINT_MEMBER(&si, si_signo, PRINT_D);
+	PRINT_MEMBER(si, si_signo, PRINT_D);
 	print_struct_member_sep();
-	PRINT_MEMBER(&si, si_code, PRINT_D);
+	PRINT_MEMBER(si, si_code, PRINT_D);
 	if (si.si_errno)
 	{
 		print_struct_member_sep();
-		PRINT_MEMBER(&si, si_errno, PRINT_D);
+		PRINT_MEMBER(si, si_errno, PRINT_D);
 	}
 	// a lot of work afterwards, which this does not deserve imo
 	print_has_more();
@@ -37,33 +37,33 @@ void printrusage(struct s_td *td, __kernel_ulong_t addr)
 
 	print_struct_start();
 
-	PRINT_MEMBER_ADDR(&ru, ru_utime, printtimeval_struct);
+	PRINT_MEMBER_ADDR(ru, ru_utime, printtimeval_struct);
 	print_struct_member_sep();
-	PRINT_MEMBER_ADDR(&ru, ru_stime, printtimeval_struct);
+	PRINT_MEMBER_ADDR(ru, ru_stime, printtimeval_struct);
 	print_struct_member_sep();
 	if (is_verbose(*td))
 	{
-		PRINT_MEMBER(&ru, ru_maxrss, PRINT_LL);
+		PRINT_MEMBER(ru, ru_maxrss, PRINT_LL);
 		print_struct_member_sep();
-		PRINT_MEMBER(&ru, ru_minflt, PRINT_LL);
+		PRINT_MEMBER(ru, ru_minflt, PRINT_LL);
 		print_struct_member_sep();
-		PRINT_MEMBER(&ru, ru_majflt, PRINT_LL);
+		PRINT_MEMBER(ru, ru_majflt, PRINT_LL);
 		print_struct_member_sep();
-		PRINT_MEMBER(&ru, ru_nswap, PRINT_LL);
+		PRINT_MEMBER(ru, ru_nswap, PRINT_LL);
 		print_struct_member_sep();
-		PRINT_MEMBER(&ru, ru_inblock, PRINT_LL);
+		PRINT_MEMBER(ru, ru_inblock, PRINT_LL);
 		print_struct_member_sep();
-		PRINT_MEMBER(&ru, ru_oublock, PRINT_LL);
+		PRINT_MEMBER(ru, ru_oublock, PRINT_LL);
 		print_struct_member_sep();
-		PRINT_MEMBER(&ru, ru_msgsnd, PRINT_LL);
+		PRINT_MEMBER(ru, ru_msgsnd, PRINT_LL);
 		print_struct_member_sep();
-		PRINT_MEMBER(&ru, ru_msgrcv, PRINT_LL);
+		PRINT_MEMBER(ru, ru_msgrcv, PRINT_LL);
 		print_struct_member_sep();
-		PRINT_MEMBER(&ru, ru_nsignals, PRINT_LL);
+		PRINT_MEMBER(ru, ru_nsignals, PRINT_LL);
 		print_struct_member_sep();
-		PRINT_MEMBER(&ru, ru_nvcsw, PRINT_LL);
+		PRINT_MEMBER(ru, ru_nvcsw, PRINT_LL);
 		print_struct_member_sep();
-		PRINT_MEMBER(&ru, ru_nivcsw, PRINT_LL);
+		PRINT_MEMBER(ru, ru_nivcsw, PRINT_LL);
 	}
 	else
 		print_has_more();

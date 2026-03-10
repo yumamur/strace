@@ -8,7 +8,7 @@ void printmsgbuf(struct s_td *td, __kernel_ulong_t addr, size_t len)
 
 	print_struct_start();
 
-	PRINT_MEMBER(&mb, mtype, PRINT_D);
+	PRINT_MEMBER(mb, mtype, PRINT_D);
 	print_struct_member_sep();
 
 	if (umovemem(td, &mb, addr, sizeof(mb)) == -1)
@@ -23,11 +23,11 @@ void printipc_perm_struct(struct ipc_perm *perm)
 {
 	if (perm)
 	{
-		PRINT_MEMBER(perm, uid, PRINT_D);
+		PRINT_MEMBER(*perm, uid, PRINT_D);
 		print_struct_member_sep();
-		PRINT_MEMBER(perm, gid, PRINT_D);
+		PRINT_MEMBER(*perm, gid, PRINT_D);
 		print_struct_member_sep();
-		PRINT_MEMBER(perm, mode, printumode);
+		PRINT_MEMBER(*perm, mode, printumode);
 	}
 }
 
@@ -40,26 +40,26 @@ void printmsqid_ds(struct s_td *td, __kernel_ulong_t addr, unsigned int op)
 
 	print_struct_start();
 
-	PRINT_MEMBER_ADDR(&ds, msg_perm, printipc_perm_struct);
+	PRINT_MEMBER_ADDR(ds, msg_perm, printipc_perm_struct);
 	if (op == IPC_SET)
 	{
 		print_struct_member_sep();
-		PRINT_MEMBER(&ds, msg_qbytes, PRINT_LLU);
+		PRINT_MEMBER(ds, msg_qbytes, PRINT_LLU);
 	}
 	else
 	{
 		print_struct_member_sep();
-		PRINT_MEMBER(&ds, msg_stime, PRINT_LLU);
+		PRINT_MEMBER(ds, msg_stime, PRINT_LLU);
 		print_struct_member_sep();
-		PRINT_MEMBER(&ds, msg_rtime, PRINT_LLU);
+		PRINT_MEMBER(ds, msg_rtime, PRINT_LLU);
 		print_struct_member_sep();
-		PRINT_MEMBER(&ds, msg_ctime, PRINT_LLU);
+		PRINT_MEMBER(ds, msg_ctime, PRINT_LLU);
 		print_struct_member_sep();
-		PRINT_MEMBER(&ds, msg_qnum, PRINT_LLU);
+		PRINT_MEMBER(ds, msg_qnum, PRINT_LLU);
 		print_struct_member_sep();
-		PRINT_MEMBER(&ds, msg_lspid, PRINT_D);
+		PRINT_MEMBER(ds, msg_lspid, PRINT_D);
 		print_struct_member_sep();
-		PRINT_MEMBER(&ds, msg_lrpid, PRINT_D);
+		PRINT_MEMBER(ds, msg_lrpid, PRINT_D);
 	}
 
 	print_struct_end();
@@ -117,7 +117,7 @@ SYS_FUNC(msgrcv)
 		if (current_klongsize < sizeof(long))
 			PRINT_D(td->sc_args[3]);
 		else
-			PRINT_LD(td->sc_args[3]);
+			PRINT_L(td->sc_args[3]);
 
 		NEXT_ARG("msgflg");
 		printflags(ipc_msg_flags, td->sc_args[4], "MSG_???");

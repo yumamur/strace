@@ -23,7 +23,7 @@ void printsigset_kernel(struct s_td *td, __kernel_ulong_t addr)
 	print_struct_member("sigmask");
 	printsigmask(td, (__kernel_ulong_t) buf.sigmask);
 	print_struct_member_sep();
-	PRINT_MEMBER(&buf, sigsetsize, PRINT_LL);
+	PRINT_MEMBER(buf, sigsetsize, PRINT_LL);
 	print_struct_end();
 }
 

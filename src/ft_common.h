@@ -41,14 +41,14 @@ bool is_error_erestart(unsigned int err);
 	 sizeof(v) == sizeof(long)  ? (unsigned long) (unsigned long) (v) :  \
 								  (unsigned long) (v))
 
-#define zero_extend_signed_to_ll(v)                         \
+#define sign_extend_unsigned_to_ll(v)                       \
 	(sizeof(v) == sizeof(char)  ? (long long) (char) (v) :  \
 	 sizeof(v) == sizeof(short) ? (long long) (short) (v) : \
 	 sizeof(v) == sizeof(int)   ? (long long) (int) (v) :   \
 	 sizeof(v) == sizeof(long)  ? (long long) (long) (v) :  \
 								  (long long) (v))
 
-#define zero_extend_signed_to_l(v)                     \
+#define sign_extend_unsigned_to_l(v)                   \
 	(sizeof(v) == sizeof(char)  ? (long) (char) (v) :  \
 	 sizeof(v) == sizeof(short) ? (long) (short) (v) : \
 	 sizeof(v) == sizeof(int)   ? (long) (int) (v) :   \
@@ -106,6 +106,7 @@ typedef int (*t_logger)(struct s_td *);
 #define sys_symlink     sys_rename
 #define sys_chmod       sys_mkdir
 #define sys_lchown      sys_chown
+#define sys_setgid      sys_setuid
 
 typedef struct s_entry
 {

@@ -8,8 +8,8 @@ int printsembuf_struct(struct s_td *td, void *sbvp)
 	struct sembuf *sbp = (struct sembuf *) sbvp;
 	print_struct_start();
 
-	PRINT_MEMBER(sbp, sem_num, PRINT_U);
-	PRINT_MEMBER(sbp, sem_op, PRINT_D);
+	PRINT_MEMBER(*sbp, sem_num, PRINT_U);
+	PRINT_MEMBER(*sbp, sem_op, PRINT_D);
 	printflags(semop_flags, sbp->sem_flg, "SEM_???");
 
 	print_struct_end();

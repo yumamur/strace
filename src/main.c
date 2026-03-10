@@ -40,46 +40,25 @@ void trace_syscalls(pid_t child)
 	t_td      td = {.pid = child};
 
 	if (waitpid(child, &status, WUNTRACED) == -1)
-	{
-		perror("waitpid initial");
-		return;
-	}
+		return perror("waitpid initial");
 
 	if (!WIFSTOPPED(status))
-	{
-		perror("Child not stopped\n");
-		return;
-	}
+		return perror("Child not stopped\n");
 
 	if (ptrace(PTRACE_SEIZE, child, 0, PTRACE_O_TRACESYSGOOD | PTRACE_O_TRACEEXEC) == -1)
-	{
-		perror("ptrace seize");
-		return;
-	}
+		return perror("ptrace seize");
 
 	if (ptrace(PTRACE_INTERRUPT, child, 0, 0) == -1)
-	{
-		perror("ptrace interrupt");
-		return;
-	}
+		return perror("ptrace interrupt");
 
 	if (waitpid(child, &status, 0) == -1)
-	{
-		perror("waitpid after interrupt");
-		return;
-	}
+		return perror("waitpid after interrupt");
 
 	if (ptrace(PTRACE_SETOPTIONS, child, 0, PTRACE_O_TRACESYSGOOD | PTRACE_O_TRACEEXEC) == -1)
-	{
-		perror("ptrace setoptions");
-		return;
-	}
+		return perror("ptrace setoptions");
 
 	if (ptrace(PTRACE_SYSCALL, child, 0, 0) == -1)
-	{
-		perror("ptrace syscall");
-		return;
-	}
+		return perror("ptrace syscall");
 
 	while (1)
 	{

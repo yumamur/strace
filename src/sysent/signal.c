@@ -59,12 +59,12 @@ void printsigset_t(const uint64_t *addr)
 		if (sig >= (unsigned) SIGRTMIN && sig <= (unsigned) SIGRTMAX)
 		{
 			prints("RT_");
-			PRINT_LD(sig - SIGRTMIN);
+			PRINT_L(sig - SIGRTMIN);
 		}
 		else if (sig < ARRAY_SIZE(signal_names) && signal_names[sig])
 			prints(signal_names[sig] + 3);
 		else
-			PRINT_LD(sig);
+			PRINT_L(sig);
 	}
 
 	print_arr_end();
@@ -80,6 +80,14 @@ void printsigmask(struct s_td *td, __kernel_ulong_t addr)
 		return printaddr(addr);
 
 	printsigset_t(&buf);
+}
+
+void printsigmask_sized(struct s_td *td, __kernel_ulong_t addr, unsigned int sigsetsize)
+{
+	if (sigsetsize > sizeof(uint64_t))
+		return printaddr(addr);
+
+	printsigmask(td, addr);
 }
 
 void printsigset_struct(struct s_td *td, __kernel_ulong_t addr)

@@ -57,9 +57,9 @@ void printrlimit(struct s_td *td, __kernel_ulong_t addr)
 	else
 	{
 		print_struct_start();
-		PRINT_MEMBER(&buf, rlim_cur, PRINT_LU);
+		PRINT_MEMBER(buf, rlim_cur, PRINT_LU);
 		print_struct_member_sep();
-		PRINT_MEMBER(&buf, rlim_max, PRINT_LU);
+		PRINT_MEMBER(buf, rlim_max, PRINT_LU);
 		print_struct_end();
 	}
 }
@@ -114,7 +114,7 @@ void printsysinfo(struct s_td *td, __kernel_ulong_t addr)
 	else
 	{
 		print_struct_start();
-		PRINT_MEMBER(&buf, uptime, PRINT_LD);
+		PRINT_MEMBER(buf, uptime, PRINT_L);
 		print_next_struct_member("loads");
 		print_arr_start();
 		PRINT_LLU(buf.loads[0]);
@@ -127,19 +127,19 @@ void printsysinfo(struct s_td *td, __kernel_ulong_t addr)
 		print_comment("15min");
 		print_arr_end();
 		print_struct_member_sep();
-		PRINT_MEMBER(&buf, totalram, PRINT_LU);
+		PRINT_MEMBER(buf, totalram, PRINT_LU);
 		print_struct_member_sep();
-		PRINT_MEMBER(&buf, freeram, PRINT_LU);
+		PRINT_MEMBER(buf, freeram, PRINT_LU);
 		print_struct_member_sep();
-		PRINT_MEMBER(&buf, sharedram, PRINT_LU);
+		PRINT_MEMBER(buf, sharedram, PRINT_LU);
 		print_struct_member_sep();
-		PRINT_MEMBER(&buf, bufferram, PRINT_LU);
+		PRINT_MEMBER(buf, bufferram, PRINT_LU);
 		print_struct_member_sep();
-		PRINT_MEMBER(&buf, totalswap, PRINT_LU);
+		PRINT_MEMBER(buf, totalswap, PRINT_LU);
 		print_struct_member_sep();
-		PRINT_MEMBER(&buf, freeswap, PRINT_LU);
+		PRINT_MEMBER(buf, freeswap, PRINT_LU);
 		print_struct_member_sep();
-		PRINT_MEMBER(&buf, procs, PRINT_U);
+		PRINT_MEMBER(buf, procs, PRINT_U);
 		print_struct_end();
 	}
 }
@@ -163,13 +163,13 @@ void printtms(struct s_td *td, __kernel_ulong_t addr)
 	else
 	{
 		print_struct_start();
-		PRINT_MEMBER(&buf, tms_utime, PRINT_LD);
+		PRINT_MEMBER(buf, tms_utime, PRINT_L);
 		print_struct_member_sep();
-		PRINT_MEMBER(&buf, tms_stime, PRINT_LD);
+		PRINT_MEMBER(buf, tms_stime, PRINT_L);
 		print_struct_member_sep();
-		PRINT_MEMBER(&buf, tms_cutime, PRINT_LD);
+		PRINT_MEMBER(buf, tms_cutime, PRINT_L);
 		print_struct_member_sep();
-		PRINT_MEMBER(&buf, tms_cstime, PRINT_LD);
+		PRINT_MEMBER(buf, tms_cstime, PRINT_L);
 		print_struct_end();
 	}
 }
@@ -183,4 +183,12 @@ SYS_FUNC(times)
 	}
 
 	return 0;
+}
+
+SYS_FUNC(setuid)
+{
+	FIRST_ARG("uid");
+	PRINT_ID(td->sc_args[0]);
+
+	return SF_DECODE_COMPLETE;
 }

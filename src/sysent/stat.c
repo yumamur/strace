@@ -49,9 +49,9 @@ int fetchstat(t_td *td, __kernel_ulong_t addr, struct stat *dst)
 	dst->st_nlink = zero_extend_signed_to_ull(buf.st_nlink);
 	dst->st_uid = zero_extend_signed_to_ull(buf.st_uid);
 	dst->st_gid = zero_extend_signed_to_ull(buf.st_gid);
-	dst->st_atime = zero_extend_signed_to_l(buf.st_atime);
-	dst->st_ctime = zero_extend_signed_to_l(buf.st_ctime);
-	dst->st_mtime = zero_extend_signed_to_l(buf.st_mtime);
+	dst->st_atime = sign_extend_unsigned_to_l(buf.st_atime);
+	dst->st_ctime = sign_extend_unsigned_to_l(buf.st_ctime);
+	dst->st_mtime = sign_extend_unsigned_to_l(buf.st_mtime);
 	dst->st_atimensec = zero_extend_signed_to_ull(buf.st_atimensec);
 	dst->st_ctimensec = zero_extend_signed_to_ull(buf.st_ctimensec);
 	dst->st_mtimensec = zero_extend_signed_to_ull(buf.st_mtimensec);
@@ -68,54 +68,54 @@ void printstat(t_td *td, struct stat *statbuf)
 
 	if (is_verbose(*td))
 	{
-		PRINT_MEMBER(statbuf, st_dev, printdev_t);
+		PRINT_MEMBER(*statbuf, st_dev, printdev_t);
 		print_struct_member_sep();
-		PRINT_MEMBER(statbuf, st_ino, PRINT_LLU);
+		PRINT_MEMBER(*statbuf, st_ino, PRINT_LLU);
 		print_struct_member_sep();
 	}
-	PRINT_MEMBER(statbuf, st_mode, printmode_t);
+	PRINT_MEMBER(*statbuf, st_mode, printmode_t);
 	if (is_verbose(*td))
 	{
 		print_struct_member_sep();
-		PRINT_MEMBER(statbuf, st_nlink, PRINT_LLU);
+		PRINT_MEMBER(*statbuf, st_nlink, PRINT_LLU);
 		print_struct_member_sep();
-		PRINT_MEMBER(statbuf, st_uid, PRINT_LLU);
+		PRINT_MEMBER(*statbuf, st_uid, PRINT_LLU);
 		print_struct_member_sep();
-		PRINT_MEMBER(statbuf, st_gid, PRINT_LLU);
+		PRINT_MEMBER(*statbuf, st_gid, PRINT_LLU);
 		print_struct_member_sep();
-		PRINT_MEMBER(statbuf, st_blksize, PRINT_LLU);
+		PRINT_MEMBER(*statbuf, st_blksize, PRINT_LLU);
 		print_struct_member_sep();
-		PRINT_MEMBER(statbuf, st_blocks, PRINT_LLU);
+		PRINT_MEMBER(*statbuf, st_blocks, PRINT_LLU);
 		print_struct_member_sep();
 	}
 	if (statbuf->st_mode & (__S_IFCHR | __S_IFBLK))
 	{
-		PRINT_MEMBER(statbuf, st_rdev, printdev_t);
+		PRINT_MEMBER(*statbuf, st_rdev, printdev_t);
 	}
 	else
 	{
-		PRINT_MEMBER(statbuf, st_size, PRINT_LLU);
+		PRINT_MEMBER(*statbuf, st_size, PRINT_LLU);
 	}
 
 	if (is_verbose(*td))
 	{
 		print_struct_member_sep();
-		PRINT_MEMBER(statbuf, st_atime, PRINT_LLU);
+		PRINT_MEMBER(*statbuf, st_atime, PRINT_LLU);
 		printtime(statbuf->st_atime, statbuf->st_atimensec);
 		print_struct_member_sep();
-		PRINT_MEMBER(statbuf, st_atimensec, PRINT_LLU);
+		PRINT_MEMBER(*statbuf, st_atimensec, PRINT_LLU);
 
 		print_struct_member_sep();
-		PRINT_MEMBER(statbuf, st_mtime, PRINT_LLU);
+		PRINT_MEMBER(*statbuf, st_mtime, PRINT_LLU);
 		printtime(statbuf->st_mtime, statbuf->st_mtimensec);
 		print_struct_member_sep();
-		PRINT_MEMBER(statbuf, st_mtimensec, PRINT_LLU);
+		PRINT_MEMBER(*statbuf, st_mtimensec, PRINT_LLU);
 
 		print_struct_member_sep();
-		PRINT_MEMBER(statbuf, st_ctime, PRINT_LLU);
+		PRINT_MEMBER(*statbuf, st_ctime, PRINT_LLU);
 		printtime(statbuf->st_ctime, statbuf->st_ctimensec);
 		print_struct_member_sep();
-		PRINT_MEMBER(statbuf, st_ctimensec, PRINT_LLU);
+		PRINT_MEMBER(*statbuf, st_ctimensec, PRINT_LLU);
 	}
 
 	if (!is_verbose(*td))

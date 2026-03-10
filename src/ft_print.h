@@ -25,13 +25,19 @@
 #define NEXT_ARG(argname)  TPUTS(", " EXTEND_ARGNAME(argname))
 
 #define PRINT_LLU(num) fprintf(FT_OUTFILE, "%llu", zero_extend_signed_to_ull(num))
-#define PRINT_LL(num)  fprintf(FT_OUTFILE, "%lld", zero_extend_signed_to_ll(num))
-#define PRINT_LD(num)  fprintf(FT_OUTFILE, "%ld", zero_extend_signed_to_l(num))
+#define PRINT_LL(num)  fprintf(FT_OUTFILE, "%lld", sign_extend_unsigned_to_ll(num))
+#define PRINT_L(num)   fprintf(FT_OUTFILE, "%ld", sign_extend_unsigned_to_l(num))
 #define PRINT_LU(num)  fprintf(FT_OUTFILE, "%lu", zero_extend_signed_to_ul(num))
 #define PRINT_U(num)   fprintf(FT_OUTFILE, "%u", (unsigned) num)
 #define PRINT_D(num)   fprintf(FT_OUTFILE, "%d", (int) num)
-#define PRINT_LX(num)  fprintf(FT_OUTFILE, "%#lx", zero_extend_signed_to_ll(num))
+#define PRINT_LX(num)  fprintf(FT_OUTFILE, "%#lx", sign_extend_unsigned_to_ll(num))
 #define PRINT_LLX(num) fprintf(FT_OUTFILE, "%#llx", zero_extend_signed_to_ull(num))
+
+#define PRINT_ID(num)                            \
+	if (sign_extend_unsigned_to_ll(num) == -1LL) \
+		PRINT_D(-1);                             \
+	else                                         \
+		PRINT_U(num);
 
 #define FETCH_PRINT_F_NAME(name_) printnum_addr_##name_
 #define FETCH_PRINT_F_DEC(name_) \
@@ -117,7 +123,9 @@ void        printdirfd(struct s_td *td, int fd);
 void        printfd(int fd);
 void        printdev_t(__dev_t dev);
 void        printsigmask(struct s_td *td, __kernel_ulong_t set);
+void        printsigmask_sized(struct s_td *td, __kernel_ulong_t addr, unsigned int sigsetsize);
 void        printsigset_t(const uint64_t *addr);
+void        printsiginfo(struct s_td *td, __kernel_ulong_t addr);
 void        printsignal(int signum);
 
 void        printiov(struct s_td *td, __kernel_ulong_t iovp, size_t iovcn, t_printer);
@@ -206,15 +214,31 @@ FT_SIVP_(val_change, " => ")
 
 #define PRINT_MEMBER(holder_, field_, fun_) \
 	print_struct_member(#field_);           \
-	fun_((holder_)->field_)
+	fun_((holder_).field_)
 
 #define PRINT_MEMBER_ADDR(holder_, field_, fun_) \
 	print_struct_member(#field_);                \
-	fun_(&(holder_)->field_)
+	fun_(&(holder_).field_)
 
 #define PRINT_MEMBER_STRQ(holder_, field_) \
 	print_struct_member(#field_);          \
 	putquotstr((holder_).field_, sizeof((holder_).field_))
+
+#define PRINT_MEMBER_FLAG(holder_, field_, xlat_, dflt_) \
+	print_struct_member(#field_);                        \
+	printflag(xlat_, (holder_).field_, dflt_)
+
+#define PRINT_MEMBER_FLAGS(holder_, field_, xlat_, dflt_) \
+	print_struct_member(#field_);                         \
+	printflags(xlat_, (holder_).field_, dflt_)
+
+#define PRINT_MEMBER_D(holder_, field_)   PRINT_MEMBER(holder_, field_, PRINT_D)
+#define PRINT_MEMBER_U(holder_, field_)   PRINT_MEMBER(holder_, field_, PRINT_U)
+#define PRINT_MEMBER_L(holder_, field_)   PRINT_MEMBER(holder_, field_, PRINT_L)
+#define PRINT_MEMBER_LU(holder_, field_)  PRINT_MEMBER(holder_, field_, PRINT_LU)
+#define PRINT_MEMBER_LX(holder_, field_)  PRINT_MEMBER(holder_, field_, PRINT_LX)
+#define PRINT_MEMBER_LLU(holder_, field_) PRINT_MEMBER(holder_, field_, PRINT_LLU)
+#define PRINT_MEMBER_LLX(holder_, field_) PRINT_MEMBER(holder_, field_, PRINT_LLX)
 
 #undef FT_SIVP_
 
