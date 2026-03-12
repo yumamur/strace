@@ -1,3 +1,4 @@
+#include "ft_print.h"
 #include "ft_utils.h"
 #include <stdlib.h>
 
@@ -20,6 +21,16 @@ size_t count_set_bits(void *addr, size_t size)
 	}
 
 	return count;
+}
+
+int umovemem_or_printaddr(struct s_td *const td, void *laddr, __kernel_ulong_t taddr, size_t len)
+{
+	if (umovemem(td, laddr, taddr, len) < 0)
+	{
+		printaddr(taddr);
+		return -1;
+	}
+	return 0;
 }
 
 // struct s_map *map_create(unsigned cap, unsigned key_size, unsigned val_size)

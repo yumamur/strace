@@ -5,29 +5,6 @@
 
 #include "exit.xlat.h"
 
-void printsiginfo(struct s_td *td, __kernel_ulong_t addr)
-{
-	siginfo_t si;
-
-	if (umovemem(td, &si, addr, sizeof(siginfo_t)) < 0)
-		printaddr(addr);
-
-	print_struct_start();
-
-	PRINT_MEMBER(si, si_signo, PRINT_D);
-	print_struct_member_sep();
-	PRINT_MEMBER(si, si_code, PRINT_D);
-	if (si.si_errno)
-	{
-		print_struct_member_sep();
-		PRINT_MEMBER(si, si_errno, PRINT_D);
-	}
-	// a lot of work afterwards, which this does not deserve imo
-	print_has_more();
-
-	print_struct_end();
-}
-
 void printrusage(struct s_td *td, __kernel_ulong_t addr)
 {
 	struct rusage ru;

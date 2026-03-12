@@ -192,3 +192,122 @@ SYS_FUNC(setuid)
 
 	return SF_DECODE_COMPLETE;
 }
+
+SYS_FUNC(setpgid)
+{
+	FIRST_ARG("pid");
+	PRINT_ID(td->sc_args[0]);
+
+	FIRST_ARG("pgid");
+	PRINT_ID(td->sc_args[1]);
+
+	return SF_DECODE_COMPLETE;
+}
+
+SYS_FUNC(setreuid)
+{
+	FIRST_ARG("ruid");
+	PRINT_ID(td->sc_args[0]);
+
+	NEXT_ARG("euid");
+	PRINT_ID(td->sc_args[1]);
+
+	return SF_DECODE_COMPLETE;
+}
+
+SYS_FUNC(setresuid)
+{
+	FIRST_ARG("ruid");
+	PRINT_ID(td->sc_args[0]);
+
+	NEXT_ARG("euid");
+	PRINT_ID(td->sc_args[1]);
+
+	NEXT_ARG("suid");
+	PRINT_ID(td->sc_args[2]);
+
+	return SF_DECODE_COMPLETE;
+}
+
+void umove_print_id(struct s_td *td, __kernel_ulong_t addr)
+{
+	__uid_t buf = 0;
+
+	if (umovemem(td, &buf, addr, sizeof(buf)) < 0)
+		return printaddr(addr);
+	print_arg_start();
+	PRINT_ID(buf);
+	print_arg_end();
+}
+
+SYS_FUNC(getresuid)
+{
+	if (exiting(*td))
+	{
+		FIRST_ARG("ruidp");
+		umove_print_id(td, td->sc_args[0]);
+
+		NEXT_ARG("euidp");
+		umove_print_id(td, td->sc_args[1]);
+
+		NEXT_ARG("suidp");
+		umove_print_id(td, td->sc_args[2]);
+	}
+
+	return 0;
+}
+
+SYS_FUNC(setresgid)
+{
+	FIRST_ARG("rgid");
+	PRINT_ID(td->sc_args[0]);
+
+	NEXT_ARG("egid");
+	PRINT_ID(td->sc_args[1]);
+
+	NEXT_ARG("sgid");
+	PRINT_ID(td->sc_args[2]);
+
+	return SF_DECODE_COMPLETE;
+}
+
+SYS_FUNC(getresgid)
+{
+	if (exiting(*td))
+	{
+		FIRST_ARG("rgidp");
+		umove_print_id(td, td->sc_args[0]);
+
+		NEXT_ARG("egidp");
+		umove_print_id(td, td->sc_args[1]);
+
+		NEXT_ARG("sgidp");
+		umove_print_id(td, td->sc_args[2]);
+	}
+
+	return 0;
+}
+
+SYS_FUNC(getpgid)
+{
+	FIRST_ARG("pid");
+	PRINT_D(td->sc_args[0]);
+
+	return SF_DECODE_COMPLETE;
+}
+
+SYS_FUNC(setfsuid)
+{
+	FIRST_ARG("uid");
+	PRINT_ID(td->sc_args[0]);
+
+	return SF_DECODE_COMPLETE;
+}
+
+SYS_FUNC(setfsgid)
+{
+	FIRST_ARG("gid");
+	PRINT_ID(td->sc_args[0]);
+
+	return SF_DECODE_COMPLETE;
+}

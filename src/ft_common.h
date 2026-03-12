@@ -100,13 +100,15 @@ typedef int (*t_logger)(struct s_td *);
 #define sys_fdatasync   sys_close
 #define sys_fchdir      sys_close
 #define sys_rmdir       sys_chdir
-#define sys_creat       sys_mkdir
-#define sys_link        sys_rename
 #define sys_unlink      sys_chdir
+#define sys_link        sys_rename
 #define sys_symlink     sys_rename
+#define sys_creat       sys_mkdir
 #define sys_chmod       sys_mkdir
 #define sys_lchown      sys_chown
 #define sys_setgid      sys_setuid
+#define sys_setreuid    sys_setregid
+#define sys_getsid		sys_getpgid
 
 typedef struct s_entry
 {
@@ -130,7 +132,7 @@ enum e_abi
 
 #define MAX_ARGS 6
 
-typedef int (*free_carry_func)(void *);
+typedef void (*free_carry_func)(void *);
 
 typedef struct s_td
 {

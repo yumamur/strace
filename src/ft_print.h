@@ -86,6 +86,7 @@ void        printkillsig(int sig);
 void        print_syscall_enter(const char *name);
 void        print_syscall_return(struct s_td *td);
 void        printaddr(__kernel_ulong_t addr);
+const char *sprintaddr(__kernel_ulong_t addr);
 
 int         printargs(struct s_td *td);
 int         printpath(struct s_td *td, __kernel_ulong_t addr);
@@ -131,14 +132,23 @@ void        printsignal(int signum);
 void        printiov(struct s_td *td, __kernel_ulong_t iovp, size_t iovcn, t_printer);
 int         printiov_str(struct s_td *td, void *iovp);
 
-void        printtime(unsigned long sec, unsigned long nsec);
+const char *sprinttime(unsigned long sec, unsigned long nsec);
 void        printtimespec_struct(struct timespec *pt);
+const char *sprinttimespec_struct(struct timespec *pt);
+void        printtime(unsigned long sec, unsigned long nsec);
+const char *sprintitimerval_struct(struct itimerval *pt);
 void        printitimerval_struct(struct itimerval *pt);
+const char *sprinttimeval_struct(struct timeval *pt);
 void        printtimeval_struct(struct timeval *pt);
+const char *sprinttimezone_struct(struct timezone *pt);
 void        printtimezone_struct(struct timezone *pt);
+const char *sprintitimerval(struct s_td *td, __kernel_ulong_t addr);
 void        printitimerval(struct s_td *td, __kernel_ulong_t addr);
+const char *sprinttimeval(struct s_td *td, __kernel_ulong_t addr);
 void        printtimeval(struct s_td *td, __kernel_ulong_t addr);
+const char *sprinttimespec(struct s_td *td, __kernel_ulong_t addr);
 void        printtimespec(struct s_td *td, __kernel_ulong_t addr);
+const char *sprinttimezone(struct s_td *td, __kernel_ulong_t addr);
 void        printtimezone(struct s_td *td, __kernel_ulong_t addr);
 
 void        printrusage(struct s_td *td, __kernel_ulong_t addr);
@@ -219,6 +229,10 @@ FT_SIVP_(val_change, " => ")
 #define PRINT_MEMBER_ADDR(holder_, field_, fun_) \
 	print_struct_member(#field_);                \
 	fun_(&(holder_).field_)
+
+#define PRINT_MEMBER_PTR(holder_, field_) \
+	print_struct_member(#field_);         \
+	printaddr((unsigned long) (holder_).field_)
 
 #define PRINT_MEMBER_STRQ(holder_, field_) \
 	print_struct_member(#field_);          \

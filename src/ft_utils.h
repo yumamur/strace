@@ -10,9 +10,10 @@ unsigned long ft_getpagesize(void);
 
 struct s_td;
 
-__ssize_t    umovestr(struct s_td *const td, char *laddr, __kernel_ulong_t addr, size_t len);
-__ssize_t    umovemem(struct s_td *const td, void *laddr, __kernel_ulong_t taddr, size_t len);
-size_t       count_set_bits(void *addr, size_t size);
+__ssize_t umovestr(struct s_td *const td, char *laddr, __kernel_ulong_t addr, size_t len);
+__ssize_t umovemem(struct s_td *const td, void *laddr, __kernel_ulong_t taddr, size_t len);
+size_t    count_set_bits(void *addr, size_t size);
+int       umovemem_or_printaddr(struct s_td *const td, void *laddr, __kernel_ulong_t taddr, size_t len);
 
 // typedef void (*f_map_ent_free)(void *);
 

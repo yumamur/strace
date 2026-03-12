@@ -6,7 +6,9 @@
 #endif
 #define _GNU_SOURCE
 #include "xlat.h"
+#include <asm-generic/siginfo.h>
 #include <asm/signal.h>
+#include <linux/signal.h>
 
 #ifndef SA_RESTORER
 #  define SA_RESTORER 0x04000000
@@ -53,6 +55,20 @@ const char *signal_names[] = {
 	XLAT_INDEXED(SIGRTMIN),
 };
 
+const t_xlat_data siginfo_codes_data[] = {
+	XLAT(SI_USER),
+	XLAT(SI_KERNEL),
+	XLAT(SI_QUEUE),
+	XLAT(SI_TIMER),
+	XLAT(SI_MESGQ),
+	XLAT(SI_ASYNCIO),
+	XLAT(SI_SIGIO),
+	XLAT(SI_TKILL),
+	XLAT(SI_DETHREAD),
+	XLAT(SI_ASYNCNL),
+};
+WXLAT(siginfo_codes);
+
 const t_xlat_data sigaction_sa_flags_data[] = {
 	XLAT(SA_NOCLDSTOP),
 	XLAT(SA_NOCLDWAIT),
@@ -86,5 +102,12 @@ const t_xlat_data sigproc_how_data[] = {
 	XLAT(SIG_SETMASK),
 };
 WXLAT(sigproc_how);
+
+const t_xlat_data signalstack_flags_data[] = {
+	XLAT(SS_ONSTACK),
+	XLAT(SS_DISABLE),
+	XLAT(SS_AUTODISARM),
+};
+WXLAT(signalstack_flags);
 
 #endif

@@ -14,6 +14,13 @@ void printaddr(__kernel_ulong_t addr)
 		print_null();
 }
 
+const char *sprintaddr(__kernel_ulong_t addr)
+{
+	static char buf[2 + sizeof(__kernel_ulong_t) * 2 + 1];
+	inprint(buf, "%#llx", zero_extend_signed_to_ull(addr));
+	return buf;
+}
+
 int printpath(struct s_td *td, __kernel_ulong_t addr)
 {
 	if (!addr)
@@ -297,14 +304,16 @@ void printarray(struct s_td     *td,
 				size_t           nmem,
 				size_t           mem_size)
 {
+	if (!start_addr)
+		return print_null();
+
 	const size_t           size = nmem * mem_size;
 	const __kernel_ulong_t end_addr = start_addr + size;
 
 	if (end_addr < start_addr || size / mem_size != nmem)
 	{
 		print_debug("size overflow");
-		printaddr(start_addr);
-		return;
+		return printaddr(start_addr);
 	}
 	__kernel_ulong_t cur_addr = start_addr;
 	int              put_sep = 0;

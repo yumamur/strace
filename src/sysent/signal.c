@@ -4,10 +4,66 @@
 
 #include "../regs.h"
 
+#include <string.h>
+
+// including 'stdlib.h' for free() breaks some sigset_t related tweaks, so just declare it here
+extern void free(void *ptr);
+
 #define SA_MASK_SIZE (NSIG / sizeof(unsigned long int))
 #ifndef _NSIG
 #  define _NSIG 8 * sizeof(unsigned long int)
 #endif
+
+void printsiginfo(struct s_td *td, __kernel_ulong_t addr)
+{
+	siginfo_t si;
+
+	if (umovemem(td, &si, addr, sizeof(siginfo_t)) < 0)
+		printaddr(addr);
+
+	print_struct_start();
+
+	PRINT_MEMBER(si, si_signo, PRINT_D);
+
+	print_struct_member_sep();
+	if (SI_FROMUSER(&si))
+	{
+		print_struct_member("si_code");
+		printflag(siginfo_codes, si.si_code, "SI_???");
+	}
+	else
+		PRINT_MEMBER(si, si_code, PRINT_D);
+
+	if (si.si_errno)
+	{
+		print_struct_member_sep();
+		PRINT_MEMBER(si, si_errno, PRINT_D);
+	}
+
+	if (si.si_code != SI_SIGIO && si.si_code != SI_TIMER)
+	{
+		print_struct_member_sep();
+		PRINT_MEMBER(si, si_pid, PRINT_D);
+		print_struct_member_sep();
+		PRINT_MEMBER(si, si_uid, PRINT_D);
+	}
+	else if (si.si_code == SI_TIMER)
+	{
+		print_struct_member_sep();
+		PRINT_MEMBER(si, si_tid, PRINT_D);
+		print_struct_member_sep();
+		PRINT_MEMBER(si, si_overrun, PRINT_D);
+	}
+	else if (si.si_code == SI_SIGIO)
+	{
+		print_struct_member_sep();
+		PRINT_MEMBER(si, si_band, PRINT_LU);
+	}
+	// a lot of work afterwards, which this does not deserve imo
+	print_has_more();
+
+	print_struct_end();
+}
 
 void printsignal(int signum)
 {
@@ -245,4 +301,113 @@ SYS_FUNC(kill)
 	printsignal(td->sc_args[1]);
 
 	return SF_DECODE_COMPLETE;
+}
+
+SYS_FUNC(rt_sigpending)
+{
+	NEXT_ARG("set");
+	printsigmask(td, td->sc_args[0]);
+
+	NEXT_ARG("sigsetsize");
+	PRINT_LU(td->sc_args[1]);
+
+	return SF_DECODE_COMPLETE;
+}
+
+SYS_FUNC(rt_sigtimedwait)
+{
+	if (entering(*td))
+	{
+		NEXT_ARG("set");
+		printsigmask(td, td->sc_args[0]);
+
+		if (!td->sc_args[1])
+		{
+			NEXT_ARG("info");
+			print_null();
+
+			NEXT_ARG("timeout");
+			printtimespec(td, td->sc_args[2]);
+
+			NEXT_ARG("sigsetsize");
+			PRINT_LU(td->sc_args[3]);
+
+			return SF_DECODE_COMPLETE;
+		}
+		else
+			td_carry(td, strdup(sprinttimespec(td, td->sc_args[2])), free);
+		return 0;
+	}
+	else
+	{
+		if (td->sc_args[1])
+		{
+			NEXT_ARG("info");
+			printsiginfo(td, td->sc_args[1]);
+
+			NEXT_ARG("timeout");
+			prints((char *) td->carry);
+			td_free_carry(td);
+
+			NEXT_ARG("sigsetsize");
+			PRINT_LU(td->sc_args[3]);
+		}
+
+		return SF_DECODE_COMPLETE;
+	}
+}
+
+SYS_FUNC(rt_sigqueueinfo)
+{
+	FIRST_ARG("pid");
+	PRINT_LL(td->sc_args[0]);
+
+	NEXT_ARG("sig");
+	printsignal(td->sc_args[1]);
+
+	NEXT_ARG("info");
+	printsiginfo(td, td->sc_args[2]);
+
+	return SF_DECODE_COMPLETE;
+}
+
+SYS_FUNC(rt_sigsuspend)
+{
+	FIRST_ARG("unewset");
+	printsigmask_sized(td, td->sc_args[0], td->sc_args[1]);
+
+	NEXT_ARG("sigsetsize");
+	PRINT_LLU(td->sc_args[1]);
+
+	return SF_DECODE_COMPLETE;
+}
+
+void printstack_t(struct s_td *td, __kernel_ulong_t addr)
+{
+	stack_t buf;
+
+	if (umovemem_or_printaddr(td, &buf, addr, sizeof(buf)))
+		return;
+
+	print_struct_start();
+	PRINT_MEMBER_PTR(buf, ss_sp);
+	print_struct_member_sep();
+	PRINT_MEMBER_FLAGS(buf, ss_flags, signalstack_flags, "SS_???");
+	print_struct_member_sep();
+	PRINT_MEMBER_LLU(buf, ss_size);
+	print_struct_end();
+}
+
+SYS_FUNC(sigaltstack)
+{
+	if (entering(*td))
+	{
+		FIRST_ARG("ss");
+	}
+	else
+	{
+		NEXT_ARG("old_ss");
+	}
+
+	return 0;
 }
