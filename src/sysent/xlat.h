@@ -18,6 +18,10 @@
 	const t_xlat name_[] = { \
 		{.data = name_##_data, .size = ARRAY_SIZE(name_##_data), .sorting = XLAT_INDEXED} \
     }
+#define WSXLAT(name_)        \
+	const t_xlat name_[] = { \
+		{.data = name_##_data, .size = ARRAY_SIZE(name_##_data), .sorting = XLAT_SORTED} \
+    }
 
 typedef struct s_xlat_data
 {
@@ -32,6 +36,7 @@ typedef struct s_xlat
 		{
 			XLAT_DEFAULT = 0,
 			XLAT_INDEXED = 1,
+			XLAT_SORTED = 2,
 		} sorting;
 		const t_xlat_data *data;
 } t_xlat;

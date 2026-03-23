@@ -311,3 +311,46 @@ SYS_FUNC(setfsgid)
 
 	return SF_DECODE_COMPLETE;
 }
+
+SYS_FUNC(getpriority)
+{
+	FIRST_ARG("which");
+	printflag_indexed(priorities, td->sc_args[0], "PRIO_???");
+
+	NEXT_ARG("who");
+	PRINT_D(td->sc_args[1]);
+
+	return SF_DECODE_COMPLETE;
+}
+
+SYS_FUNC(setpriority)
+{
+	FIRST_ARG("which");
+	printflag_indexed(priorities, td->sc_args[0], "PRIO_???");
+
+	NEXT_ARG("who");
+	PRINT_D(td->sc_args[1]);
+
+	NEXT_ARG("niceval");
+	PRINT_D(td->sc_args[2]);
+
+	return SF_DECODE_COMPLETE;
+}
+
+SYS_FUNC(prctl)
+{
+	FIRST_ARG("option");
+	printflag(prctl_options, td->sc_args[0], "PR_???");
+
+	// tons of unnecessary if else logging, skipped
+	NEXT_ARG("arg2");
+	printaddr(td->sc_args[1]);
+	NEXT_ARG("arg3");
+	printaddr(td->sc_args[2]);
+	NEXT_ARG("arg4");
+	printaddr(td->sc_args[3]);
+	NEXT_ARG("arg5");
+	printaddr(td->sc_args[4]);
+
+	return SF_DECODE_COMPLETE;
+}

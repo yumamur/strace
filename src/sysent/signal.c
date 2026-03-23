@@ -403,10 +403,12 @@ SYS_FUNC(sigaltstack)
 	if (entering(*td))
 	{
 		FIRST_ARG("ss");
+		printstack_t(td, td->sc_args[0]);
 	}
 	else
 	{
 		NEXT_ARG("old_ss");
+		printstack_t(td, td->sc_args[1]);
 	}
 
 	return 0;

@@ -226,3 +226,11 @@ SYS_FUNC(madvise)
 
 	return SF_DECODE_COMPLETE;
 }
+
+SYS_FUNC(mlockall)
+{
+	FIRST_ARG("flags");
+	printflags(mlockall_flags, td->sc_args[0], "MCL_???");
+
+	return SF_DECODE_COMPLETE;
+}

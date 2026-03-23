@@ -99,4 +99,11 @@ const t_xlat_data madvise_values_data[] = {
 };
 WXLAT(madvise_values);
 
+const t_xlat_data mlockall_flags_data[] = {
+	XLAT(MCL_CURRENT),
+	XLAT(MCL_FUTURE),
+	XLAT(MCL_ONFAULT),
+};
+WXLAT(mlockall_flags);
+
 #endif

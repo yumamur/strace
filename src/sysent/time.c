@@ -75,3 +75,16 @@ SYS_FUNC(gettimeofday)
 	}
 	return 0;
 }
+
+SYS_FUNC(adjtimex)
+{
+	if (exiting(*td))
+	{
+		if (current_abi == ABI_64BIT)
+			printtimex64(td, td->sc_args[0]);
+		else
+			printtimex32(td, td->sc_args[0]);
+	}
+
+	return 0;
+}

@@ -30,6 +30,7 @@
 #define PRINT_LU(num)  fprintf(FT_OUTFILE, "%lu", zero_extend_signed_to_ul(num))
 #define PRINT_U(num)   fprintf(FT_OUTFILE, "%u", (unsigned) num)
 #define PRINT_D(num)   fprintf(FT_OUTFILE, "%d", (int) num)
+#define PRINT_X(num)   fprintf(FT_OUTFILE, "%x", (int) num)
 #define PRINT_LX(num)  fprintf(FT_OUTFILE, "%#lx", sign_extend_unsigned_to_ll(num))
 #define PRINT_LLX(num) fprintf(FT_OUTFILE, "%#llx", zero_extend_signed_to_ull(num))
 
@@ -77,6 +78,7 @@ struct timespec;
 struct timeval;
 struct itimerval;
 struct timezone;
+struct utimbuf;
 
 typedef int (*t_printer)(struct s_td *, void *);
 
@@ -110,8 +112,15 @@ void printarray(struct s_td     *td,
 int  printflag(const t_xlat *xlat, uint64_t flag, const char *dflt);
 int  printflags(const t_xlat *xlat, uint64_t flags, const char *dflt);
 
-#define printflag_indexed(xlat, flag, dflt) \
-	flag < ARRAY_SIZE(xlat) && xlat[flag] ? TPUTS(xlat[flag]) : TPUTS(dflt)
+#define printflag_indexed(xlat, flag, dflt)                    \
+	if ((unsigned long) flag < ARRAY_SIZE(xlat) && xlat[flag]) \
+		TPUTS(xlat[flag]);                                     \
+	else                                                       \
+	{                                                          \
+		putnum(flag, HEX);                                     \
+		if (dflt)                                              \
+			print_comment(dflt);                               \
+	}
 
 const char *snprintflags(char         *dst,
 						 size_t        n,
@@ -121,8 +130,10 @@ const char *snprintflags(char         *dst,
 
 void        printumode(uint64_t mode);
 void        printdirfd(struct s_td *td, int fd);
+int         printmode_t(__mode_t mode);
 void        printfd(int fd);
 void        printdev_t(__dev_t dev);
+void        printuser_desc(struct s_td *td, __kernel_ulong_t addr);
 void        printsigmask(struct s_td *td, __kernel_ulong_t set);
 void        printsigmask_sized(struct s_td *td, __kernel_ulong_t addr, unsigned int sigsetsize);
 void        printsigset_t(const uint64_t *addr);
@@ -133,15 +144,16 @@ void        printiov(struct s_td *td, __kernel_ulong_t iovp, size_t iovcn, t_pri
 int         printiov_str(struct s_td *td, void *iovp);
 
 const char *sprinttime(unsigned long sec, unsigned long nsec);
-void        printtimespec_struct(struct timespec *pt);
-const char *sprinttimespec_struct(struct timespec *pt);
 void        printtime(unsigned long sec, unsigned long nsec);
+const char *sprinttimespec_struct(struct timespec *pt);
+void        printtimespec_struct(struct timespec *pt);
 const char *sprintitimerval_struct(struct itimerval *pt);
 void        printitimerval_struct(struct itimerval *pt);
 const char *sprinttimeval_struct(struct timeval *pt);
 void        printtimeval_struct(struct timeval *pt);
 const char *sprinttimezone_struct(struct timezone *pt);
 void        printtimezone_struct(struct timezone *pt);
+void        printutimbuf_struct(struct utimbuf *pt);
 const char *sprintitimerval(struct s_td *td, __kernel_ulong_t addr);
 void        printitimerval(struct s_td *td, __kernel_ulong_t addr);
 const char *sprinttimeval(struct s_td *td, __kernel_ulong_t addr);
@@ -150,6 +162,10 @@ const char *sprinttimespec(struct s_td *td, __kernel_ulong_t addr);
 void        printtimespec(struct s_td *td, __kernel_ulong_t addr);
 const char *sprinttimezone(struct s_td *td, __kernel_ulong_t addr);
 void        printtimezone(struct s_td *td, __kernel_ulong_t addr);
+void        printutimbuf(struct s_td *td, __kernel_ulong_t addr);
+void        printutimbuf_utimes(struct s_td *td, __kernel_ulong_t addr);
+void		printtimex64(struct s_td *td, __kernel_ulong_t addr);
+void		printtimex32(struct s_td *td, __kernel_ulong_t addr);
 
 void        printrusage(struct s_td *td, __kernel_ulong_t addr);
 void        printrlimit(struct s_td *td, __kernel_ulong_t addr);
@@ -207,6 +223,7 @@ FT_SIVP_(arg_sep, ", ")
 FT_SIVP_(arg_end, ")")
 FT_SIVP_(or, "|")
 FT_SIVP_(arr_start, "[")
+FT_SIVP_(arr_sep, ", ")
 FT_SIVP_(arr_end, "]")
 FT_SIVP_(struct_start, "{")
 FT_SIVP_(struct_end, "}")
@@ -251,6 +268,7 @@ FT_SIVP_(val_change, " => ")
 #define PRINT_MEMBER_L(holder_, field_)   PRINT_MEMBER(holder_, field_, PRINT_L)
 #define PRINT_MEMBER_LU(holder_, field_)  PRINT_MEMBER(holder_, field_, PRINT_LU)
 #define PRINT_MEMBER_LX(holder_, field_)  PRINT_MEMBER(holder_, field_, PRINT_LX)
+#define PRINT_MEMBER_LL(holder_, field_)  PRINT_MEMBER(holder_, field_, PRINT_LL)
 #define PRINT_MEMBER_LLU(holder_, field_) PRINT_MEMBER(holder_, field_, PRINT_LLU)
 #define PRINT_MEMBER_LLX(holder_, field_) PRINT_MEMBER(holder_, field_, PRINT_LLX)
 

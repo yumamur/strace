@@ -2,45 +2,8 @@
 #include "../ft_utils.h"
 #include "fork.xlat.h"
 
-#include <asm/ldt.h>
-
 #define IDX_TLS (current_abi == ABI_64BIT ? 4 : 3)
 #define IDX_CTD (current_abi == ABI_64BIT ? 3 : 4)
-
-void printuser_desc(struct s_td *td, __kernel_ulong_t addr)
-{
-	struct user_desc ud;
-
-	if (umovemem(td, &ud, addr, sizeof(ud)) < 0)
-		return printaddr(addr);
-
-	print_struct_start();
-
-	if ((long long) (signed int) (ud.entry_number) == -1LL)
-		prints("entry_number=-1");
-	else
-		PRINT_MEMBER(ud, entry_number, PRINT_U);
-	print_struct_member_sep();
-
-	PRINT_MEMBER(ud, base_addr, PRINT_U);
-	print_struct_member_sep();
-	PRINT_MEMBER(ud, limit, PRINT_U);
-	print_struct_member_sep();
-	PRINT_MEMBER(ud, seg_32bit, PRINT_U);
-	print_struct_member_sep();
-	PRINT_MEMBER(ud, read_exec_only, PRINT_U);
-	print_struct_member_sep();
-	PRINT_MEMBER(ud, limit_in_pages, PRINT_U);
-	print_struct_member_sep();
-	PRINT_MEMBER(ud, useable, PRINT_U);
-	if (current_abi == ABI_64BIT)
-	{
-		print_struct_member_sep();
-		PRINT_MEMBER(ud, lm, PRINT_U);
-	}
-
-	print_struct_end();
-}
 
 void printtls(struct s_td *td, __kernel_ulong_t addr)
 {

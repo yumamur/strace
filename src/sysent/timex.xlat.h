@@ -1,0 +1,43 @@
+#ifndef STAT_XLAT_H
+#define STAT_XLAT_H
+
+#include "xlat.h"
+
+#include <linux/timex.h>
+
+const t_xlat_data adjtimex_modes_data[] = {
+	XLAT(ADJ_OFFSET),
+	XLAT(ADJ_FREQUENCY),
+	XLAT(ADJ_MAXERROR),
+	XLAT(ADJ_ESTERROR),
+	XLAT(ADJ_STATUS),
+	XLAT(ADJ_TIMECONST),
+	XLAT(ADJ_TAI),
+	XLAT(ADJ_SETOFFSET),
+	XLAT(ADJ_MICRO),
+	XLAT(ADJ_NANO),
+	XLAT(ADJ_TICK),
+};
+WXLAT(adjtimex_modes);
+
+const t_xlat_data adjtimex_status_data[] = {
+	XLAT(STA_PLL),
+	XLAT(STA_PPSFREQ),
+	XLAT(STA_PPSTIME),
+	XLAT(STA_FLL),
+	XLAT(STA_INS),
+	XLAT(STA_DEL),
+	XLAT(STA_UNSYNC),
+	XLAT(STA_FREQHOLD),
+	XLAT(STA_PPSSIGNAL),
+	XLAT(STA_PPSJITTER),
+	XLAT(STA_PPSWANDER),
+	XLAT(STA_PPSERROR),
+	XLAT(STA_CLOCKERR),
+	XLAT(STA_NANO),
+	XLAT(STA_MODE),
+	XLAT(STA_CLK),
+};
+WXLAT(adjtimex_status);
+
+#endif
