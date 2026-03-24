@@ -88,3 +88,30 @@ SYS_FUNC(adjtimex)
 
 	return 0;
 }
+
+SYS_FUNC(settimeofday)
+{
+	FIRST_ARG("tv");
+	printtimeval(td, td->sc_args[0]);
+
+	NEXT_ARG("tz");
+	printtimezone(td, td->sc_args[1]);
+
+	return SF_DECODE_COMPLETE;
+}
+
+SYS_FUNC(time)
+{
+	if (exiting(*td))
+	{
+		FIRST_ARG("tloc");
+		__kernel_time_t tloc;
+		if (umovemem_or_printaddr(td, &tloc, td->sc_args[0], sizeof(tloc)))
+			return SF_DECODE_COMPLETE;
+		print_arg_start();
+		PRINT_L(tloc);
+		printtime(tloc, 0);
+		print_arg_end();
+	}
+	return 0;
+}

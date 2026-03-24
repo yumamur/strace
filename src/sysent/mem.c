@@ -1,4 +1,7 @@
-#define __USE_GNU
+#ifndef __USE_GNU
+#  define __USE_GNU
+#endif
+
 #include "../ft_print.h"
 #include "../ft_utils.h"
 #include "mem.xlat.h"
@@ -233,4 +236,18 @@ SYS_FUNC(mlockall)
 	printflags(mlockall_flags, td->sc_args[0], "MCL_???");
 
 	return SF_DECODE_COMPLETE;
+}
+
+SYS_FUNC(readahead)
+{
+	FIRST_ARG("fd");
+	printfd(td->sc_args[0]);
+
+	NEXT_ARG("offset");
+	unsigned int next_arg = print_ll_arg(td, td->sc_args[1]);
+
+	NEXT_ARG("count");
+	PRINT_LLU(td->sc_args[next_arg]);
+
+	return SF_DECODE_COMPLETE | SF_PRINT_HEX;
 }

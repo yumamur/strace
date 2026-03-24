@@ -349,3 +349,34 @@ void printarray(struct s_td     *td,
 	}
 	print_arr_end();
 }
+
+/* some 32-bit syscalls use 2 arguments to pass a 64-bit value,
+   these helper functions:
+	- consume required number of arguments,
+	- print the 64-bit value,
+	- return the next argument's index
+ */
+unsigned int print_llu_arg(struct s_td *td, unsigned int iarg)
+{
+	uint64_t val;
+	if (current_wordsize == 4)
+		val = ((uint64_t) td->sc_args[iarg + 1] << 32) | td->sc_args[iarg];
+	else
+		val = td->sc_args[iarg];
+	PRINT_LLU(val);
+	return iarg + (current_wordsize == 4 ? 2 : 1);
+}
+
+unsigned int print_ll_arg(struct s_td *td, unsigned int iarg)
+{
+	uint64_t val;
+	if (current_wordsize == 4)
+	{
+		uint32_t low = td->sc_args[iarg], high = td->sc_args[iarg + 1];
+		val = ((uint64_t) high << 32) | low;
+	}
+	else
+		val = td->sc_args[iarg];
+	PRINT_LL(val);
+	return iarg + (current_wordsize == 4 ? 2 : 1);
+}

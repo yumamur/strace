@@ -21,8 +21,8 @@
 
 #define MAX_PATH_LEN 4096
 
-#define FIRST_ARG(argname) TPUTS(EXTEND_ARGNAME(argname))
-#define NEXT_ARG(argname)  TPUTS(", " EXTEND_ARGNAME(argname))
+#define FIRST_ARG(argname) is_verbose(*td) ? TPUTS(argname "=") : (void) 0
+#define NEXT_ARG(argname)  is_verbose(*td) ? TPUTS(", " argname "=") : (void) 0
 
 #define PRINT_LLU(num) fprintf(FT_OUTFILE, "%llu", zero_extend_signed_to_ull(num))
 #define PRINT_LL(num)  fprintf(FT_OUTFILE, "%lld", sign_extend_unsigned_to_ll(num))
@@ -164,8 +164,8 @@ const char *sprinttimezone(struct s_td *td, __kernel_ulong_t addr);
 void        printtimezone(struct s_td *td, __kernel_ulong_t addr);
 void        printutimbuf(struct s_td *td, __kernel_ulong_t addr);
 void        printutimbuf_utimes(struct s_td *td, __kernel_ulong_t addr);
-void		printtimex64(struct s_td *td, __kernel_ulong_t addr);
-void		printtimex32(struct s_td *td, __kernel_ulong_t addr);
+void        printtimex64(struct s_td *td, __kernel_ulong_t addr);
+void        printtimex32(struct s_td *td, __kernel_ulong_t addr);
 
 void        printrusage(struct s_td *td, __kernel_ulong_t addr);
 void        printrlimit(struct s_td *td, __kernel_ulong_t addr);
@@ -273,5 +273,8 @@ FT_SIVP_(val_change, " => ")
 #define PRINT_MEMBER_LLX(holder_, field_) PRINT_MEMBER(holder_, field_, PRINT_LLX)
 
 #undef FT_SIVP_
+
+unsigned int print_llu_arg(struct s_td *td, unsigned int iarg);
+unsigned int print_ll_arg(struct s_td *td, unsigned int iarg);
 
 #endif

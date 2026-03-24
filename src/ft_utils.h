@@ -15,6 +15,10 @@ __ssize_t umovemem(struct s_td *const td, void *laddr, __kernel_ulong_t taddr, s
 size_t    count_set_bits(void *addr, size_t size);
 int       umovemem_or_printaddr(struct s_td *const td, void *laddr, __kernel_ulong_t taddr, size_t len);
 
+// umovemem_or_printaddr((td_), (&obj_), (taddr_), sizeof(obj_))
+#define umovemem_or_printaddr2(td_, obj_, taddr_) \
+	umovemem((td_), (&obj_), (taddr_), (sizeof(obj_))) < 0 ? (printaddr(taddr_), -1) : 0
+
 // typedef void (*f_map_ent_free)(void *);
 
 // struct s_map

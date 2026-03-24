@@ -354,3 +354,39 @@ SYS_FUNC(prctl)
 
 	return SF_DECODE_COMPLETE;
 }
+
+SYS_FUNC(setrlimit)
+{
+	FIRST_ARG("resource");
+	printflag_indexed(rlimit_resources, td->sc_args[0], "RLIMIT_???");
+
+	NEXT_ARG("rlim");
+	printrlimit(td, td->sc_args[1]);
+
+	return SF_DECODE_COMPLETE;
+}
+
+SYS_FUNC(sethostname)
+{
+	FIRST_ARG("name");
+	printnstr(td, td->sc_args[0], td->sc_args[1]);
+
+	NEXT_ARG("len");
+	PRINT_U(td->sc_args[1]);
+
+	return SF_DECODE_COMPLETE;
+}
+
+SYS_FUNC(gethostname)
+{
+	if (exiting(*td))
+	{
+		FIRST_ARG("name");
+		printnstr(td, td->sc_args[0], td->sc_args[1]);
+
+		NEXT_ARG("len");
+		PRINT_U(td->sc_args[1]);
+	}
+
+	return 0;
+}

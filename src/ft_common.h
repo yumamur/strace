@@ -101,8 +101,12 @@ typedef int (*t_logger)(struct s_td *);
 #define sys_fchdir                 sys_close
 #define sys_rmdir                  sys_chdir
 #define sys_unlink                 sys_chdir
+#define sys_chroot                 sys_chdir
+#define sys_acct                   sys_chdir
+#define sys_swapoff                sys_chdir
 #define sys_link                   sys_rename
 #define sys_symlink                sys_rename
+#define sys_pivot_root             sys_rename
 #define sys_creat                  sys_mkdir
 #define sys_chmod                  sys_mkdir
 #define sys_lchown                 sys_chown
@@ -112,7 +116,11 @@ typedef int (*t_logger)(struct s_td *);
 #define sys_sched_get_priority_min sys_sched_get_priority_max
 #define sys_mlock                  sys_munmap
 #define sys_munlock                sys_munmap
-#define sys_pivot_root             sys_rename
+#define sys_lsetxattr              sys_setxattr
+#define sys_lgetxattr              sys_getxattr
+#define sys_llistxattr             sys_listxattr
+#define sys_lremovexattr           sys_removexattr
+#define sys_tkill                  sys_kill
 
 // deprecated
 #define sys_sysfs printargs
@@ -189,7 +197,9 @@ static inline void td_carry_ulong(struct s_td *td, unsigned long val)
 		return (type_) td->carry;                             \
 	}
 
-TD_CARRY_GET_FUNC(ulong, unsigned long);
+TD_CARRY_GET_FUNC(ulong, unsigned long)
+
+TD_CARRY_GET_FUNC(voidptr, void *)
 
 #undef TD_CARRY_GET_FUNC
 
@@ -213,6 +223,6 @@ extern unsigned int current_klongsize;
 
 const char         *get_errmsg(unsigned int num);
 
-__kernel_ulong_t    get_sp_reg(void);
+// __kernel_ulong_t    get_sp_reg(void);
 
 #endif
