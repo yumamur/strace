@@ -214,24 +214,63 @@ SYS_FUNC(newstat)
 	}
 }
 
-SYS_FUNC(readlink)
+int decode_readlink(struct s_td *td, unsigned off)
 {
 	if (entering(*td))
 	{
-		FIRST_ARG("pathname");
-		printpath(td, td->sc_args[0]);
+		if (off)
+			NEXT_ARG("pathname");
+		else
+			FIRST_ARG("pathname");
+		printpath(td, td->sc_args[off]);
 
 		return 0;
 	}
 
 	NEXT_ARG("buf");
 	if (td->sc_err)
-		printaddr(td->sc_args[1]);
+		printaddr(td->sc_args[off + 1]);
 	else
-		printnstr(td, td->sc_args[1], td->sc_ret);
+		printnstr(td, td->sc_args[off + 1], td->sc_ret);
 
 	NEXT_ARG("bufsiz");
-	PRINT_LLU(td->sc_args[2]);
+	PRINT_LLU(td->sc_args[off + 2]);
+
+	return SF_DECODE_COMPLETE;
+}
+
+SYS_FUNC(readlink)
+{
+	return decode_readlink(td, 0);
+}
+
+SYS_FUNC(readlinkat)
+{
+	if (entering(*td))
+	{
+		FIRST_ARG("dirfd");
+		printdirfd(td, td->sc_args[0]);
+	}
+
+	return decode_readlink(td, 1);
+}
+
+SYS_FUNC(statx)
+{
+	FIRST_ARG("dirfd");
+	printdirfd(td, td->sc_args[0]);
+
+	NEXT_ARG("filename");
+	printpath(td, td->sc_args[1]);
+
+	NEXT_ARG("flags");
+	unsigned flags = td->sc_args[2];
+	printflags(at_statx_sync_types, flags & AT_STATX_SYNC_TYPE, 0);
+	flags &= ~AT_STATX_SYNC_TYPE;
+	if (flags)
+	{
+		printflags(statx_flags, flags, "STATX_???");
+	}
 
 	return SF_DECODE_COMPLETE;
 }

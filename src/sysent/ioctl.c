@@ -1,6 +1,4 @@
-#include "../ft_common.h"
 #include "../ft_print.h"
-
 #include <linux/fs.h>
 #include <linux/ioctl.h>
 

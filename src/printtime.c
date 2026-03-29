@@ -31,17 +31,6 @@ void printtime(unsigned long sec, unsigned long nsec)
 		print_comment("%s", s);
 }
 
-void printtimespec_struct(struct timespec *pt)
-{
-	print_struct_start();
-	PRINT_MEMBER(*pt, tv_sec, PRINT_LL);
-	print_struct_member_sep();
-	PRINT_MEMBER(*pt, tv_nsec, PRINT_LL);
-	print_struct_end();
-
-	printtime(pt->tv_sec, pt->tv_nsec);
-}
-
 void printtimeval_struct(struct timeval *pt)
 {
 	print_struct_start();
@@ -50,7 +39,7 @@ void printtimeval_struct(struct timeval *pt)
 	PRINT_MEMBER(*pt, tv_usec, PRINT_LL);
 	print_struct_end();
 
-	printtime(pt->tv_sec, pt->tv_usec);
+	// printtime(pt->tv_sec, pt->tv_usec);
 }
 
 void printitimerval_struct(struct itimerval *pt)
@@ -97,14 +86,6 @@ void printtimeval(struct s_td *td, __kernel_ulong_t addr)
 	printtimeval_struct(&buf);
 }
 
-void printtimespec(struct s_td *td, __kernel_ulong_t addr)
-{
-	struct timespec buf = {};
-	if (umovemem_or_printaddr(td, &buf, addr, sizeof(buf)))
-		return;
-	printtimespec_struct(&buf);
-}
-
 void printtimezone(struct s_td *td, __kernel_ulong_t addr)
 {
 	struct timezone buf = {};
@@ -135,17 +116,9 @@ void printutimbuf_utimes(struct s_td *td, __kernel_ulong_t addr)
 	print_arr_end();
 }
 
-#define timespec_printsize  sizeof("{tv_sec=18446744073709551615, tv_nsec=18446744073709551615}")
-#define timeval_printsize   timespec_printsize
-#define itimerval_printsize sizeof("{it_interval={}, it_value}") + timeval_printsize * 2
+#define timeval_printsize   sizeof("{tv_sec=18446744073709551615, tv_usec=18446744073709551615}")
+#define itimerval_printsize sizeof("{it_interval={}, it_value=}") + timeval_printsize * 2
 #define timezone_printsize  sizeof("{tz_minuteswest=32767, tz_dsttime=32767}")
-
-const char *sprinttimespec_struct(struct timespec *pt)
-{
-	static char buf[timespec_printsize];
-	inprint(buf, "{tv_sec=%lld, tv_nsec=%lld}", (long long) pt->tv_sec, (long long) pt->tv_nsec);
-	return buf;
-}
 
 const char *sprinttimeval_struct(struct timeval *pt)
 {
@@ -183,14 +156,6 @@ const char *sprinttimeval(struct s_td *td, __kernel_ulong_t addr)
 	if (umovemem(td, &buf, addr, sizeof(buf)) != sizeof(buf))
 		return sprintaddr(addr);
 	return sprinttimeval_struct(&buf);
-}
-
-const char *sprinttimespec(struct s_td *td, __kernel_ulong_t addr)
-{
-	struct timespec buf = {};
-	if (umovemem(td, &buf, addr, sizeof(buf)) != sizeof(buf))
-		return sprintaddr(addr);
-	return sprinttimespec_struct(&buf);
 }
 
 const char *sprinttimezone(struct s_td *td, __kernel_ulong_t addr)

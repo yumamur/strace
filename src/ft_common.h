@@ -25,7 +25,8 @@ bool is_error_erestart(unsigned int err);
 #define MIN(x, y) ((x) < (y) ? (x) : (y))
 #define MAX(x, y) ((x) > (y) ? (x) : (y))
 
-#define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
+#define ARRAY_SIZE(x)  (sizeof(x) / sizeof((x)[0]))
+#define TO_STRING(...) #__VA_ARGS__
 
 #define zero_extend_signed_to_ull(v)                                          \
 	(sizeof(v) == sizeof(char)  ? (unsigned long long) (unsigned char) (v) :  \
@@ -99,11 +100,13 @@ typedef int (*t_logger)(struct s_td *);
 #define sys_fsync                  sys_close
 #define sys_fdatasync              sys_close
 #define sys_fchdir                 sys_close
+#define sys_syncfs                 sys_close
 #define sys_rmdir                  sys_chdir
 #define sys_unlink                 sys_chdir
 #define sys_chroot                 sys_chdir
 #define sys_acct                   sys_chdir
 #define sys_swapoff                sys_chdir
+#define sys_mq_unlink              sys_chdir
 #define sys_link                   sys_rename
 #define sys_symlink                sys_rename
 #define sys_pivot_root             sys_rename
@@ -121,6 +124,7 @@ typedef int (*t_logger)(struct s_td *);
 #define sys_llistxattr             sys_listxattr
 #define sys_lremovexattr           sys_removexattr
 #define sys_tkill                  sys_kill
+#define sys_clock_getres           sys_clock_gettime
 
 // deprecated
 #define sys_sysfs printargs
@@ -222,6 +226,7 @@ extern unsigned int current_wordsize;
 extern unsigned int current_klongsize;
 
 const char         *get_errmsg(unsigned int num);
+const char         *get_errname(unsigned int num);
 
 // __kernel_ulong_t    get_sp_reg(void);
 

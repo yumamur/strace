@@ -30,4 +30,5 @@ const t_xlat_data rwf_flags_data[] = {
 };
 WXLAT(rwf_flags);
 
+
 #endif

@@ -1,6 +1,4 @@
-#include "../ft_common.h"
 #include "../ft_print.h"
-
 #include "exec_domain.xlat.h"
 
 SYS_FUNC(personality)

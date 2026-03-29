@@ -390,3 +390,37 @@ SYS_FUNC(gethostname)
 
 	return 0;
 }
+
+SYS_FUNC(sys_prlimit64)
+{
+	FIRST_ARG("pid");
+	PRINT_D(td->sc_args[0]);
+
+	NEXT_ARG("resource");
+	printflag_indexed(rlimit_resources, td->sc_args[1], "RLIMIT_???");
+
+	NEXT_ARG("new_limit");
+	printrlimit(td, td->sc_args[2]);
+
+	NEXT_ARG("old_limit");
+	printrlimit(td, td->sc_args[3]);
+
+	return SF_DECODE_COMPLETE;
+}
+
+SYS_FUNC(getcpu)
+{
+	if (exiting(*td))
+	{
+		FIRST_ARG("cpu");
+		printnum_addr_uint32(td, td->sc_args[0]);
+
+		NEXT_ARG("node");
+		printnum_addr_uint32(td, td->sc_args[1]);
+
+		NEXT_ARG("tcache");
+		printaddr(td->sc_args[2]);
+	}
+
+	return 0;
+}

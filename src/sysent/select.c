@@ -73,12 +73,13 @@ int printfd_set(struct s_td     *td,
 	return total_set;
 }
 
-int print_pollfd(struct s_td *td, void *buf)
+int print_pollfd(struct s_td *td, void *buf, size_t mem_size)
 {
+	(void) mem_size;
 	struct pollfd *pt = (struct pollfd *) buf;
 
 	if (!(uint64_t) pt->revents)
-		return 0;
+		return PRINTARR_STATE_CONT;
 
 	(void) td;
 	print_struct_start();
@@ -91,22 +92,28 @@ int print_pollfd(struct s_td *td, void *buf)
 
 	print_struct_end();
 
-	return 1;
+	return PRINTARR_STATE_SEP;
+}
+
+static void print_pollfds(struct s_td *td, __kernel_ulong_t addr, unsigned long nfds)
+{
+	struct pollfd buf;
+
+	printarray(td, (t_printarray_cfg) {
+					   .printer = print_pollfd,
+					   .start_addr = addr,
+					   .pt_buf_var = &buf,
+					   .n_var = nfds,
+					   .var_size = sizeof(buf),
+				   });
 }
 
 SYS_FUNC(poll)
 {
-	struct pollfd buf;
 	if (entering(*td))
 	{
 		FIRST_ARG("fds");
-		printarray(
-			td,
-			print_pollfd,
-			td->sc_args[0],
-			&buf,
-			td->sc_args[1],
-			sizeof(buf));
+		print_pollfds(td, td->sc_args[0], td->sc_args[1]);
 
 		NEXT_ARG("nfds");
 		PRINT_LLU(td->sc_args[1]);
@@ -119,13 +126,7 @@ SYS_FUNC(poll)
 	else
 	{
 		print_arg_start();
-		printarray(
-			td,
-			print_pollfd,
-			td->sc_args[0],
-			&buf,
-			td->sc_args[1],
-			sizeof(buf));
+		print_pollfds(td, td->sc_args[0], MIN(td->sc_args[1], td->sc_ret));
 		print_arg_end();
 
 		return SF_DECODE_COMPLETE;
@@ -226,17 +227,10 @@ SYS_FUNC(pselect6)
 
 SYS_FUNC(ppoll)
 {
-	struct pollfd buf;
 	if (entering(*td))
 	{
 		FIRST_ARG("fds");
-		printarray(
-			td,
-			print_pollfd,
-			td->sc_args[0],
-			&buf,
-			td->sc_args[1],
-			sizeof(buf));
+		print_pollfds(td, td->sc_args[0], td->sc_args[1]);
 
 		NEXT_ARG("nfds");
 		PRINT_LLU(td->sc_args[1]);
@@ -252,13 +246,7 @@ SYS_FUNC(ppoll)
 	else
 	{
 		print_arg_start();
-		printarray(
-			td,
-			print_pollfd,
-			td->sc_args[0],
-			&buf,
-			td->sc_args[1],
-			sizeof(buf));
+		print_pollfds(td, td->sc_args[0], td->sc_args[1]);
 		print_arg_end();
 
 		return SF_DECODE_COMPLETE;

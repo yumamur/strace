@@ -3,6 +3,7 @@
 
 #include "xlat.h"
 
+#include <linux/fcntl.h>
 #include <sys/mount.h>
 
 const t_xlat_data mount_flags_data[] = {
@@ -43,5 +44,27 @@ const t_xlat_data umount_flags_data[] = {
 	XLAT(UMOUNT_NOFOLLOW),
 };
 WXLAT(umount_flags);
+
+const t_xlat_data open_tree_flags_data[] = {
+	XLAT(OPEN_TREE_CLONE),
+	XLAT(OPEN_TREE_CLOEXEC),
+	XLAT(AT_SYMLINK_NOFOLLOW),
+	XLAT(AT_NO_AUTOMOUNT),
+	XLAT(AT_EMPTY_PATH),
+	XLAT(AT_RECURSIVE),
+};
+WXLAT(open_tree_flags);
+
+const t_xlat_data move_mount_flags_data[] = {
+	XLAT(MOVE_MOUNT_F_SYMLINKS),
+	XLAT(MOVE_MOUNT_F_AUTOMOUNTS),
+	XLAT(MOVE_MOUNT_F_EMPTY_PATH),
+	XLAT(MOVE_MOUNT_T_SYMLINKS),
+	XLAT(MOVE_MOUNT_T_AUTOMOUNTS),
+	XLAT(MOVE_MOUNT_T_EMPTY_PATH),
+	XLAT(MOVE_MOUNT_SET_GROUP),
+	XLAT(MOVE_MOUNT_BENEATH),
+};
+WXLAT(move_mount_flags);
 
 #endif /* NAMESPACE_XLAT_H */

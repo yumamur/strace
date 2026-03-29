@@ -234,6 +234,14 @@ void print_syscall_return(struct s_td *td)
 		putfmt(") = %" PRIu64, *(__kernel_ulong_t *) &td->sc_ret);
 }
 
+void print_err_status(int status)
+{
+	if (!status)
+		TPUTS("OK");
+	else
+		putfmt("%d (%s)", status, get_errname(status < 0 ? -status : status));
+}
+
 void printdirfd(struct s_td *td, int fd)
 {
 	(void) td;
@@ -249,7 +257,7 @@ void printfd(int fd)
 }
 
 #define FETCH_PRINT_F(name_, type_, printer_)            \
-	FETCH_PRINT_F_DEC(name_)                             \
+	FETCH_PRINT_F_DECL(name_)                            \
 	{                                                    \
 		type_ buf;                                       \
 		if (umovemem(td, &buf, addr, sizeof(buf)) == -1) \
@@ -264,9 +272,11 @@ void printfd(int fd)
 	}
 
 FETCH_PRINT_F(int32, int32_t, PRINT_D)
-FETCH_PRINT_F(uint32, int32_t, PRINT_U)
 FETCH_PRINT_F(int64, int64_t, PRINT_LL)
+FETCH_PRINT_F(uint32, int32_t, PRINT_U)
 FETCH_PRINT_F(uint64, uint64_t, PRINT_LU)
+FETCH_PRINT_F(ptr32, unsigned int, printaddr)
+FETCH_PRINT_F(ptr64, uint64_t, printaddr)
 
 #undef FETCH_PRINT_F
 
@@ -297,53 +307,101 @@ int printargs(struct s_td *td)
 	return SF_DECODE_COMPLETE;
 }
 
-void printarray(struct s_td     *td,
-				t_printer        printer,
-				__kernel_ulong_t start_addr,
-				void *const      mem_addr,
-				size_t           nmem,
-				size_t           mem_size)
+// void printarray_old(struct s_td     *td,
+// 					t_printer        printer,
+// 					__kernel_ulong_t start_addr,
+// 					void *const      mem_addr,
+// 					size_t           nmem,
+// 					size_t           mem_size)
+// {
+// 	if (!start_addr || !mem_size)
+// 		return print_null();
+
+// 	const size_t           size = nmem * mem_size;
+// 	const __kernel_ulong_t end_addr = start_addr + size;
+
+// 	if (end_addr < start_addr || size / mem_size != nmem)
+// 	{
+// 		print_debug("size overflow");
+// 		return printaddr(start_addr);
+// 	}
+// 	__kernel_ulong_t cur_addr = start_addr;
+// 	int              put_sep = 0;
+
+// 	print_arr_start();
+// 	for (cur_addr = start_addr;
+// 		 cur_addr < end_addr;
+// 		 cur_addr += mem_size)
+// 	{
+// 		if (put_sep)
+// 			print_arr_sep();
+
+// 		if (umovemem(td, mem_addr, cur_addr, mem_size) < 0)
+// 		{
+// 			printaddr(cur_addr);
+// 			if (cur_addr != start_addr)
+// 				print_has_more();
+// 			break;
+// 		}
+
+// 		if (cur_addr < start_addr)
+// 		{
+// 			print_debug("memory wrap-around");
+// 			break;
+// 		}
+
+// 		if (printer)
+// 		{
+// 			put_sep = printer(td, mem_addr, mem_size);
+// 			if (put_sep < 0)
+// 				break;
+// 		}
+// 	}
+// 	print_arr_end();
+// }
+
+void printarray(struct s_td *td, const t_printarray_cfg cfg)
 {
-	if (!start_addr)
+	if (!cfg.start_addr || !cfg.var_size)
 		return print_null();
 
-	const size_t           size = nmem * mem_size;
-	const __kernel_ulong_t end_addr = start_addr + size;
+	const size_t           size = cfg.n_var * cfg.var_size;
+	const __kernel_ulong_t end_addr = cfg.start_addr + size;
 
-	if (end_addr < start_addr || size / mem_size != nmem)
+	if (end_addr < cfg.start_addr || size / cfg.var_size != cfg.n_var)
 	{
 		print_debug("size overflow");
-		return printaddr(start_addr);
+		return printaddr(cfg.start_addr);
 	}
-	__kernel_ulong_t cur_addr = start_addr;
-	int              put_sep = 0;
+	__kernel_ulong_t      cur_addr = cfg.start_addr;
+	enum e_printarr_state state = PRINTARR_STATE_CONT;
 
 	print_arr_start();
-	for (cur_addr = start_addr;
+	for (cur_addr = cfg.start_addr;
 		 cur_addr < end_addr;
-		 cur_addr += mem_size)
+		 cur_addr += cfg.var_size)
 	{
-		if (put_sep)
-			print_arg_sep();
+		if (state == PRINTARR_STATE_SEP)
+			cfg.separator ? TPUTS(cfg.separator) : print_arr_sep();
 
-		if (umovemem(td, mem_addr, cur_addr, mem_size) < 0)
+		if (umovemem(td, cfg.pt_buf_var, cur_addr, cfg.var_size) < 0)
 		{
 			printaddr(cur_addr);
-			if (cur_addr != start_addr)
+			if (cur_addr != cfg.start_addr)
 				print_has_more();
 			break;
 		}
 
-		if (cur_addr < start_addr)
+		if (cur_addr < cfg.start_addr)
 		{
 			print_debug("memory wrap-around");
 			break;
 		}
 
-		if (printer)
+		if (cfg.printer)
 		{
-			put_sep = printer(td, mem_addr);
-			if (put_sep < 0)
+			state = cfg.printer(td, cfg.pt_buf_var, cfg.var_size);
+			if (state == PRINTARR_STATE_STOP)
 				break;
 		}
 	}
@@ -379,4 +437,21 @@ unsigned int print_ll_arg(struct s_td *td, unsigned int iarg)
 		val = td->sc_args[iarg];
 	PRINT_LL(val);
 	return iarg + (current_wordsize == 4 ? 2 : 1);
+}
+
+int print_byte(struct s_td *td, void *byte, size_t mem_size)
+{
+	(void) td;
+	for (size_t i = 0; i < mem_size; i++)
+	{
+		uint8_t cur_byte = ((uint8_t *) byte)[i];
+		for (int j = 7; j >= 0; --j)
+			TPUTS(cur_byte & (1U << j) ? "1" : "0");
+		// if (i != mem_size - 1)
+		// print_space();
+	}
+	// uint8_t cur_byte = *(uint8_t *) byte;
+	// for (int i = 7; i >= 0; --i)
+	// 	TPUTS(cur_byte & (1U << i) ? "1" : "0");
+	return PRINTARR_STATE_SEP;
 }

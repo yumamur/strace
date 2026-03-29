@@ -107,7 +107,7 @@ SYS_FUNC(mmap_pgoff)
 	return SF_DECODE_COMPLETE | SF_PRINT_HEX;
 }
 
-SYS_FUNC(mprotect)
+void decode_mprotect(struct s_td *td)
 {
 	FIRST_ARG("addr");
 	printaddr(td->sc_args[0]);
@@ -117,19 +117,46 @@ SYS_FUNC(mprotect)
 
 	NEXT_ARG("prot");
 	printflags(mprotect_prots, td->sc_args[2], "PROT_???");
+}
 
+SYS_FUNC(mprotect)
+{
+	decode_mprotect(td);
 	return SF_DECODE_COMPLETE | SF_PRINT_HEX;
 }
 
-SYS_FUNC(munmap)
+SYS_FUNC(pkey_mprotect)
+{
+	decode_mprotect(td);
+
+	NEXT_ARG("pkey");
+	PRINT_D(td->sc_args[3]);
+	return SF_DECODE_COMPLETE | SF_PRINT_HEX;
+}
+
+void decode_munmap(struct s_td *td)
 {
 	FIRST_ARG("addr");
 	printaddr(td->sc_args[0]);
 
 	NEXT_ARG("length");
 	PRINT_LLU(td->sc_args[1]);
+}
 
+SYS_FUNC(munmap)
+{
+	decode_munmap(td);
 	return SF_DECODE_COMPLETE;
+}
+
+SYS_FUNC(mlock2)
+{
+	decode_munmap(td);
+
+	NEXT_ARG("flags");
+	printflags(mlock_flags, td->sc_args[2], "MLOCK_???");
+
+	return SF_DECODE_COMPLETE | SF_PRINT_HEX;
 }
 
 SYS_FUNC(brk)
@@ -177,11 +204,13 @@ SYS_FUNC(msync)
 	return SF_DECODE_COMPLETE;
 }
 
-int print_mincore_mem(struct s_td *td, void *buf)
+int print_mincore_mem(struct s_td *td, void *buf, size_t mem_size)
 {
 	(void) td;
+	(void) mem_size;
 	uint8_t val = (*(uint8_t *) buf) & 1;
-	return PRINT_LLU(val);
+	PRINT_LLU(val);
+	return PRINTARR_STATE_SEP;
 }
 
 SYS_FUNC(mincore)
@@ -205,13 +234,13 @@ SYS_FUNC(mincore)
 
 		NEXT_ARG("vec");
 		uint8_t buf;
-		printarray(
-			td,
-			print_mincore_mem,
-			td->sc_args[2], // vec
-			&buf,
-			n, // number of pages to fit 'length' amount bytes
-			sizeof(buf));
+		printarray(td, (t_printarray_cfg){
+						   .printer = print_mincore_mem,
+						   .start_addr = td->sc_args[2],
+						   .pt_buf_var = &buf,
+						   .n_var = n, // number of pages to fit 'length' amount bytes
+						   .var_size = sizeof(buf),
+					   });
 		return SF_DECODE_COMPLETE;
 	}
 }
@@ -250,4 +279,44 @@ SYS_FUNC(readahead)
 	PRINT_LLU(td->sc_args[next_arg]);
 
 	return SF_DECODE_COMPLETE | SF_PRINT_HEX;
+}
+
+SYS_FUNC(remap_file_pages)
+{
+	FIRST_ARG("start");
+	printaddr(td->sc_args[0]);
+
+	NEXT_ARG("size");
+	PRINT_LLU(td->sc_args[1]);
+
+	NEXT_ARG("prot");
+	printflags(mmap_prots, td->sc_args[2], "PROT_???");
+
+	NEXT_ARG("pgoff");
+	PRINT_LLU(td->sc_args[3]);
+
+	NEXT_ARG("flags");
+	print_mmap_flags(td->sc_args[4]);
+
+	return SF_DECODE_COMPLETE | SF_PRINT_HEX;
+}
+
+SYS_FUNC(pkey_alloc)
+{
+	FIRST_ARG("flags");
+	// not implemented yet
+	PRINT_X(td->sc_args[0]);
+
+	NEXT_ARG("access_rights");
+	printflags(pkey_access_rights, td->sc_args[2], "PKEY_???");
+
+	return SF_DECODE_COMPLETE;
+}
+
+SYS_FUNC(pkey_free)
+{
+	FIRST_ARG("pkey");
+	PRINT_D(td->sc_args[0]);
+
+	return SF_DECODE_COMPLETE;
 }

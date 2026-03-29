@@ -1,0 +1,42 @@
+#ifndef INOTIFY_XLAT_H
+#define INOTIFY_XLAT_H
+
+#include "xlat.h"
+
+#include <linux/inotify.h>
+
+const t_xlat_data inotify_flags_data[] = {
+	XLAT(IN_ACCESS),
+	XLAT(IN_MODIFY),
+	XLAT(IN_ATTRIB),
+	XLAT(IN_CLOSE_WRITE),
+	XLAT(IN_CLOSE_NOWRITE),
+	XLAT(IN_OPEN),
+	XLAT(IN_MOVED_FROM),
+	XLAT(IN_MOVED_TO),
+	XLAT(IN_CREATE),
+	XLAT(IN_DELETE),
+	XLAT(IN_DELETE_SELF),
+	XLAT(IN_MOVE_SELF),
+	XLAT(IN_UNMOUNT),
+	XLAT(IN_Q_OVERFLOW),
+	XLAT(IN_IGNORED),
+	XLAT(IN_CLOSE),
+	XLAT(IN_MOVE),
+	XLAT(IN_ONLYDIR),
+	XLAT(IN_DONT_FOLLOW),
+	XLAT(IN_EXCL_UNLINK),
+	XLAT(IN_MASK_CREATE),
+	XLAT(IN_MASK_ADD),
+	XLAT(IN_ISDIR),
+	XLAT(IN_ONESHOT),
+};
+WXLAT(inotify_flags);
+
+const t_xlat_data inotify_init_flags_data[] = {
+	XLAT(IN_CLOEXEC),
+	XLAT(IN_NONBLOCK),
+};
+WXLAT(inotify_init_flags);
+
+#endif /* INOTIFY_XLAT_H */

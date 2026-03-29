@@ -33,6 +33,15 @@ int umovemem_or_printaddr(struct s_td *const td, void *laddr, __kernel_ulong_t t
 	return 0;
 }
 
+unsigned int get_ll_arg(struct s_td *td, unsigned long long *pt, unsigned iarg)
+{
+	if (current_wordsize == 4)
+		*pt = ((uint64_t) td->sc_args[iarg + 1] << 32) | td->sc_args[iarg];
+	else
+		*pt = td->sc_args[iarg];
+	return iarg + (current_wordsize == 4 ? 2 : 1);
+}
+
 // struct s_map *map_create(unsigned cap, unsigned key_size, unsigned val_size)
 // {
 // 	if (cap < 1 || key_size > sizeof(uint64_t))

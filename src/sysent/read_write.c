@@ -5,11 +5,14 @@
 #include <string.h>
 #include <sys/uio.h>
 
-int printiov_str(struct s_td *td, void *iovp)
+#define _FILE_OFFSET_BITS 64
+
+int printiov_str(struct s_td *td, void *iovp, size_t mem_size)
 {
 	__kernel_ulong_t base;
 	size_t           len;
-	if (current_wordsize < sizeof(__kernel_ulong_t))
+
+	if (mem_size < sizeof(struct iovec))
 	{
 		const unsigned int *const pt = iovp;
 		base = pt[0];
@@ -27,7 +30,15 @@ int printiov_str(struct s_td *td, void *iovp)
 	print_next_struct_member("iov_len");
 	PRINT_LU(len);
 	print_struct_end();
-	return n;
+	return n > 0 ? PRINTARR_STATE_SEP : PRINTARR_STATE_STOP;
+}
+
+int printiov_addr(struct s_td *td, void *iovp, size_t mem_size)
+{
+	(void) td;
+	(void) mem_size;
+	printaddr(*(__kernel_ulong_t *) iovp);
+	return PRINTARR_STATE_CONT;
 }
 
 void printiov(struct s_td     *td,
@@ -36,7 +47,13 @@ void printiov(struct s_td     *td,
 			  t_printer        p)
 {
 	struct iovec buf = {};
-	printarray(td, p, iovp, &buf, iovcnt, current_wordsize * 2);
+	printarray(td, (t_printarray_cfg){
+					   .printer = p,
+					   .start_addr = iovp,
+					   .pt_buf_var = &buf,
+					   .n_var = iovcnt,
+					   .var_size = current_wordsize * 2,
+				   });
 }
 
 SYS_FUNC(read)
@@ -266,6 +283,82 @@ SYS_FUNC(pwritev2)
 
 	NEXT_ARG("flags");
 	printflags(rwf_flags, td->sc_args[5], "RWF_???");
+
+	return SF_DECODE_COMPLETE;
+}
+
+SYS_FUNC(process_vm_readv)
+{
+	if (entering(*td))
+	{
+		FIRST_ARG("pid");
+		PRINT_ID(td->sc_args[0]);
+	}
+	else
+	{
+		NEXT_ARG("lvec");
+		printiov(td, td->sc_args[1], td->sc_args[2], printiov_str);
+
+		NEXT_ARG("liovcnt");
+		PRINT_LLU(td->sc_args[2]);
+
+		NEXT_ARG("rvec");
+		printiov(td, td->sc_args[3], td->sc_args[4], printiov_str);
+
+		NEXT_ARG("riovcnt");
+		PRINT_LLU(td->sc_args[4]);
+
+		NEXT_ARG("flags");
+		// should be zero, it's unused for now, but let's print it just in case
+		PRINT_U(td->sc_args[5]);
+	}
+
+	return 0;
+}
+
+SYS_FUNC(process_vm_writev)
+{
+	FIRST_ARG("pid");
+	PRINT_ID(td->sc_args[0]);
+
+	NEXT_ARG("lvec");
+	printiov(td, td->sc_args[1], td->sc_args[2], printiov_str);
+
+	NEXT_ARG("liovcnt");
+	PRINT_LLU(td->sc_args[2]);
+
+	NEXT_ARG("rvec");
+	printiov(td, td->sc_args[3], td->sc_args[4], printiov_str);
+
+	NEXT_ARG("riovcnt");
+	PRINT_LLU(td->sc_args[4]);
+
+	NEXT_ARG("flags");
+	PRINT_U(td->sc_args[5]);
+
+	return 0;
+}
+
+SYS_FUNC(copy_file_range)
+{
+	FIRST_ARG("fd_in");
+	printfd(td->sc_args[0]);
+
+	NEXT_ARG("off_in");
+	printnum_addr_int64(td, td->sc_args[1]);
+
+	NEXT_ARG("fd_out");
+	printfd(td->sc_args[2]);
+
+	NEXT_ARG("off_out");
+	printnum_addr_int64(td, td->sc_args[3]);
+
+	NEXT_ARG("len");
+	PRINT_U(td->sc_args[4]);
+
+	NEXT_ARG("flags");
+	// not implemented yet
+	PRINT_U(td->sc_args[5]);
 
 	return SF_DECODE_COMPLETE;
 }

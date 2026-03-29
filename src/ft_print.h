@@ -22,7 +22,7 @@
 #define MAX_PATH_LEN 4096
 
 #define FIRST_ARG(argname) is_verbose(*td) ? TPUTS(argname "=") : (void) 0
-#define NEXT_ARG(argname)  is_verbose(*td) ? TPUTS(", " argname "=") : (void) 0
+#define NEXT_ARG(argname)  is_verbose(*td) ? TPUTS(", " argname "=") : TPUTS(", ")
 
 #define PRINT_LLU(num) fprintf(FT_OUTFILE, "%llu", zero_extend_signed_to_ull(num))
 #define PRINT_LL(num)  fprintf(FT_OUTFILE, "%lld", sign_extend_unsigned_to_ll(num))
@@ -41,13 +41,15 @@
 		PRINT_U(num);
 
 #define FETCH_PRINT_F_NAME(name_) printnum_addr_##name_
-#define FETCH_PRINT_F_DEC(name_) \
+#define FETCH_PRINT_F_DECL(name_) \
 	int FETCH_PRINT_F_NAME(name_)(struct s_td * td, __kernel_ulong_t addr)
 
-FETCH_PRINT_F_DEC(int32);
-FETCH_PRINT_F_DEC(uint32);
-FETCH_PRINT_F_DEC(int64);
-FETCH_PRINT_F_DEC(uint64);
+FETCH_PRINT_F_DECL(int32);
+FETCH_PRINT_F_DECL(int64);
+FETCH_PRINT_F_DECL(uint32);
+FETCH_PRINT_F_DECL(uint64);
+FETCH_PRINT_F_DECL(ptr32);
+FETCH_PRINT_F_DECL(ptr64);
 
 enum e_putnum_fmt
 {
@@ -74,13 +76,10 @@ fputfmt(FILE *file, const char *fmt, ...);
 #define putfmterr(fmt, ...)    fputfmt(stderr, fmt, ##__VA_ARGS__)
 
 struct s_td;
-struct timespec;
 struct timeval;
 struct itimerval;
 struct timezone;
 struct utimbuf;
-
-typedef int (*t_printer)(struct s_td *, void *);
 
 void        printexit(int status);
 void        printkillsig(int sig);
@@ -89,6 +88,7 @@ void        print_syscall_enter(const char *name);
 void        print_syscall_return(struct s_td *td);
 void        printaddr(__kernel_ulong_t addr);
 const char *sprintaddr(__kernel_ulong_t addr);
+void        print_err_status(int status);
 
 int         printargs(struct s_td *td);
 int         printpath(struct s_td *td, __kernel_ulong_t addr);
@@ -96,21 +96,45 @@ int         printstr(struct s_td *td, __kernel_ulong_t addr);
 int         printnstr(struct s_td *td, __kernel_ulong_t addr, size_t n);
 int         printmem(struct s_td *td, __kernel_ulong_t addr, size_t n);
 
+// Thought about this months ago, but I'm implementing it when this into the project
+enum e_printarr_state
+{
+	PRINTARR_STATE_CONT = 0,  // continue without printing separator
+	PRINTARR_STATE_SEP = 1,   // print separator and continue
+	PRINTARR_STATE_STOP = -1, // stop printing array
+};
+
+typedef enum e_printarr_state (*t_printer)(struct s_td *, void *, size_t);
+
+typedef struct
+{
+		t_printer        printer;
+		__kernel_ulong_t start_addr;
+		void *const      pt_buf_var;
+		const size_t     n_var;
+		const size_t     var_size;
+		const char      *separator;
+} t_printarray_cfg;
+
+void printarray(struct s_td *td, t_printarray_cfg cfg);
 /**
  * printer returns:
  *   == 0 => continue
  *   >  0  => add separator (", ") inbetween elements
  *   <  0  => stop
  */
-void printarray(struct s_td     *td,
-				t_printer        printer,
-				__kernel_ulong_t start_addr,
-				void *const      mem_addr,
-				size_t           nmem,
-				size_t           mem_size);
+// typedef int                   (*t_printer)(struct s_td *, void *, size_t);
+// void printarray_old(struct s_td     *td,
+// 					t_printer        printer,
+// 					__kernel_ulong_t start_addr,
+// 					void *const      mem_addr,
+// 					size_t           nmem,
+// 					size_t           mem_size);
 
-int  printflag(const t_xlat *xlat, uint64_t flag, const char *dflt);
-int  printflags(const t_xlat *xlat, uint64_t flags, const char *dflt);
+int print_byte(struct s_td *td, void *byte, size_t mem_size);
+
+int printflag(const t_xlat *xlat, uint64_t flag, const char *dflt);
+int printflags(const t_xlat *xlat, uint64_t flags, const char *dflt);
 
 #define printflag_indexed(xlat, flag, dflt)                    \
 	if ((unsigned long) flag < ARRAY_SIZE(xlat) && xlat[flag]) \
@@ -131,35 +155,47 @@ const char *snprintflags(char         *dst,
 void        printumode(uint64_t mode);
 void        printdirfd(struct s_td *td, int fd);
 int         printmode_t(__mode_t mode);
+void        print_open_flags(unsigned int flags);
 void        printfd(int fd);
 void        printdev_t(__dev_t dev);
 void        printuser_desc(struct s_td *td, __kernel_ulong_t addr);
 void        printsigmask(struct s_td *td, __kernel_ulong_t set);
 void        printsigmask_sized(struct s_td *td, __kernel_ulong_t addr, unsigned int sigsetsize);
+void        printsigset_kernel(struct s_td *td, __kernel_ulong_t addr);
+
 void        printsigset_t(const uint64_t *addr);
 void        printsiginfo(struct s_td *td, __kernel_ulong_t addr);
 void        printsignal(int signum);
 
 void        printiov(struct s_td *td, __kernel_ulong_t iovp, size_t iovcn, t_printer);
-int         printiov_str(struct s_td *td, void *iovp);
+int         printiov_str(struct s_td *td, void *iovp, size_t mem_size);
 
 const char *sprinttime(unsigned long sec, unsigned long nsec);
 void        printtime(unsigned long sec, unsigned long nsec);
-const char *sprinttimespec_struct(struct timespec *pt);
-void        printtimespec_struct(struct timespec *pt);
-const char *sprintitimerval_struct(struct itimerval *pt);
-void        printitimerval_struct(struct itimerval *pt);
-const char *sprinttimeval_struct(struct timeval *pt);
+
+// void        printtimespec64_struct(t_struct_timespec64 *pt);
+// void        printtimespec32_struct(t_struct_timespec32 *pt);
+// const char *sprinttimespec64_struct(t_struct_timespec64 *pt);
+// const char *sprinttimespec32_struct(t_struct_timespec32 *pt);
+const char *sprinttimespec64(struct s_td *td, __kernel_ulong_t addr);
+const char *sprinttimespec32(struct s_td *td, __kernel_ulong_t addr);
+void        printtimespec64(struct s_td *td, __kernel_ulong_t addr);
+void        printtimespec32(struct s_td *td, __kernel_ulong_t addr);
+
 void        printtimeval_struct(struct timeval *pt);
-const char *sprinttimezone_struct(struct timezone *pt);
-void        printtimezone_struct(struct timezone *pt);
-void        printutimbuf_struct(struct utimbuf *pt);
+void        printtimeval(struct s_td *td, __kernel_ulong_t addr);
+
+#define sprinttimespec_struct (current_abi == ABI_64BIT ? sprinttimespec64_struct : sprinttimespec32_struct)
+#define printtimespec_struct  current_abi == ABI_64BIT ? printtimespec64_struct : printtimespec32_struct
+#define sprinttimespec        (current_abi == ABI_64BIT ? sprinttimespec64 : sprinttimespec32)
+#define printtimespec         current_abi == ABI_64BIT ? printtimespec64 : printtimespec32
+
+// const char *sprintitimerval_struct(struct itimerval *pt);
+// void        printitimerval_struct(struct itimerval *pt);
+// const char *sprinttimeval_struct(struct timeval *pt);
 const char *sprintitimerval(struct s_td *td, __kernel_ulong_t addr);
 void        printitimerval(struct s_td *td, __kernel_ulong_t addr);
 const char *sprinttimeval(struct s_td *td, __kernel_ulong_t addr);
-void        printtimeval(struct s_td *td, __kernel_ulong_t addr);
-const char *sprinttimespec(struct s_td *td, __kernel_ulong_t addr);
-void        printtimespec(struct s_td *td, __kernel_ulong_t addr);
 const char *sprinttimezone(struct s_td *td, __kernel_ulong_t addr);
 void        printtimezone(struct s_td *td, __kernel_ulong_t addr);
 void        printutimbuf(struct s_td *td, __kernel_ulong_t addr);
@@ -167,10 +203,12 @@ void        printutimbuf_utimes(struct s_td *td, __kernel_ulong_t addr);
 void        printtimex64(struct s_td *td, __kernel_ulong_t addr);
 void        printtimex32(struct s_td *td, __kernel_ulong_t addr);
 
-void        printrusage(struct s_td *td, __kernel_ulong_t addr);
-void        printrlimit(struct s_td *td, __kernel_ulong_t addr);
+#define printtimex current_abi == ABI_64BIT ? printtimex64 : printtimex32
 
-void        printkey_t(int32_t key);
+void printrusage(struct s_td *td, __kernel_ulong_t addr);
+void printrlimit(struct s_td *td, __kernel_ulong_t addr);
+
+void printkey_t(int32_t key);
 
 int __attribute__((format(printf, 1, 2)))
 print_flush(const char *fmt, ...);
@@ -223,7 +261,7 @@ FT_SIVP_(arg_sep, ", ")
 FT_SIVP_(arg_end, ")")
 FT_SIVP_(or, "|")
 FT_SIVP_(arr_start, "[")
-FT_SIVP_(arr_sep, ", ")
+FT_SIVP_(arr_sep, " ")
 FT_SIVP_(arr_end, "]")
 FT_SIVP_(struct_start, "{")
 FT_SIVP_(struct_end, "}")

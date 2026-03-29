@@ -5,10 +5,12 @@
 #include <linux/mman.h>
 
 const t_xlat_data mmap_prots_data[] = {
-	XLAT(PROT_EXEC),
+	XLAT(PROT_NONE),
 	XLAT(PROT_READ),
 	XLAT(PROT_WRITE),
-	XLAT(PROT_NONE),
+	XLAT(PROT_EXEC),
+	XLAT(PROT_GROWSDOWN),
+	XLAT(PROT_GROWSUP),
 };
 WXLAT(mmap_prots);
 
@@ -105,5 +107,20 @@ const t_xlat_data mlockall_flags_data[] = {
 	XLAT(MCL_ONFAULT),
 };
 WXLAT(mlockall_flags);
+
+const t_xlat_data mlock_flags_data[] = {
+	XLAT(MLOCK_ONFAULT),
+};
+WXLAT(mlock_flags);
+
+const t_xlat_data pkey_access_rights_data[] = {
+	XLAT(PKEY_UNRESTRICTED),
+	XLAT(PKEY_DISABLE_ACCESS),
+	XLAT(PKEY_DISABLE_WRITE),
+#ifdef PKEY_DISABLE_EXECUTE
+	XLAT(PKEY_DISABLE_EXECUTE),
+#endif
+};
+WXLAT(pkey_access_rights);
 
 #endif

@@ -371,11 +371,12 @@ SYS_FUNC(listen)
 	return SF_DECODE_COMPLETE;
 }
 
-static int print_singlefd(struct s_td *td, void *mem)
+int print_singlefd(struct s_td *td, void *mem, size_t mem_size)
 {
 	(void) td;
+	(void) mem_size;
 	printfd(*(int *) mem);
-	return 1;
+	return PRINTARR_STATE_CONT;
 }
 
 SYS_FUNC(socketpair)
@@ -384,14 +385,15 @@ SYS_FUNC(socketpair)
 		decode_socket(td);
 	else
 	{
+		NEXT_ARG("sv");
 		int buf;
-		printarray(
-			td,
-			print_singlefd,
-			td->sc_args[3],
-			&buf,
-			2,
-			sizeof(buf));
+		printarray(td, (t_printarray_cfg) {
+						   .printer = print_singlefd,
+						   .start_addr = td->sc_args[3],
+						   .pt_buf_var = &buf,
+						   .n_var = 2,
+						   .var_size = sizeof(buf),
+					   });
 	}
 
 	return 0;
@@ -485,4 +487,55 @@ SYS_FUNC(getsockopt)
 	}
 
 	return 0;
+}
+
+SYS_FUNC(recvmmsg)
+{
+	if (entering(*td))
+	{
+		FIRST_ARG("fd");
+		printfd(td->sc_args[0]);
+
+		NEXT_ARG("mmsg");
+		printaddr(td->sc_args[1]);
+
+		NEXT_ARG("vlen");
+		PRINT_U(td->sc_args[2]);
+
+		NEXT_ARG("flags");
+		printflags(msg_flags, td->sc_args[3], "MSG_???");
+
+		NEXT_ARG("timeout");
+		printtimespec(td, td->sc_args[4]);
+
+		return SF_AFTER_RETURN;
+	}
+	else
+	{
+		if (td->sc_err)
+			return 0;
+		if (td->sc_ret)
+			print_comment("Time left: %s", sprinttimespec(td, td->sc_args[4]));
+		else
+			print_comment("Timeout");
+
+		return SF_DECODE_COMPLETE;
+	}
+}
+
+SYS_FUNC(sendmmsg)
+{
+	FIRST_ARG("fd");
+	printfd(td->sc_args[0]);
+
+	NEXT_ARG("mmsg");
+	printaddr(td->sc_args[1]);
+
+	NEXT_ARG("vlen");
+	PRINT_U(td->sc_args[2]);
+
+	NEXT_ARG("flags");
+	printflags(msg_flags, td->sc_args[3], "MSG_???");
+
+	return SF_DECODE_COMPLETE;
 }

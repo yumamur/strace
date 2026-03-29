@@ -1,4 +1,3 @@
-#include "../ft_common.h"
 #include "../ft_print.h"
 
 SYS_FUNC(getcwd)

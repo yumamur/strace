@@ -36,3 +36,37 @@ SYS_FUNC(umount)
 
 	return SF_DECODE_COMPLETE;
 }
+
+SYS_FUNC(open_tree)
+{
+	FIRST_ARG("dirfd");
+	printdirfd(td, td->sc_args[0]);
+
+	NEXT_ARG("filename");
+	printpath(td, td->sc_args[1]);
+
+	NEXT_ARG("flags");
+	printflags(open_tree_flags, td->sc_args[2], "OPEN_TREE_???");
+
+	return SF_DECODE_COMPLETE;
+}
+
+SYS_FUNC(move_mount)
+{
+	FIRST_ARG("from_dfd");
+	printdirfd(td, td->sc_args[0]);
+
+	NEXT_ARG("from_pathname");
+	printpath(td, td->sc_args[1]);
+
+	NEXT_ARG("to_dfd");
+	printdirfd(td, td->sc_args[2]);
+
+	NEXT_ARG("to_pathname");
+	printpath(td, td->sc_args[3]);
+
+	NEXT_ARG("flags");
+	printflags(move_mount_flags, td->sc_args[2], "MOVE_MOUNT_???");
+
+	return SF_DECODE_COMPLETE;
+}

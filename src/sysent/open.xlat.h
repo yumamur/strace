@@ -48,4 +48,25 @@ const t_xlat_data faccessat2_flags_data[] = {
 };
 WXLAT(faccessat2_flags);
 
+const t_xlat_data fchownat_flags_data[] = {
+	XLAT(AT_SYMLINK_NOFOLLOW),
+	XLAT(AT_REMOVEDIR),
+	XLAT(AT_SYMLINK_FOLLOW),
+	XLAT(AT_NO_AUTOMOUNT),
+	XLAT(AT_EMPTY_PATH),
+	XLAT(AT_RECURSIVE),
+};
+WXLAT(fchownat_flags);
+
+
+const t_xlat_data name_to_handle_at_flags_data[] = {
+	XLAT(AT_HANDLE_MNT_ID_UNIQUE),
+	XLAT(AT_HANDLE_CONNECTABLE),
+	XLAT(AT_HANDLE_FID),
+	XLAT(AT_SYMLINK_FOLLOW),
+	XLAT(AT_EMPTY_PATH),
+};
+WXLAT(name_to_handle_at_flags);
+
+
 #endif

@@ -1,8 +1,7 @@
 #include "../ft_print.h"
 #include "../ft_utils.h"
-#include "signal.xlat.h"
-
 #include "../regs.h"
+#include "signal.xlat.h"
 
 #include <string.h>
 
@@ -412,4 +411,49 @@ SYS_FUNC(sigaltstack)
 	}
 
 	return 0;
+}
+
+SYS_FUNC(tgkill)
+{
+	FIRST_ARG("tgid");
+	PRINT_ID(td->sc_args[0]);
+
+	NEXT_ARG("pid");
+	PRINT_ID(td->sc_args[1]);
+
+	NEXT_ARG("sig");
+	printsignal(td->sc_args[2]);
+
+	return SF_DECODE_COMPLETE;
+}
+
+SYS_FUNC(rt_tgsigqueueinfo)
+{
+	FIRST_ARG("tgid");
+	PRINT_ID(td->sc_args[0]);
+
+	NEXT_ARG("pid");
+	PRINT_ID(td->sc_args[1]);
+
+	NEXT_ARG("uinfo");
+	printsiginfo(td, td->sc_args[2]);
+
+	return SF_DECODE_COMPLETE;
+}
+
+SYS_FUNC(pidfd_send_signal)
+{
+	FIRST_ARG("pidfd");
+	PRINT_ID(td->sc_args[0]);
+
+	NEXT_ARG("sig");
+	printsignal(td->sc_args[1]);
+
+	NEXT_ARG("info");
+	printsiginfo(td, td->sc_args[2]);
+
+	NEXT_ARG("flags");
+	PRINT_U(td->sc_args[3]);
+
+	return SF_DECODE_COMPLETE;
 }

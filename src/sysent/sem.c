@@ -2,9 +2,10 @@
 #include "../ft_utils.h"
 #include "sem.xlat.h"
 
-int printsembuf_struct(struct s_td *td, void *sbvp)
+int printsembuf_struct(struct s_td *td, void *sbvp, size_t mem_size)
 {
 	(void) td;
+	(void) mem_size;
 	struct sembuf *sbp = (struct sembuf *) sbvp;
 	print_struct_start();
 
@@ -13,7 +14,7 @@ int printsembuf_struct(struct s_td *td, void *sbvp)
 	printflags(semop_flags, sbp->sem_flg, "SEM_???");
 
 	print_struct_end();
-	return 1;
+	return PRINTARR_STATE_SEP;
 }
 
 void printkey_t(int32_t key)
@@ -45,7 +46,13 @@ void decode_semop(struct s_td *td)
 
 	NEXT_ARG("sops");
 	struct sembuf sb;
-	printarray(td, printsembuf_struct, td->sc_args[1], &sb, td->sc_args[2], sizeof(sb));
+	printarray(td, (t_printarray_cfg) {
+					   .printer = printsembuf_struct,
+					   .start_addr = td->sc_args[1],
+					   .pt_buf_var = &sb,
+					   .n_var = td->sc_args[2],
+					   .var_size = sizeof(sb),
+				   });
 
 	NEXT_ARG("nsops");
 	PRINT_D(td->sc_args[2]);

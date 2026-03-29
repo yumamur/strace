@@ -10,6 +10,7 @@
 #else
 #  undef __DISABLED_USE_XOPEN2K8
 #endif
+#include <linux/stat.h>
 #include <sys/stat.h>
 #ifdef __DISABLED_USE_XOPEN2K8
 #  define __USE_XOPEN2K8
@@ -46,5 +47,35 @@ const t_xlat_data fstatat_flags_data[] = {
 	XLAT(AT_SYMLINK_NOFOLLOW),
 };
 WXLAT(fstatat_flags);
+
+const t_xlat_data at_statx_sync_types_data[] = {
+	XLAT(AT_STATX_SYNC_AS_STAT),
+	XLAT(AT_STATX_FORCE_SYNC),
+	XLAT(AT_STATX_DONT_SYNC),
+};
+WXLAT(at_statx_sync_types);
+
+const t_xlat_data statx_flags_data[] = {
+	XLAT(STATX_TYPE),
+	XLAT(STATX_MODE),
+	XLAT(STATX_NLINK),
+	XLAT(STATX_UID),
+	XLAT(STATX_GID),
+	XLAT(STATX_ATIME),
+	XLAT(STATX_MTIME),
+	XLAT(STATX_CTIME),
+	XLAT(STATX_INO),
+	XLAT(STATX_SIZE),
+	XLAT(STATX_BLOCKS),
+	XLAT(STATX_BASIC_STATS),
+	XLAT(STATX_BTIME),
+	XLAT(STATX_MNT_ID),
+	XLAT(STATX_DIOALIGN),
+	XLAT(STATX_MNT_ID_UNIQUE),
+	XLAT(STATX_SUBVOL),
+	XLAT(STATX_WRITE_ATOMIC),
+	XLAT(STATX_DIO_READ_ALIGN),
+};
+WXLAT(statx_flags);
 
 #endif

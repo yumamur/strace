@@ -9,8 +9,8 @@ void printrusage(struct s_td *td, __kernel_ulong_t addr)
 {
 	struct rusage ru;
 
-	if (umovemem(td, &ru, addr, sizeof(struct rusage)) < 0)
-		printaddr(addr);
+	if (umovemem_or_printaddr(td, &ru, addr, sizeof(struct rusage)))
+		return;
 
 	print_struct_start();
 
@@ -106,8 +106,8 @@ SYS_FUNC(waitid)
 		NEXT_ARG("options");
 		printflags(wait4_options, td->sc_args[3], "W??");
 
-		NEXT_ARG("infop");
-		printaddr(td->sc_args[2]);
+		NEXT_ARG("usage");
+		printrusage(td, td->sc_args[3]);
 	}
 
 	return SF_DECODE_COMPLETE;

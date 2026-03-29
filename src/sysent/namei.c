@@ -1,4 +1,3 @@
-#include "../ft_common.h"
 #include "../ft_print.h"
 #include "namei.xlat.h"
 
@@ -13,13 +12,31 @@ SYS_FUNC(rename)
 	return SF_DECODE_COMPLETE;
 }
 
-SYS_FUNC(mkdir)
+void decode_mkdir(struct s_td *td, unsigned off)
 {
-	FIRST_ARG("pathname");
-	printstr(td, td->sc_args[0]);
+	if (off)
+		NEXT_ARG("pathname");
+	else
+		FIRST_ARG("pathname");
+
+	printstr(td, td->sc_args[off++]);
 
 	NEXT_ARG("mode");
-	printumode(td->sc_args[1]);
+	printumode(td->sc_args[off]);
+}
+
+SYS_FUNC(mkdir)
+{
+	decode_mkdir(td, 0);
+	return SF_DECODE_COMPLETE;
+}
+
+SYS_FUNC(mkdirat)
+{
+	FIRST_ARG("dirfd");
+	printdirfd(td, td->sc_args[0]);
+
+	decode_mkdir(td, 1);
 
 	return SF_DECODE_COMPLETE;
 }
@@ -84,6 +101,54 @@ SYS_FUNC(mknodat)
 	printdirfd(td, td->sc_args[0]);
 
 	decode_mknod(td, 1);
+
+	return SF_DECODE_COMPLETE;
+}
+
+SYS_FUNC(unlinkat)
+{
+	FIRST_ARG("dirfd");
+	printdirfd(td, td->sc_args[0]);
+
+	NEXT_ARG("pathname");
+	printpath(td, td->sc_args[1]);
+
+	NEXT_ARG("flags");
+	printflags(at_flags, td->sc_args[2], "AT_???");
+
+	return SF_DECODE_COMPLETE;
+}
+
+SYS_FUNC(linkat)
+{
+	FIRST_ARG("olddirfd");
+	printdirfd(td, td->sc_args[0]);
+
+	NEXT_ARG("oldpath");
+	printpath(td, td->sc_args[1]);
+
+	NEXT_ARG("newdirfd");
+	printdirfd(td, td->sc_args[2]);
+
+	NEXT_ARG("newpath");
+	printpath(td, td->sc_args[3]);
+
+	NEXT_ARG("flags");
+	printflags(at_flags, td->sc_args[4], "AT_???");
+
+	return SF_DECODE_COMPLETE;
+}
+
+SYS_FUNC(symlinkat)
+{
+	FIRST_ARG("oldname");
+	printpath(td, td->sc_args[0]);
+
+	NEXT_ARG("newdirfd");
+	printdirfd(td, td->sc_args[1]);
+
+	NEXT_ARG("newname");
+	printpath(td, td->sc_args[2]);
 
 	return SF_DECODE_COMPLETE;
 }
