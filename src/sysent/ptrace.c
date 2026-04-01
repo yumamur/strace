@@ -64,9 +64,9 @@ void print_syscall_info_seccomp_struct(
 		return print_struct_end();
 	PRINT_MEMBER_U(*pt, ret_data);
 
-	if (len < offsetof(struct ptrace_syscall_info, seccomp.reserved2))
-		return print_struct_end();
-	PRINT_MEMBER_U(*pt, reserved2);
+//	if (len < offsetof(struct ptrace_syscall_info, seccomp.reserved2))
+//		return print_struct_end();
+//	PRINT_MEMBER_U(*pt, reserved2);
 
 	print_struct_end();
 }
@@ -90,7 +90,7 @@ void printptrace_syscall_info(
 	print_struct_start();
 	PRINT_MEMBER_FLAG(info, op, ptrace_syscall_info_ops, "PTRACE_SYSCALL_INFO_");
 
-	if (len < offsetof(struct ptrace_syscall_info, reserved))
+/*	if (len < offsetof(struct ptrace_syscall_info, reserved))
 		return print_struct_end();
 
 	if (info.reserved)
@@ -107,7 +107,7 @@ void printptrace_syscall_info(
 		print_struct_member_sep();
 		PRINT_MEMBER_LLX(info, flags);
 	}
-
+*/
 	if (len < offsetof(struct ptrace_syscall_info, arch))
 		return print_struct_end();
 	print_struct_member_sep();
@@ -203,7 +203,6 @@ int decode_ptrace_entering(struct s_td *const td)
 	case PTRACE_SECCOMP_GET_FILTER:
 	case PTRACE_SECCOMP_GET_METADATA:
 	case PTRACE_GET_SYSCALL_INFO:
-	case PTRACE_SET_SYSCALL_INFO:
 		PRINT_U(addr);
 		break;
 	case PTRACE_PEEKSIGINFO:
