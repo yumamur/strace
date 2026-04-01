@@ -1,29 +1,30 @@
 #include "../ft_print.h"
+#include "../ft_utils.h"
 #include "open.xlat.h"
 #include <string.h>
 
 void print_open_flags(unsigned int flags)
 {
-	char        buffer[1024];
-	const char *access_mode_name = search_xlat(open_access_flags, flags & O_ACCMODE);
-
-	if (!access_mode_name)
-		access_mode_name = "O_???";
-
-	int written = snprintf(buffer, sizeof(buffer), "%s", access_mode_name);
+	printflag(open_access_flags, flags & O_ACCMODE, "O_???");
 	flags &= ~O_ACCMODE;
 
-	if (flags && (size_t) written < sizeof(buffer) - 1)
+	if (flags)
 	{
-		buffer[written++] = '|';
-		snprintflags(buffer + written,
-					 sizeof(buffer) - written,
-					 open_flags,
-					 flags,
-					 "O_???");
+		print_or();
+		printflags(open_flags, flags, "O_???");
 	}
+}
 
-	prints(buffer);
+void print_open_flags64(uint64_t flags)
+{
+	printflag(open_access_flags, flags & O_ACCMODE, "O_???");
+	flags &= ~O_ACCMODE;
+
+	if (flags)
+	{
+		print_or();
+		printflags(open_flags, flags, "O_???");
+	}
 }
 
 SYS_FUNC(open)
@@ -59,6 +60,42 @@ SYS_FUNC(openat)
 		NEXT_ARG("mode");
 		printumode(td->sc_args[3]);
 	}
+
+	return SF_DECODE_COMPLETE;
+}
+
+void printopen_how(struct s_td *td, __kernel_ulong_t addr, size_t size)
+{
+	struct open_how buf;
+
+	if (size < sizeof(buf))
+		return printaddr(addr);
+
+	if (umovemem_or_printaddr(td, &buf, addr, sizeof(buf)))
+		return;
+
+	print_struct_start();
+	PRINT_MEMBER(buf, flags, print_open_flags64);
+	print_struct_member_sep();
+	PRINT_MEMBER(buf, mode, printumode);
+	print_struct_member_sep();
+	PRINT_MEMBER_FLAGS(buf, resolve, open_how_resolve_flags, "RESOLVE_???");
+	print_struct_end();
+}
+
+SYS_FUNC(openat2)
+{
+	FIRST_ARG("dirfd");
+	printdirfd(td, td->sc_args[0]);
+
+	NEXT_ARG("pathname");
+	printpath(td, td->sc_args[1]);
+
+	NEXT_ARG("how");
+	printopen_how(td, td->sc_args[2], td->sc_args[3]);
+
+	NEXT_ARG("usize");
+	PRINT_LU(td->sc_args[3]);
 
 	return SF_DECODE_COMPLETE;
 }
@@ -124,6 +161,17 @@ SYS_FUNC(truncate)
 	return SF_DECODE_COMPLETE;
 }
 
+SYS_FUNC(truncate64)
+{
+	FIRST_ARG("path");
+	printpath(td, td->sc_args[0]);
+
+	NEXT_ARG("length");
+	print_llu_arg(td, 1);
+
+	return SF_DECODE_COMPLETE;
+}
+
 SYS_FUNC(ftruncate)
 {
 	FIRST_ARG("fd");
@@ -131,6 +179,17 @@ SYS_FUNC(ftruncate)
 
 	NEXT_ARG("length");
 	PRINT_LL(td->sc_args[1]);
+
+	return SF_DECODE_COMPLETE;
+}
+
+SYS_FUNC(ftruncate64)
+{
+	FIRST_ARG("fd");
+	printfd(td->sc_args[0]);
+
+	NEXT_ARG("length");
+	print_llu_arg(td, 1);
 
 	return SF_DECODE_COMPLETE;
 }
@@ -154,7 +213,7 @@ SYS_FUNC(fchmod)
 	return SF_DECODE_COMPLETE;
 }
 
-SYS_FUNC(fchmodat)
+void decode_fchmodat(struct s_td *td)
 {
 	FIRST_ARG("dirfd");
 	printdirfd(td, td->sc_args[0]);
@@ -164,6 +223,20 @@ SYS_FUNC(fchmodat)
 
 	NEXT_ARG("mode");
 	printumode(td->sc_args[2]);
+}
+
+SYS_FUNC(fchmodat)
+{
+	decode_fchmodat(td);
+	return SF_DECODE_COMPLETE;
+}
+
+SYS_FUNC(fchmodat2)
+{
+	decode_fchmodat(td);
+
+	NEXT_ARG("flags");
+	printflags(fchmodat2_flags, td->sc_args[3], "AT_???");
 
 	return SF_DECODE_COMPLETE;
 }
@@ -187,6 +260,34 @@ void decode_chown(struct s_td *td, unsigned off)
 SYS_FUNC(chown)
 {
 	decode_chown(td, 0);
+	return SF_DECODE_COMPLETE;
+}
+
+SYS_FUNC(chown16)
+{
+	FIRST_ARG("pathname");
+	printpath(td, td->sc_args[0]);
+
+	NEXT_ARG("owner");
+	PRINT_U((unsigned short) td->sc_args[1]);
+
+	NEXT_ARG("group");
+	PRINT_U((unsigned short) td->sc_args[2]);
+
+	return SF_DECODE_COMPLETE;
+}
+
+SYS_FUNC(fchown16)
+{
+	FIRST_ARG("fd");
+	printfd(td->sc_args[0]);
+
+	NEXT_ARG("owner");
+	PRINT_U((unsigned short) td->sc_args[1]);
+
+	NEXT_ARG("group");
+	PRINT_U((unsigned short) td->sc_args[2]);
+
 	return SF_DECODE_COMPLETE;
 }
 

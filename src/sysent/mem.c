@@ -320,3 +320,109 @@ SYS_FUNC(pkey_free)
 
 	return SF_DECODE_COMPLETE;
 }
+
+SYS_FUNC(process_madvise)
+{
+	FIRST_ARG("pidfd");
+	printfd(td->sc_args[0]);
+
+	NEXT_ARG("vec");
+	printiov(td, td->sc_args[1], td->sc_args[2], printiov_addr);
+
+	NEXT_ARG("vlen");
+	PRINT_LU(td->sc_args[2]);
+
+	NEXT_ARG("behavior");
+	printflags(madvise_values, td->sc_args[3], "MADV_???");
+
+	NEXT_ARG("flags");
+	// not implemented yet
+	PRINT_X(td->sc_args[4]);
+
+	return SF_DECODE_COMPLETE;
+}
+
+SYS_FUNC(process_mrelease)
+{
+	FIRST_ARG("pidfd");
+	printfd(td->sc_args[0]);
+
+	NEXT_ARG("flags");
+	// not implemented yet
+	PRINT_X(td->sc_args[1]);
+
+	return SF_DECODE_COMPLETE;
+}
+
+void printcachestat_range(struct s_td *td, __kernel_ulong_t addr)
+{
+	struct cachestat_range buf;
+	if (umovemem_or_printaddr(td, &buf, addr, sizeof(buf)))
+		return;
+
+	print_struct_start();
+	PRINT_MEMBER_LL(buf, off);
+	print_struct_member_sep();
+	PRINT_MEMBER_LL(buf, len);
+	print_struct_end();
+}
+
+void printcachestat(struct s_td *td, __kernel_ulong_t addr)
+{
+	struct cachestat buf;
+
+	if (umovemem_or_printaddr(td, &buf, addr, sizeof(buf)))
+		return;
+
+	print_struct_start();
+	PRINT_MEMBER_LLU(buf, nr_cache);
+	print_struct_member_sep();
+	PRINT_MEMBER_LLU(buf, nr_dirty);
+	print_struct_member_sep();
+	PRINT_MEMBER_LLU(buf, nr_writeback);
+	print_struct_member_sep();
+	PRINT_MEMBER_LLU(buf, nr_evicted);
+	print_struct_member_sep();
+	PRINT_MEMBER_LLU(buf, nr_recently_evicted);
+	print_struct_end();
+}
+
+SYS_FUNC(cachestat)
+{
+	if (entering(*td))
+	{
+		FIRST_ARG("fd");
+		printfd(td->sc_args[0]);
+
+		NEXT_ARG("cstat_range");
+		printcachestat_range(td, td->sc_args[1]);
+	}
+	else
+	{
+		if (td->sc_err)
+			printaddr(td->sc_args[2]);
+		else
+			printcachestat(td, td->sc_args[2]);
+
+		NEXT_ARG("flags");
+		// not implemented
+		PRINT_X(td->sc_args[3]);
+	}
+
+	return 0;
+}
+
+SYS_FUNC(mseal)
+{
+	FIRST_ARG("start");
+	printaddr(td->sc_args[0]);
+
+	NEXT_ARG("len");
+	PRINT_LU(td->sc_args[1]);
+
+	NEXT_ARG("flags");
+	// not implemented yet
+	PRINT_X(td->sc_args[2]);
+
+	return SF_DECODE_COMPLETE;
+}

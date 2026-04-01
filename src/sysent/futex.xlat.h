@@ -41,4 +41,24 @@ const t_xlat_data futex_bitsets_data[] = {
 };
 WXLAT(futex_bitsets);
 
+const t_xlat_data futex2_size_flags_data[] = {
+	XLAT(FUTEX2_SIZE_U8),
+	XLAT(FUTEX2_SIZE_U16),
+	XLAT(FUTEX2_SIZE_U32),
+	XLAT(FUTEX2_SIZE_U64),
+};
+WXLAT(futex2_size_flags);
+
+const t_xlat_data futex2_flags_data[] = {
+	XLAT(FUTEX2_NUMA),
+	XLAT(FUTEX2_MPOL),
+	XLAT(FUTEX2_PRIVATE),
+};
+WXLAT(futex2_flags);
+
+const t_xlat_data futex2_bitset_data[] = {
+	XLAT(FUTEX_BITSET_MATCH_ANY),
+};
+WXLAT(futex2_bitset);
+
 #endif /* FUTEX_XLAT_H */

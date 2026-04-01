@@ -3,6 +3,7 @@
 
 #include "xlat.h"
 #include <linux/fcntl.h>
+#include <linux/openat2.h>
 #include <unistd.h>
 
 const t_xlat_data open_access_flags_data[] = {
@@ -58,7 +59,6 @@ const t_xlat_data fchownat_flags_data[] = {
 };
 WXLAT(fchownat_flags);
 
-
 const t_xlat_data name_to_handle_at_flags_data[] = {
 	XLAT(AT_HANDLE_MNT_ID_UNIQUE),
 	XLAT(AT_HANDLE_CONNECTABLE),
@@ -68,5 +68,20 @@ const t_xlat_data name_to_handle_at_flags_data[] = {
 };
 WXLAT(name_to_handle_at_flags);
 
+const t_xlat_data open_how_resolve_flags_data[] = {
+	XLAT(RESOLVE_NO_XDEV),
+	XLAT(RESOLVE_NO_MAGICLINKS),
+	XLAT(RESOLVE_NO_SYMLINKS),
+	XLAT(RESOLVE_BENEATH),
+	XLAT(RESOLVE_IN_ROOT),
+	XLAT(RESOLVE_CACHED),
+};
+WXLAT(open_how_resolve_flags);
+
+const t_xlat_data fchmodat2_flags_data[] = {
+	XLAT(AT_SYMLINK_NOFOLLOW),
+	XLAT(AT_EMPTY_PATH),
+};
+WXLAT(fchmodat2_flags);
 
 #endif

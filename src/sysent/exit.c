@@ -1,9 +1,8 @@
 #include "../ft_print.h"
 #include "../ft_utils.h"
+#include "exit.xlat.h"
 #include <sys/resource.h>
 #include <sys/signal.h>
-
-#include "exit.xlat.h"
 
 void printrusage(struct s_td *td, __kernel_ulong_t addr)
 {
@@ -14,9 +13,9 @@ void printrusage(struct s_td *td, __kernel_ulong_t addr)
 
 	print_struct_start();
 
-	PRINT_MEMBER_ADDR(ru, ru_utime, printtimeval_struct);
+	PRINT_MEMBER_ADDR(ru, ru_utime, print_kernel_old_timeval_struct);
 	print_struct_member_sep();
-	PRINT_MEMBER_ADDR(ru, ru_stime, printtimeval_struct);
+	PRINT_MEMBER_ADDR(ru, ru_stime, print_kernel_old_timeval_struct);
 	print_struct_member_sep();
 	if (is_verbose(*td))
 	{
@@ -56,14 +55,33 @@ SYS_FUNC(exit)
 	return SF_DECODE_COMPLETE;
 }
 
+SYS_FUNC(waitpid)
+{
+	if (entering(*td))
+	{
+		FIRST_ARG("pid");
+		PRINT_D(td->sc_args[0]);
+	}
+	else
+	{
+		NEXT_ARG("status");
+		if (!td->sc_ret)
+			printaddr(td->sc_args[1]);
+		else
+			printnum_addr_int32(td, td->sc_args[1]);
+
+		NEXT_ARG("options");
+		printflags(wait4_options, td->sc_args[2], "W??");
+	}
+	return (0);
+}
+
 SYS_FUNC(wait4)
 {
 	if (entering(*td))
 	{
 		FIRST_ARG("pid");
 		PRINT_D(td->sc_args[0]);
-
-		return (0);
 	}
 	else
 	{
@@ -83,7 +101,7 @@ SYS_FUNC(wait4)
 			printaddr(td->sc_args[3]);
 	}
 
-	return (SF_DECODE_COMPLETE);
+	return (0);
 }
 
 SYS_FUNC(waitid)

@@ -61,6 +61,16 @@ ssize_t umovemem(struct s_td *const td, void *laddr, __kernel_ulong_t taddr, siz
 	return read;
 }
 
+ssize_t umovemem_ignore_sc_err(struct s_td *const td, void *laddr, __kernel_ulong_t taddr, size_t len)
+{
+	int read = process_read_mem(td->pid, laddr, (void *) taddr, len);
+	if (read >= 0 && len != (size_t) read)
+		perror_and_cont(errno,
+					"vm_readv error: (expected:%zu, got:%d) addr: 0x%lx",
+					len, read, taddr);
+	return read;
+}
+
 ssize_t umovestr(struct s_td *const td, char *laddr, __kernel_ulong_t taddr, size_t len)
 {
 	const int    pid = td->pid;

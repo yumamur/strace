@@ -321,3 +321,9 @@ void syscallend(struct s_td *td)
 	td->sc_err = 0;
 	clear_td(td);
 }
+
+int syscall_noop(struct s_td *td)
+{
+	(void) td;
+	return SF_DECODE_COMPLETE;
+}

@@ -99,11 +99,34 @@ SYS_FUNC(lseek)
 	PRINT_LL(td->sc_args[1]);
 
 	NEXT_ARG("whence");
-	printflags(lseek_whence_values, td->sc_args[2], "UNKNOWN");
+	printflag_indexed(lseek_whence_values, td->sc_args[2], "UNKNOWN");
 	return SF_DECODE_COMPLETE;
 }
 
-SYS_FUNC(pread64)
+SYS_FUNC(llseek)
+{
+	if (entering(*td))
+	{
+		FIRST_ARG("fd");
+		printfd(td->sc_args[0]);
+
+		long long offset = ((long long) td->sc_args[1] << 32) | td->sc_args[2];
+		NEXT_ARG("offset");
+		PRINT_LL(offset);
+	}
+	else
+	{
+		NEXT_ARG("result");
+		printnum_addr_int64(td, td->sc_args[3]);
+
+		NEXT_ARG("whence");
+		printflag_indexed(lseek_whence_values, td->sc_args[3], "UNKNOWN");
+	}
+
+	return 0;
+}
+
+SYS_FUNC(pread)
 {
 	if (entering(*td))
 	{
@@ -126,7 +149,7 @@ SYS_FUNC(pread64)
 	}
 }
 
-SYS_FUNC(pwrite64)
+SYS_FUNC(pwrite)
 {
 	FIRST_ARG("fd");
 	printfd(td->sc_args[0]);
@@ -177,7 +200,7 @@ SYS_FUNC(writev)
 	return SF_DECODE_COMPLETE;
 }
 
-SYS_FUNC(sendfile64)
+SYS_FUNC(sendfile)
 {
 	if (entering(*td))
 	{
@@ -188,7 +211,7 @@ SYS_FUNC(sendfile64)
 		printfd(td->sc_args[1]);
 
 		NEXT_ARG("offset");
-		if (printnum_addr_int64(td, td->sc_args[2]) == -1)
+		if (printnum_addr_uint32(td, td->sc_args[2]) == -1)
 		{
 			NEXT_ARG("count");
 			PRINT_LLU(td->sc_args[3]);
@@ -202,7 +225,41 @@ SYS_FUNC(sendfile64)
 		{
 			print_val_change();
 
-			printnum_addr_int64(td, td->sc_args[2]);
+			printnum_addr_uint32(td, td->sc_args[2]);
+		}
+
+		NEXT_ARG("count");
+		PRINT_LLU(td->sc_args[3]);
+	}
+	return 0;
+}
+
+SYS_FUNC(sendfile64)
+{
+	if (entering(*td))
+	{
+		FIRST_ARG("out_fd");
+		printfd(td->sc_args[0]);
+
+		NEXT_ARG("in_fd");
+		printfd(td->sc_args[1]);
+
+		NEXT_ARG("offset");
+		if (printnum_addr_uint64(td, td->sc_args[2]) == -1)
+		{
+			NEXT_ARG("count");
+			PRINT_LLU(td->sc_args[3]);
+
+			return SF_DECODE_COMPLETE;
+		}
+	}
+	else
+	{
+		if (!td->sc_err && td->sc_ret)
+		{
+			print_val_change();
+
+			printnum_addr_uint64(td, td->sc_args[2]);
 		}
 
 		NEXT_ARG("count");

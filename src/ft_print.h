@@ -3,6 +3,7 @@
 
 #include "ft_common.h"
 #include "ft_string.h"
+#include "printtime.h"
 #include "sysent/xlat.h"
 
 #define FT_OUTFILE stderr
@@ -113,6 +114,7 @@ typedef struct
 		void *const      pt_buf_var;
 		const size_t     n_var;
 		const size_t     var_size;
+		const ssize_t    max_vars;
 		const char      *separator;
 } t_printarray_cfg;
 
@@ -132,6 +134,8 @@ void printarray(struct s_td *td, t_printarray_cfg cfg);
 // 					size_t           mem_size);
 
 int print_byte(struct s_td *td, void *byte, size_t mem_size);
+int print_singlefd(struct s_td *td, void *mem, size_t mem_size);
+int print_uint64(struct s_td *td, void *pt, size_t size);
 
 int printflag(const t_xlat *xlat, uint64_t flag, const char *dflt);
 int printflags(const t_xlat *xlat, uint64_t flags, const char *dflt);
@@ -169,41 +173,43 @@ void        printsignal(int signum);
 
 void        printiov(struct s_td *td, __kernel_ulong_t iovp, size_t iovcn, t_printer);
 int         printiov_str(struct s_td *td, void *iovp, size_t mem_size);
+int         printiov_addr(struct s_td *td, void *iovp, size_t mem_size);
 
-const char *sprinttime(unsigned long sec, unsigned long nsec);
-void        printtime(unsigned long sec, unsigned long nsec);
+// const char *sprinttime(unsigned long sec, unsigned long nsec);
+// void        printtime(unsigned long sec, unsigned long nsec);
+// void        print_clock_id(int clockid);
 
-// void        printtimespec64_struct(t_struct_timespec64 *pt);
-// void        printtimespec32_struct(t_struct_timespec32 *pt);
-// const char *sprinttimespec64_struct(t_struct_timespec64 *pt);
-// const char *sprinttimespec32_struct(t_struct_timespec32 *pt);
-const char *sprinttimespec64(struct s_td *td, __kernel_ulong_t addr);
-const char *sprinttimespec32(struct s_td *td, __kernel_ulong_t addr);
-void        printtimespec64(struct s_td *td, __kernel_ulong_t addr);
-void        printtimespec32(struct s_td *td, __kernel_ulong_t addr);
+// const char *sprinttimespec64(struct s_td *td, __kernel_ulong_t addr);
+// const char *sprinttimespec32(struct s_td *td, __kernel_ulong_t addr);
+// void        printtimespec64(struct s_td *td, __kernel_ulong_t addr);
+// void        printtimespec32(struct s_td *td, __kernel_ulong_t addr);
 
-void        printtimeval_struct(struct timeval *pt);
-void        printtimeval(struct s_td *td, __kernel_ulong_t addr);
+// void        printtimeval32_struct(void *pt);
+// void        printtimeval64_struct(void *pt);
+// void        printtimeval32(struct s_td *td, __kernel_ulong_t addr);
+// void        printtimeval64(struct s_td *td, __kernel_ulong_t addr);
 
-#define sprinttimespec_struct (current_abi == ABI_64BIT ? sprinttimespec64_struct : sprinttimespec32_struct)
-#define printtimespec_struct  current_abi == ABI_64BIT ? printtimespec64_struct : printtimespec32_struct
-#define sprinttimespec        (current_abi == ABI_64BIT ? sprinttimespec64 : sprinttimespec32)
-#define printtimespec         current_abi == ABI_64BIT ? printtimespec64 : printtimespec32
+// #define sprinttimespec_struct (current_abi == ABI_64BIT ? sprinttimespec64_struct : sprinttimespec32_struct)
+// #define printtimespec_struct  current_abi == ABI_64BIT ? printtimespec64_struct : printtimespec32_struct
+// #define sprinttimespec        (current_abi == ABI_64BIT ? sprinttimespec64 : sprinttimespec32)
+// #define printtimespec         current_abi == ABI_64BIT ? printtimespec64 : printtimespec32
 
-// const char *sprintitimerval_struct(struct itimerval *pt);
-// void        printitimerval_struct(struct itimerval *pt);
-// const char *sprinttimeval_struct(struct timeval *pt);
-const char *sprintitimerval(struct s_td *td, __kernel_ulong_t addr);
-void        printitimerval(struct s_td *td, __kernel_ulong_t addr);
-const char *sprinttimeval(struct s_td *td, __kernel_ulong_t addr);
-const char *sprinttimezone(struct s_td *td, __kernel_ulong_t addr);
-void        printtimezone(struct s_td *td, __kernel_ulong_t addr);
-void        printutimbuf(struct s_td *td, __kernel_ulong_t addr);
-void        printutimbuf_utimes(struct s_td *td, __kernel_ulong_t addr);
-void        printtimex64(struct s_td *td, __kernel_ulong_t addr);
-void        printtimex32(struct s_td *td, __kernel_ulong_t addr);
+// // #define sprinttimeval_struct  (current_abi == ABI_64BIT ? sprinttimeval64_struct : sprinttimeval32_struct)
+// #define printtimeval_struct   current_abi == ABI_64BIT ? printtimeval64_struct : printtimeval32_struct
+// // #define sprinttimeval         (current_abi == ABI_64BIT ? sprinttimeval64 : sprinttimeval32)
+// #define printtimeval          current_abi == ABI_64BIT ? printtimeval64 : printtimeval32
 
-#define printtimex current_abi == ABI_64BIT ? printtimex64 : printtimex32
+// const char *sprintitimerval(struct s_td *td, __kernel_ulong_t addr);
+// void        printitimerval(struct s_td *td, __kernel_ulong_t addr);
+// const char *sprinttimeval(struct s_td *td, __kernel_ulong_t addr);
+// const char *sprinttimezone(struct s_td *td, __kernel_ulong_t addr);
+// void        printtimezone(struct s_td *td, __kernel_ulong_t addr);
+// void        printutimbuf(struct s_td *td, __kernel_ulong_t addr);
+// void        printutimbuf_utimes(struct s_td *td, __kernel_ulong_t addr);
+// void        printtimex64(struct s_td *td, __kernel_ulong_t addr);
+// void        printtimex32(struct s_td *td, __kernel_ulong_t addr);
+
+// #define printtimex current_abi == ABI_64BIT ? printtimex64 : printtimex32
 
 void printrusage(struct s_td *td, __kernel_ulong_t addr);
 void printrlimit(struct s_td *td, __kernel_ulong_t addr);

@@ -99,7 +99,7 @@ static void print_pollfds(struct s_td *td, __kernel_ulong_t addr, unsigned long 
 {
 	struct pollfd buf;
 
-	printarray(td, (t_printarray_cfg) {
+	printarray(td, (t_printarray_cfg){
 					   .printer = print_pollfd,
 					   .start_addr = addr,
 					   .pt_buf_var = &buf,
@@ -133,99 +133,85 @@ SYS_FUNC(poll)
 	}
 }
 
-void do_select_exiting(struct s_td *td, __kernel_ulong_t fdss[], int nfds, int nmax)
+int do_select(struct s_td *td, typeof(printtimeval32) printtimeval_fn)
 {
-	if (nmax == 0)
-		return print_comment("Timeout");
+	int nfds = (int) td->sc_args[0];
+	if (nfds < 0)
+		nfds = 0;
+	if (nfds > FD_SETSIZE)
+		nfds = FD_SETSIZE;
 
-	print_arg_start();
+	if (entering(*td))
+	{
+		FIRST_ARG("nfds");
+		PRINT_D(nfds);
 
-	print_struct_member("in");
-	nmax -= printfd_set(td, fdss[0], nfds, nmax);
+		NEXT_ARG("readfds");
+		printfd_set(td, td->sc_args[1], nfds, nfds);
 
-	print_next_struct_member("out");
-	nmax -= printfd_set(td, fdss[1], nfds, nmax);
+		NEXT_ARG("writefds");
+		printfd_set(td, td->sc_args[2], nfds, nfds);
 
-	print_next_struct_member("exc");
-	nmax -= printfd_set(td, fdss[2], nfds, nmax);
+		NEXT_ARG("exceptfds");
+		printfd_set(td, td->sc_args[3], nfds, nfds);
 
-	print_arr_end();
+		NEXT_ARG("timeout");
+		printtimeval_fn(td, td->sc_args[4]);
+
+		return SF_AFTER_RETURN;
+	}
+	else
+	{
+		int nmax = td->sc_ret;
+		if (nmax == 0)
+			print_comment("Timeout");
+		else
+		{
+			print_arg_start();
+
+			print_struct_member("in");
+			nmax -= printfd_set(td, td->sc_args[1], nfds, nmax);
+
+			print_next_struct_member("out");
+			nmax -= printfd_set(td, td->sc_args[2], nfds, nmax);
+
+			print_next_struct_member("exc");
+			nmax -= printfd_set(td, td->sc_args[3], nfds, nmax);
+
+			print_arr_end();
+		}
+
+		return SF_DECODE_COMPLETE;
+	}
 }
 
 SYS_FUNC(select)
 {
-	int nfds = (int) td->sc_args[0];
-	if (nfds < 0)
-		nfds = 0;
-	if (nfds > FD_SETSIZE)
-		nfds = FD_SETSIZE;
-
-	if (entering(*td))
-	{
-		FIRST_ARG("nfds");
-		PRINT_D(nfds);
-
-		NEXT_ARG("readfds");
-		printfd_set(td, td->sc_args[1], nfds, nfds);
-
-		NEXT_ARG("writefds");
-		printfd_set(td, td->sc_args[2], nfds, nfds);
-
-		NEXT_ARG("exceptfds");
-		printfd_set(td, td->sc_args[3], nfds, nfds);
-
-		NEXT_ARG("timeout");
-		printtimeval(td, td->sc_args[4]);
-
-		return SF_AFTER_RETURN;
-	}
-	else
-	{
-		do_select_exiting(td, &td->sc_args[1], nfds, td->sc_ret);
-
-		return SF_DECODE_COMPLETE;
-	}
+	return do_select(td, printtimeval64);
 }
 
-SYS_FUNC(pselect6)
+int do_pselect6(struct s_td *td, typeof(printtimeval32) printtimeval_fn)
 {
-	int nfds = (int) td->sc_args[0];
-	if (nfds < 0)
-		nfds = 0;
-	if (nfds > FD_SETSIZE)
-		nfds = FD_SETSIZE;
-
+	int ret = do_select(td, printtimeval_fn);
 	if (entering(*td))
 	{
-		FIRST_ARG("nfds");
-		PRINT_D(nfds);
-
-		NEXT_ARG("readfds");
-		printfd_set(td, td->sc_args[1], nfds, nfds);
-
-		NEXT_ARG("writefds");
-		printfd_set(td, td->sc_args[2], nfds, nfds);
-
-		NEXT_ARG("exceptfds");
-		printfd_set(td, td->sc_args[3], nfds, nfds);
-
-		NEXT_ARG("timeout");
-		printtimeval(td, td->sc_args[4]);
-
 		NEXT_ARG("sigmask");
 		printsigset_kernel(td, td->sc_args[5]);
-
-		return SF_AFTER_RETURN;
 	}
-	else
-	{
-		do_select_exiting(td, &td->sc_args[1], nfds, td->sc_ret);
-
-		return SF_DECODE_COMPLETE;
-	}
+	return ret;
 }
 
-SYS_FUNC(ppoll)
+SYS_FUNC(pselect6_time32)
+{
+	return do_pselect6(td, printtimeval32);
+}
+
+SYS_FUNC(pselect6_time64)
+{
+	return do_pselect6(td, printtimeval64);
+}
+
+SYS_FUNC(ppoll_time32)
 {
 	if (entering(*td))
 	{
@@ -236,7 +222,35 @@ SYS_FUNC(ppoll)
 		PRINT_LLU(td->sc_args[1]);
 
 		NEXT_ARG("timeout");
-		printtimeval(td, td->sc_args[2]);
+		printtimeval32(td, td->sc_args[2]);
+
+		NEXT_ARG("sigmask");
+		printsigset_kernel(td, td->sc_args[3]);
+
+		return SF_AFTER_RETURN;
+	}
+	else
+	{
+		print_arg_start();
+		print_pollfds(td, td->sc_args[0], td->sc_args[1]);
+		print_arg_end();
+
+		return SF_DECODE_COMPLETE;
+	}
+}
+
+SYS_FUNC(ppoll_time64)
+{
+	if (entering(*td))
+	{
+		FIRST_ARG("fds");
+		print_pollfds(td, td->sc_args[0], td->sc_args[1]);
+
+		NEXT_ARG("nfds");
+		PRINT_LLU(td->sc_args[1]);
+
+		NEXT_ARG("timeout");
+		printtimeval64(td, td->sc_args[2]);
 
 		NEXT_ARG("sigmask");
 		printsigset_kernel(td, td->sc_args[3]);

@@ -5,7 +5,7 @@
 #include <sys/times.h>
 #include <sys/utsname.h>
 
-SYS_FUNC(newuname)
+SYS_FUNC(uname)
 {
 	struct utsname un;
 
@@ -185,6 +185,14 @@ SYS_FUNC(times)
 	return 0;
 }
 
+SYS_FUNC(setuid16)
+{
+	FIRST_ARG("uid");
+	PRINT_ID((unsigned short) td->sc_args[0]);
+
+	return SF_DECODE_COMPLETE;
+}
+
 SYS_FUNC(setuid)
 {
 	FIRST_ARG("uid");
@@ -204,6 +212,17 @@ SYS_FUNC(setpgid)
 	return SF_DECODE_COMPLETE;
 }
 
+SYS_FUNC(setreuid16)
+{
+	FIRST_ARG("ruid");
+	PRINT_ID((unsigned short) td->sc_args[0]);
+
+	NEXT_ARG("euid");
+	PRINT_ID((unsigned short) td->sc_args[1]);
+
+	return SF_DECODE_COMPLETE;
+}
+
 SYS_FUNC(setreuid)
 {
 	FIRST_ARG("ruid");
@@ -211,6 +230,20 @@ SYS_FUNC(setreuid)
 
 	NEXT_ARG("euid");
 	PRINT_ID(td->sc_args[1]);
+
+	return SF_DECODE_COMPLETE;
+}
+
+SYS_FUNC(setresuid16)
+{
+	FIRST_ARG("ruid");
+	PRINT_ID((unsigned short) td->sc_args[0]);
+
+	NEXT_ARG("euid");
+	PRINT_ID((unsigned short) td->sc_args[1]);
+
+	NEXT_ARG("suid");
+	PRINT_ID((unsigned short) td->sc_args[2]);
 
 	return SF_DECODE_COMPLETE;
 }
@@ -229,32 +262,60 @@ SYS_FUNC(setresuid)
 	return SF_DECODE_COMPLETE;
 }
 
-void umove_print_id(struct s_td *td, __kernel_ulong_t addr)
+void umove_print_id(struct s_td *td, __kernel_ulong_t addr, size_t id_t_size)
 {
 	__uid_t buf = 0;
 
 	if (umovemem(td, &buf, addr, sizeof(buf)) < 0)
 		return printaddr(addr);
 	print_arg_start();
-	PRINT_ID(buf);
+	if (id_t_size == sizeof(short))
+	{
+		PRINT_ID((unsigned short) buf);
+	}
+	else
+		PRINT_ID(buf);
 	print_arg_end();
+}
+
+void do_getresuid(struct s_td *td, size_t id_t_size, bool is_gid)
+{
+	is_gid ? FIRST_ARG("rgidp") : FIRST_ARG("ruidp");
+	umove_print_id(td, td->sc_args[0], id_t_size);
+
+	is_gid ? NEXT_ARG("egidp") : NEXT_ARG("euidp");
+	umove_print_id(td, td->sc_args[1], id_t_size);
+
+	is_gid ? NEXT_ARG("sgidp") : NEXT_ARG("suidp");
+	umove_print_id(td, td->sc_args[2], id_t_size);
+}
+
+SYS_FUNC(getresuid16)
+{
+	if (exiting(*td))
+		do_getresuid(td, sizeof(__kernel_old_uid_t), false);
+	return 0;
 }
 
 SYS_FUNC(getresuid)
 {
 	if (exiting(*td))
-	{
-		FIRST_ARG("ruidp");
-		umove_print_id(td, td->sc_args[0]);
-
-		NEXT_ARG("euidp");
-		umove_print_id(td, td->sc_args[1]);
-
-		NEXT_ARG("suidp");
-		umove_print_id(td, td->sc_args[2]);
-	}
-
+		do_getresuid(td, sizeof(__kernel_uid_t), false);
 	return 0;
+}
+
+SYS_FUNC(setresgid16)
+{
+	FIRST_ARG("rgid");
+	PRINT_ID((__kernel_old_gid_t) td->sc_args[0]);
+
+	NEXT_ARG("egid");
+	PRINT_ID((__kernel_old_gid_t) td->sc_args[1]);
+
+	NEXT_ARG("sgid");
+	PRINT_ID((__kernel_old_gid_t) td->sc_args[2]);
+
+	return SF_DECODE_COMPLETE;
 }
 
 SYS_FUNC(setresgid)
@@ -271,20 +332,17 @@ SYS_FUNC(setresgid)
 	return SF_DECODE_COMPLETE;
 }
 
+SYS_FUNC(getresgid16)
+{
+	if (exiting(*td))
+		do_getresuid(td, sizeof(__kernel_old_uid_t), false);
+	return 0;
+}
+
 SYS_FUNC(getresgid)
 {
 	if (exiting(*td))
-	{
-		FIRST_ARG("rgidp");
-		umove_print_id(td, td->sc_args[0]);
-
-		NEXT_ARG("egidp");
-		umove_print_id(td, td->sc_args[1]);
-
-		NEXT_ARG("sgidp");
-		umove_print_id(td, td->sc_args[2]);
-	}
-
+		do_getresuid(td, sizeof(__kernel_uid_t), true);
 	return 0;
 }
 
@@ -296,10 +354,26 @@ SYS_FUNC(getpgid)
 	return SF_DECODE_COMPLETE;
 }
 
+SYS_FUNC(setfsuid16)
+{
+	FIRST_ARG("uid");
+	PRINT_ID((unsigned short) td->sc_args[0]);
+
+	return SF_DECODE_COMPLETE;
+}
+
 SYS_FUNC(setfsuid)
 {
 	FIRST_ARG("uid");
 	PRINT_ID(td->sc_args[0]);
+
+	return SF_DECODE_COMPLETE;
+}
+
+SYS_FUNC(setfsgid16)
+{
+	FIRST_ARG("gid");
+	PRINT_ID((unsigned short) td->sc_args[0]);
 
 	return SF_DECODE_COMPLETE;
 }
@@ -391,7 +465,7 @@ SYS_FUNC(gethostname)
 	return 0;
 }
 
-SYS_FUNC(sys_prlimit64)
+SYS_FUNC(prlimit64)
 {
 	FIRST_ARG("pid");
 	PRINT_D(td->sc_args[0]);

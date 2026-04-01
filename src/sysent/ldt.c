@@ -71,3 +71,20 @@ SYS_FUNC(modify_ldt)
 		return SF_DECODE_COMPLETE;
 	}
 }
+
+SYS_FUNC(get_thread_area)
+{
+	if (exiting(*td))
+	{
+		FIRST_ARG("u_info");
+		printuser_desc(td, td->sc_args[0]);
+	}
+	return 0;
+}
+
+SYS_FUNC(set_thread_area)
+{
+	FIRST_ARG("u_info");
+	printuser_desc(td, td->sc_args[0]);
+	return SF_DECODE_COMPLETE;
+}

@@ -29,6 +29,14 @@ static void print_policy(int policy)
 	printflag_indexed(scheduler_policies, policy, "SCHED_???");
 }
 
+SYS_FUNC(nice)
+{
+	FIRST_ARG("increment");
+	PRINT_D(td->sc_args[0]);
+
+	return SF_DECODE_COMPLETE;
+}
+
 SYS_FUNC(sched_setparam)
 {
 	FIRST_ARG("pid");
@@ -89,7 +97,7 @@ SYS_FUNC(sched_getscheduler)
 	}
 }
 
-SYS_FUNC(get_priority_max)
+SYS_FUNC(sched_get_priority_max)
 {
 	FIRST_ARG("policy");
 	print_policy(td->sc_args[1]);
@@ -97,7 +105,7 @@ SYS_FUNC(get_priority_max)
 	return SF_DECODE_COMPLETE;
 }
 
-SYS_FUNC(sched_rr_get_interval)
+void decode_sched_rr_get_interval(struct s_td *td, typeof(printtimespec32) printtimespec_fn)
 {
 	if (entering(*td))
 	{
@@ -107,12 +115,23 @@ SYS_FUNC(sched_rr_get_interval)
 	else
 	{
 		NEXT_ARG("tp");
-		printtimespec(td, td->sc_args[1]);
+		printtimespec_fn(td, td->sc_args[1]);
 	}
+}
+
+SYS_FUNC(sched_rr_get_interval_time32)
+{
+	decode_sched_rr_get_interval(td, printtimespec32);
 	return 0;
 }
 
-unsigned int get_cpu_ct()
+SYS_FUNC(sched_rr_get_interval_time64)
+{
+	decode_sched_rr_get_interval(td, printtimespec64);
+	return 0;
+}
+
+unsigned int get_cpu_ct(void)
 {
 	static unsigned int ct;
 

@@ -90,7 +90,7 @@ SYS_FUNC(semtimedop)
 	if (td->sc_args[4])
 	{
 		NEXT_ARG("timeout");
-		printtimespec(td, td->sc_args[4]);
+		printtimespec64(td, td->sc_args[4]);
 	}
 
 	return SF_DECODE_COMPLETE;

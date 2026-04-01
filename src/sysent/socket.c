@@ -371,14 +371,6 @@ SYS_FUNC(listen)
 	return SF_DECODE_COMPLETE;
 }
 
-int print_singlefd(struct s_td *td, void *mem, size_t mem_size)
-{
-	(void) td;
-	(void) mem_size;
-	printfd(*(int *) mem);
-	return PRINTARR_STATE_CONT;
-}
-
 SYS_FUNC(socketpair)
 {
 	if (entering(*td))
@@ -387,7 +379,7 @@ SYS_FUNC(socketpair)
 	{
 		NEXT_ARG("sv");
 		int buf;
-		printarray(td, (t_printarray_cfg) {
+		printarray(td, (t_printarray_cfg){
 						   .printer = print_singlefd,
 						   .start_addr = td->sc_args[3],
 						   .pt_buf_var = &buf,
@@ -489,7 +481,9 @@ SYS_FUNC(getsockopt)
 	return 0;
 }
 
-SYS_FUNC(recvmmsg)
+int do_recvmmsg(struct s_td             *td,
+				typeof(printtimespec32)  printtimespec_fn,
+				typeof(sprinttimespec32) sprinttimespec_fn)
 {
 	if (entering(*td))
 	{
@@ -506,7 +500,7 @@ SYS_FUNC(recvmmsg)
 		printflags(msg_flags, td->sc_args[3], "MSG_???");
 
 		NEXT_ARG("timeout");
-		printtimespec(td, td->sc_args[4]);
+		printtimespec_fn(td, td->sc_args[4]);
 
 		return SF_AFTER_RETURN;
 	}
@@ -515,12 +509,22 @@ SYS_FUNC(recvmmsg)
 		if (td->sc_err)
 			return 0;
 		if (td->sc_ret)
-			print_comment("Time left: %s", sprinttimespec(td, td->sc_args[4]));
+			print_comment("Time left: %s", sprinttimespec_fn(td, td->sc_args[4]));
 		else
 			print_comment("Timeout");
 
 		return SF_DECODE_COMPLETE;
 	}
+}
+
+SYS_FUNC(recvmmsg_time32)
+{
+	return do_recvmmsg(td, printtimespec32, sprinttimespec32);
+}
+
+SYS_FUNC(recvmmsg_time64)
+{
+	return do_recvmmsg(td, printtimespec64, sprinttimespec64);
 }
 
 SYS_FUNC(sendmmsg)
@@ -536,6 +540,17 @@ SYS_FUNC(sendmmsg)
 
 	NEXT_ARG("flags");
 	printflags(msg_flags, td->sc_args[3], "MSG_???");
+
+	return SF_DECODE_COMPLETE;
+}
+
+SYS_FUNC(socketcall)
+{
+	FIRST_ARG("call");
+	printflag(socketcalls, td->sc_args[0], "SYS_???");
+
+	NEXT_ARG("args");
+	printaddr(td->sc_args[1]);
 
 	return SF_DECODE_COMPLETE;
 }

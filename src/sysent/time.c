@@ -2,6 +2,9 @@
 #include "../ft_utils.h"
 #include "time.xlat.h"
 
+#define printtimespec current_abi == ABI_64BIT ? printtimespec64 : printtimespec32
+#define printtimeval  current_abi == ABI_64BIT ? printtimeval64 : printtimeval32
+
 SYS_FUNC(nanosleep)
 {
 	if (entering(*td))
@@ -79,12 +82,7 @@ SYS_FUNC(gettimeofday)
 SYS_FUNC(adjtimex)
 {
 	if (exiting(*td))
-	{
-		if (current_abi == ABI_64BIT)
-			printtimex64(td, td->sc_args[0]);
-		else
-			printtimex32(td, td->sc_args[0]);
-	}
+		printtimex(td, td->sc_args[0]);
 
 	return 0;
 }
@@ -119,7 +117,7 @@ SYS_FUNC(time)
 SYS_FUNC(timer_create)
 {
 	FIRST_ARG("which_clock");
-	printflag(clock_ids, td->sc_args[0], "CLOCK_???");
+	print_clock_id(td->sc_args[0]);
 
 	NEXT_ARG("timer_event_spec");
 	// this project had its fair share of struct parsing.
@@ -131,7 +129,7 @@ SYS_FUNC(timer_create)
 	return SF_DECODE_COMPLETE;
 }
 
-int decode_timer_settime(struct s_td *td)
+int do_timer_settime_flags_settings(struct s_td *td, typeof(printitimerval32) printitimerval_fn)
 {
 	if (entering(*td))
 	{
@@ -139,17 +137,17 @@ int decode_timer_settime(struct s_td *td)
 		printflags(timer_settime_flags, td->sc_args[1], "TIMER_???");
 
 		NEXT_ARG("new_setting");
-		printitimerval(td, td->sc_args[2]);
+		printitimerval_fn(td, td->sc_args[2]);
 	}
 	else
 	{
 		NEXT_ARG("old_setting");
-		printitimerval(td, td->sc_args[3]);
+		printitimerval_fn(td, td->sc_args[3]);
 	}
 	return 0;
 }
 
-SYS_FUNC(timer_settime)
+int do_timer_settime(struct s_td *td, typeof(printitimerval32) printitimerval_fn)
 {
 	if (entering(*td))
 	{
@@ -157,10 +155,20 @@ SYS_FUNC(timer_settime)
 		PRINT_LLU(td->sc_args[0]);
 	}
 
-	return decode_timer_settime(td);
+	return do_timer_settime_flags_settings(td, printitimerval_fn);
 }
 
-SYS_FUNC(timer_gettime)
+SYS_FUNC(timer_settime32)
+{
+	return do_timer_settime(td, printitimerval32);
+}
+
+SYS_FUNC(timer_settime64)
+{
+	return do_timer_settime(td, printitimerval64);
+}
+
+void do_timer_gettime(struct s_td *td)
 {
 	if (entering(*td))
 	{
@@ -172,7 +180,17 @@ SYS_FUNC(timer_gettime)
 		NEXT_ARG("setting");
 		printitimerval(td, td->sc_args[1]);
 	}
+}
 
+SYS_FUNC(timer_gettime32)
+{
+	do_timer_gettime(td);
+	return 0;
+}
+
+SYS_FUNC(timer_gettime64)
+{
+	do_timer_gettime(td);
 	return 0;
 }
 
@@ -195,7 +213,7 @@ SYS_FUNC(timer_delete)
 SYS_FUNC(timerfd_create)
 {
 	FIRST_ARG("clockid");
-	printflag(clock_ids, td->sc_args[0], "CLOCK_???");
+	print_clock_id(td->sc_args[0]);
 
 	NEXT_ARG("flags");
 	printflags(timerfd_flags, td->sc_args[1], "TFD_???");
@@ -203,7 +221,7 @@ SYS_FUNC(timerfd_create)
 	return SF_DECODE_COMPLETE;
 }
 
-SYS_FUNC(timerfd_settime)
+int do_timerfd_settime(struct s_td *td, typeof(printitimerval32) printitimerval_fn)
 {
 	if (entering(*td))
 	{
@@ -211,10 +229,20 @@ SYS_FUNC(timerfd_settime)
 		printfd(td->sc_args[1]);
 	}
 
-	return decode_timer_settime(td);
+	return do_timer_settime_flags_settings(td, printitimerval_fn);
 }
 
-SYS_FUNC(timerfd_gettime)
+SYS_FUNC(timerfd_settime32)
+{
+	return do_timerfd_settime(td, printitimerval32);
+}
+
+SYS_FUNC(timerfd_settime64)
+{
+	return do_timerfd_settime(td, printitimerval64);
+}
+
+int do_timerfd_gettime(struct s_td *td, typeof(printitimerval32) printitimerval_fn)
 {
 	if (entering(*td))
 	{
@@ -224,71 +252,121 @@ SYS_FUNC(timerfd_gettime)
 	else
 	{
 		NEXT_ARG("setting");
-		printitimerval(td, td->sc_args[1]);
+		printitimerval_fn(td, td->sc_args[1]);
 	}
 
 	return 0;
 }
 
-SYS_FUNC(clock_settime)
+SYS_FUNC(timerfd_gettime32)
+{
+	return do_timerfd_gettime(td, printitimerval32);
+}
+
+SYS_FUNC(timerfd_gettime64)
+{
+	return do_timerfd_gettime(td, printitimerval64);
+}
+
+int do_clock_settime(struct s_td *td, typeof(printtimespec32) printtimespec_fn)
 {
 	FIRST_ARG("which_clock");
-	printflag(clock_ids, td->sc_args[0], "CLOCK_???");
+	print_clock_id(td->sc_args[0]);
 
 	NEXT_ARG("tp");
-	printtimespec(td, td->sc_args[1]);
+	printtimespec_fn(td, td->sc_args[1]);
 
 	return SF_DECODE_COMPLETE;
 }
 
-SYS_FUNC(clock_gettime)
+SYS_FUNC(clock_settime32)
+{
+	return do_clock_settime(td, printtimespec32);
+}
+
+SYS_FUNC(clock_settime64)
+{
+	return do_clock_settime(td, printtimespec64);
+}
+
+int do_clock_gettime(struct s_td *td, typeof(printtimespec32) printtimespec_fn)
 {
 	if (entering(*td))
 	{
 		FIRST_ARG("which_clock");
-		printflag(clock_ids, td->sc_args[0], "CLOCK_???");
+		print_clock_id(td->sc_args[0]);
 	}
 	else
 	{
 		NEXT_ARG("tp");
-		printtimespec(td, td->sc_args[1]);
+		printtimespec_fn(td, td->sc_args[1]);
 	}
 
 	return 0;
 }
 
-SYS_FUNC(clock_nanosleep)
+SYS_FUNC(clock_gettime32)
+{
+	return do_clock_gettime(td, printtimespec32);
+}
+
+SYS_FUNC(clock_gettime64)
+{
+	return do_clock_gettime(td, printtimespec64);
+}
+
+void do_clock_nanosleep(struct s_td *td, typeof(printtimespec32) printtimespec_fn)
 {
 	if (entering(*td))
 	{
 		FIRST_ARG("which_clock");
-		printflag(clock_ids, td->sc_args[0], "CLOCK_???");
+		print_clock_id(td->sc_args[0]);
 
 		NEXT_ARG("flags");
 		printflags(timer_settime_flags, td->sc_args[1], "TIMER_???");
 
 		NEXT_ARG("request");
-		printtimespec(td, td->sc_args[2]);
+		printtimespec_fn(td, td->sc_args[2]);
 	}
 	else
 	{
 		NEXT_ARG("remain");
 		if (!td->sc_args[1] && is_error_erestart(td->sc_err))
-			printtimespec(td, td->sc_args[3]);
+			printtimespec_fn(td, td->sc_args[3]);
 		else
 			printaddr(td->sc_args[3]);
 	}
+}
 
+SYS_FUNC(clock_nanosleep_time32)
+{
+	do_clock_nanosleep(td, printtimespec32);
 	return 0;
 }
 
-SYS_FUNC(clock_adjtime)
+SYS_FUNC(clock_nanosleep_time64)
+{
+	do_clock_nanosleep(td, printtimespec64);
+	return 0;
+}
+
+int do_clock_adjtime(struct s_td *td, typeof(printtimex) printtimex_fn)
 {
 	FIRST_ARG("which_clock");
-	printflag(clock_ids, td->sc_args[0], "CLOCK_???");
+	print_clock_id(td->sc_args[0]);
 
 	NEXT_ARG("utx");
-	printtimex(td, td->sc_args[1]);
+	printtimex_fn(td, td->sc_args[1]);
 
 	return SF_DECODE_COMPLETE;
+}
+
+SYS_FUNC(clock_adjtime32)
+{
+	return do_clock_adjtime(td, printtimex32);
+}
+
+SYS_FUNC(clock_adjtime64)
+{
+	return do_clock_adjtime(td, printtimex64);
 }

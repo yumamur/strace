@@ -245,4 +245,89 @@ const t_xlat_data socket_option_levels_data[] = {
 };
 WXLAT(socket_option_levels);
 
+#ifndef SYS_SOCKET
+#  define SYS_SOCKET 1
+#endif
+#ifndef SYS_BIND
+#  define SYS_BIND 2
+#endif
+#ifndef SYS_CONNECT
+#  define SYS_CONNECT 3
+#endif
+#ifndef SYS_LISTEN
+#  define SYS_LISTEN 4
+#endif
+#ifndef SYS_ACCEPT
+#  define SYS_ACCEPT 5
+#endif
+#ifndef SYS_GETSOCKNAME
+#  define SYS_GETSOCKNAME 6
+#endif
+#ifndef SYS_GETPEERNAME
+#  define SYS_GETPEERNAME 7
+#endif
+#ifndef SYS_SOCKETPAIR
+#  define SYS_SOCKETPAIR 8
+#endif
+#ifndef SYS_SEND
+#  define SYS_SEND 9
+#endif
+#ifndef SYS_RECV
+#  define SYS_RECV 10
+#endif
+#ifndef SYS_SENDTO
+#  define SYS_SENDTO 11
+#endif
+#ifndef SYS_RECVFROM
+#  define SYS_RECVFROM 12
+#endif
+#ifndef SYS_SHUTDOWN
+#  define SYS_SHUTDOWN 13
+#endif
+#ifndef SYS_SETSOCKOPT
+#  define SYS_SETSOCKOPT 14
+#endif
+#ifndef SYS_GETSOCKOPT
+#  define SYS_GETSOCKOPT 15
+#endif
+#ifndef SYS_SENDMSG
+#  define SYS_SENDMSG 16
+#endif
+#ifndef SYS_RECVMSG
+#  define SYS_RECVMSG 17
+#endif
+#ifndef SYS_ACCEPT4
+#  define SYS_ACCEPT4 18
+#endif
+#ifndef SYS_RECVMMSG
+#  define SYS_RECVMMSG 19
+#endif
+#ifndef SYS_SENDMMSG
+#  define SYS_SENDMMSG 20
+#endif
+
+const t_xlat_data socketcalls_data[] = {
+	XLAT(SYS_SOCKET),
+	XLAT(SYS_BIND),
+	XLAT(SYS_CONNECT),
+	XLAT(SYS_LISTEN),
+	XLAT(SYS_ACCEPT),
+	XLAT(SYS_GETSOCKNAME),
+	XLAT(SYS_GETPEERNAME),
+	XLAT(SYS_SOCKETPAIR),
+	XLAT(SYS_SEND),
+	XLAT(SYS_RECV),
+	XLAT(SYS_SENDTO),
+	XLAT(SYS_RECVFROM),
+	XLAT(SYS_SHUTDOWN),
+	XLAT(SYS_SETSOCKOPT),
+	XLAT(SYS_GETSOCKOPT),
+	XLAT(SYS_SENDMSG),
+	XLAT(SYS_RECVMSG),
+	XLAT(SYS_ACCEPT4),
+	XLAT(SYS_RECVMMSG),
+	XLAT(SYS_SENDMMSG),
+};
+WXLAT(socketcalls);
+
 #endif

@@ -204,3 +204,20 @@ SYS_FUNC(move_pages)
 
 	return 0;
 }
+
+SYS_FUNC(set_mempolicy_home_node)
+{
+	FIRST_ARG("start");
+	printaddr(td->sc_args[0]);
+
+	NEXT_ARG("len");
+	PRINT_LU(td->sc_args[1]);
+
+	NEXT_ARG("home_node");
+	printaddr(td->sc_args[2]);
+
+	NEXT_ARG("flags");
+	PRINT_X(td->sc_args[3]);
+
+	return SF_DECODE_COMPLETE;
+}

@@ -73,6 +73,17 @@ SYS_FUNC(statfs)
 	}
 }
 
+SYS_FUNC(statfs64)
+{
+	FIRST_ARG("pathname");
+	printpath(td, td->sc_args[0]);
+
+	NEXT_ARG("buf");
+	printaddr(td->sc_args[1]);
+
+	return SF_DECODE_COMPLETE;
+}
+
 SYS_FUNC(fstatfs)
 {
 	if (entering(*td))
@@ -89,4 +100,15 @@ SYS_FUNC(fstatfs)
 
 		return SF_DECODE_COMPLETE;
 	}
+}
+
+SYS_FUNC(fstatfs64)
+{
+	FIRST_ARG("fd");
+	printfd(td->sc_args[0]);
+
+	NEXT_ARG("buf");
+	printaddr(td->sc_args[1]);
+
+	return SF_DECODE_COMPLETE;
 }

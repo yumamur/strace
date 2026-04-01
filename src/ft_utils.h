@@ -10,10 +10,12 @@ unsigned long ft_getpagesize(void);
 
 struct s_td;
 
-__ssize_t umovestr(struct s_td *const td, char *laddr, __kernel_ulong_t addr, size_t len);
-__ssize_t umovemem(struct s_td *const td, void *laddr, __kernel_ulong_t taddr, size_t len);
-size_t    count_set_bits(void *addr, size_t size);
-int       umovemem_or_printaddr(struct s_td *const td, void *laddr, __kernel_ulong_t taddr, size_t len);
+__ssize_t    umovestr(struct s_td *const td, char *laddr, __kernel_ulong_t addr, size_t len);
+__ssize_t    umovemem(struct s_td *const td, void *laddr, __kernel_ulong_t taddr, size_t len);
+__ssize_t    umovemem_ignore_sc_err(struct s_td *const td, void *laddr, __kernel_ulong_t taddr, size_t len);
+
+size_t       count_set_bits(void *addr, size_t size);
+int          umovemem_or_printaddr(struct s_td *const td, void *laddr, __kernel_ulong_t taddr, size_t len);
 unsigned int get_ll_arg(struct s_td *td, unsigned long long *pt, unsigned iarg);
 
 // umovemem_or_printaddr((td_), (&obj_), (taddr_), sizeof(obj_))

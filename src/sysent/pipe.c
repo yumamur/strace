@@ -2,7 +2,7 @@
 #include "../ft_print.h"
 #include "pipe.xlat.h"
 
-int print_single_pipefd(struct s_td *td, void *mem, size_t mem_size)
+int print_singlefd(struct s_td *td, void *mem, size_t mem_size)
 {
 	(void) td;
 	(void) mem_size;
@@ -14,7 +14,7 @@ void print_pipefd(struct s_td *td, __kernel_ulong_t addr)
 {
 	int buf;
 	printarray(td, (t_printarray_cfg) {
-					   .printer = print_single_pipefd,
+					   .printer = print_singlefd,
 					   .start_addr = addr,
 					   .pt_buf_var = &buf,
 					   .n_var = 2,

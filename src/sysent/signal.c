@@ -313,7 +313,9 @@ SYS_FUNC(rt_sigpending)
 	return SF_DECODE_COMPLETE;
 }
 
-SYS_FUNC(rt_sigtimedwait)
+int decode_rt_sigtimedwait(struct s_td             *td,
+						   typeof(printtimespec32)  printtimespec_fn,
+						   typeof(sprinttimespec32) sprinttimespec_fn)
 {
 	if (entering(*td))
 	{
@@ -326,7 +328,7 @@ SYS_FUNC(rt_sigtimedwait)
 			print_null();
 
 			NEXT_ARG("timeout");
-			printtimespec(td, td->sc_args[2]);
+			printtimespec_fn(td, td->sc_args[2]);
 
 			NEXT_ARG("sigsetsize");
 			PRINT_LU(td->sc_args[3]);
@@ -334,7 +336,7 @@ SYS_FUNC(rt_sigtimedwait)
 			return SF_DECODE_COMPLETE;
 		}
 		else
-			td_carry(td, strdup(sprinttimespec(td, td->sc_args[2])), free);
+			td_carry(td, strdup(sprinttimespec_fn(td, td->sc_args[2])), free);
 		return 0;
 	}
 	else
@@ -354,6 +356,16 @@ SYS_FUNC(rt_sigtimedwait)
 
 		return SF_DECODE_COMPLETE;
 	}
+}
+
+SYS_FUNC(rt_sigtimedwait_time32)
+{
+	return decode_rt_sigtimedwait(td, printtimespec32, sprinttimespec32);
+}
+
+SYS_FUNC(rt_sigtimedwait_time64)
+{
+	return decode_rt_sigtimedwait(td, printtimespec64, sprinttimespec64);
 }
 
 SYS_FUNC(rt_sigqueueinfo)

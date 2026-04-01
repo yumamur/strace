@@ -55,6 +55,14 @@ const t_xlat_data open_tree_flags_data[] = {
 };
 WXLAT(open_tree_flags);
 
+const t_xlat_data mount_setattr_flags_data[] = {
+	XLAT(AT_SYMLINK_NOFOLLOW),
+	XLAT(AT_NO_AUTOMOUNT),
+	XLAT(AT_EMPTY_PATH),
+	XLAT(AT_RECURSIVE),
+};
+WXLAT(mount_setattr_flags);
+
 const t_xlat_data move_mount_flags_data[] = {
 	XLAT(MOVE_MOUNT_F_SYMLINKS),
 	XLAT(MOVE_MOUNT_F_AUTOMOUNTS),
@@ -66,5 +74,28 @@ const t_xlat_data move_mount_flags_data[] = {
 	XLAT(MOVE_MOUNT_BENEATH),
 };
 WXLAT(move_mount_flags);
+
+const t_xlat_data mount_attr_attributes_data[] = {
+	XLAT(MOUNT_ATTR_RDONLY),
+	XLAT(MOUNT_ATTR_NOSUID),
+	XLAT(MOUNT_ATTR_NODEV),
+	XLAT(MOUNT_ATTR_NOEXEC),
+	XLAT(MOUNT_ATTR__ATIME),
+	XLAT(MOUNT_ATTR_RELATIME),
+	XLAT(MOUNT_ATTR_NOATIME),
+	XLAT(MOUNT_ATTR_STRICTATIME),
+	XLAT(MOUNT_ATTR_NODIRATIME),
+	XLAT(MOUNT_ATTR_IDMAP),
+	XLAT(MOUNT_ATTR_NOSYMFOLLOW),
+};
+WXLAT(mount_attr_attributes);
+
+const t_xlat_data mount_attr_propagation_types_data[] = {
+	XLAT(MS_UNBINDABLE),
+	XLAT(MS_PRIVATE),
+	XLAT(MS_SLAVE),
+	XLAT(MS_SHARED),
+};
+WXLAT(mount_attr_propagation_types);
 
 #endif /* NAMESPACE_XLAT_H */

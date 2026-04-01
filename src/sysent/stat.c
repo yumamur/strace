@@ -156,7 +156,7 @@ SYS_FUNC(newfstatat)
 	}
 }
 
-SYS_FUNC(newfstat)
+SYS_FUNC(fstat)
 {
 	if (entering(*td))
 	{
@@ -175,26 +175,46 @@ SYS_FUNC(newfstat)
 	}
 }
 
-SYS_FUNC(newlstat)
+SYS_FUNC(fstatat64)
 {
-	if (entering(*td))
-	{
-		FIRST_ARG("pathname");
-		printpath(td, td->sc_args[0]);
+	FIRST_ARG("dirfd");
+	printdirfd(td, td->sc_args[0]);
 
-		return 0;
-	}
-	else
-	{
-		struct stat buf = {};
-		NEXT_ARG("statbuf");
-		fetchstat(td, td->sc_args[1], &buf);
-		printstat(td, &buf);
-		return SF_DECODE_COMPLETE;
-	}
+	NEXT_ARG("pathname");
+	printpath(td, td->sc_args[1]);
+
+	NEXT_ARG("statbuf");
+	printaddr(td->sc_args[2]);
+
+	NEXT_ARG("flags");
+	printflags(fstatat_flags, td->sc_args[3], "AT_???");
+
+	return SF_DECODE_COMPLETE;
 }
 
-SYS_FUNC(newstat)
+SYS_FUNC(fstat64)
+{
+	FIRST_ARG("fd");
+	printfd(td->sc_args[0]);
+
+	NEXT_ARG("statbuf");
+	printaddr(td->sc_args[1]);
+
+	return SF_DECODE_COMPLETE;
+}
+
+SYS_FUNC(stat64)
+{
+	FIRST_ARG("pathname");
+	printpath(td, td->sc_args[0]);
+
+	NEXT_ARG("statbuf");
+	printaddr(td->sc_args[1]);
+
+	return SF_DECODE_COMPLETE;
+}
+
+SYS_FUNC(stat)
 {
 	if (entering(*td))
 	{

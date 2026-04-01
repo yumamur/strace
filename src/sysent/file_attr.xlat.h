@@ -1,0 +1,36 @@
+#ifndef FILE_ATTR_XLAT_H
+#define FILE_ATTR_XLAT_H
+
+#include "xlat.h"
+
+#include <linux/fcntl.h>
+#include <linux/fs.h>
+
+const t_xlat_data file_attr_flags_data[] = {
+	XLAT(AT_SYMLINK_NOFOLLOW),
+	XLAT(AT_EMPTY_PATH),
+};
+WXLAT(file_attr_flags);
+
+const t_xlat_data fs_xflags_data[] = {
+	XLAT(FS_XFLAG_REALTIME),
+	XLAT(FS_XFLAG_PREALLOC),
+	XLAT(FS_XFLAG_IMMUTABLE),
+	XLAT(FS_XFLAG_APPEND),
+	XLAT(FS_XFLAG_SYNC),
+	XLAT(FS_XFLAG_NOATIME),
+	XLAT(FS_XFLAG_NODUMP),
+	XLAT(FS_XFLAG_RTINHERIT),
+	XLAT(FS_XFLAG_PROJINHERIT),
+	XLAT(FS_XFLAG_NOSYMLINKS),
+	XLAT(FS_XFLAG_EXTSIZE),
+	XLAT(FS_XFLAG_EXTSZINHERIT),
+	XLAT(FS_XFLAG_NODEFRAG),
+	XLAT(FS_XFLAG_FILESTREAM),
+	XLAT(FS_XFLAG_DAX),
+	XLAT(FS_XFLAG_COWEXTSIZE),
+	XLAT(FS_XFLAG_HASATTR),
+};
+WXLAT(fs_xflags);
+
+#endif /* FILE_ATTR_XLAT_H */

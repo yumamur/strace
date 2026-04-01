@@ -1,0 +1,52 @@
+#ifndef LANDLOCK_XLAT_H
+#define LANDLOCK_XLAT_H
+
+#include "xlat.h"
+
+#include <linux/landlock.h>
+
+const t_xlat_data landlock_ruleset_fs_actions_data[] = {
+	XLAT(LANDLOCK_ACCESS_FS_EXECUTE),
+	XLAT(LANDLOCK_ACCESS_FS_WRITE_FILE),
+	XLAT(LANDLOCK_ACCESS_FS_READ_FILE),
+	XLAT(LANDLOCK_ACCESS_FS_READ_DIR),
+	XLAT(LANDLOCK_ACCESS_FS_REMOVE_DIR),
+	XLAT(LANDLOCK_ACCESS_FS_REMOVE_FILE),
+	XLAT(LANDLOCK_ACCESS_FS_MAKE_CHAR),
+	XLAT(LANDLOCK_ACCESS_FS_MAKE_DIR),
+	XLAT(LANDLOCK_ACCESS_FS_MAKE_REG),
+	XLAT(LANDLOCK_ACCESS_FS_MAKE_SOCK),
+	XLAT(LANDLOCK_ACCESS_FS_MAKE_FIFO),
+	XLAT(LANDLOCK_ACCESS_FS_MAKE_BLOCK),
+	XLAT(LANDLOCK_ACCESS_FS_MAKE_SYM),
+	XLAT(LANDLOCK_ACCESS_FS_REFER),
+	XLAT(LANDLOCK_ACCESS_FS_TRUNCATE),
+	XLAT(LANDLOCK_ACCESS_FS_IOCTL_DEV),
+};
+WXLAT(landlock_ruleset_fs_actions);
+
+const t_xlat_data landlock_ruleset_net_actions_data[] = {
+	XLAT(LANDLOCK_ACCESS_NET_BIND_TCP),
+	XLAT(LANDLOCK_ACCESS_NET_CONNECT_TCP),
+};
+WXLAT(landlock_ruleset_net_actions);
+
+const t_xlat_data landlock_ruleset_scope_flags_data[] = {
+	XLAT(LANDLOCK_SCOPE_ABSTRACT_UNIX_SOCKET),
+	XLAT(LANDLOCK_SCOPE_SIGNAL),
+};
+WXLAT(landlock_ruleset_scope_flags);
+
+const t_xlat_data landlock_create_ruleset_flags_data[] = {
+	XLAT(LANDLOCK_CREATE_RULESET_VERSION),
+	XLAT(LANDLOCK_CREATE_RULESET_ERRATA),
+};
+WXLAT(landlock_create_ruleset_flags);
+
+const t_xlat_data landlock_rule_types_data[] = {
+	XLAT(LANDLOCK_RULE_PATH_BENEATH),
+	XLAT(LANDLOCK_RULE_NET_PORT),
+};
+WXLAT(landlock_rule_types);
+
+#endif /* LANDLOCK_XLAT_H */

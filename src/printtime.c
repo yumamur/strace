@@ -1,9 +1,107 @@
 #include "ft_print.h"
 #include "ft_utils.h"
-
+#include "sysent/xlat.h"
 #include <linux/time.h>
 #include <string.h>
-#include <utime.h>
+
+static const char *clock_ids[] = {
+	XLAT_INDEXED(CLOCK_REALTIME),
+	XLAT_INDEXED(CLOCK_MONOTONIC),
+	XLAT_INDEXED(CLOCK_PROCESS_CPUTIME_ID),
+	XLAT_INDEXED(CLOCK_THREAD_CPUTIME_ID),
+	XLAT_INDEXED(CLOCK_MONOTONIC_RAW),
+	XLAT_INDEXED(CLOCK_REALTIME_COARSE),
+	XLAT_INDEXED(CLOCK_MONOTONIC_COARSE),
+	XLAT_INDEXED(CLOCK_BOOTTIME),
+	XLAT_INDEXED(CLOCK_REALTIME_ALARM),
+	XLAT_INDEXED(CLOCK_BOOTTIME_ALARM),
+	XLAT_INDEXED(CLOCK_SGI_CYCLE),
+	XLAT_INDEXED(CLOCK_TAI),
+};
+
+#define STRUCT_TIMESPEC       t_struct_timespec32
+#define PRINTTIMESPEC         printtimespec32
+#define PRINTTIMESPEC_STRUCT  printtimespec32_struct
+#define SPRINTTIMESPEC        sprinttimespec32
+#define SPRINTTIMESPEC_STRUCT sprinttimespec32_struct
+#define STRUCT_ITIMERSPEC     t_struct_itimerspec32
+#define PRINTITIMERSPEC       printitimerspec32
+#define PRECISION_FIELD       tv_nsec
+#define PRINTTIMESPEC_UTIMES  printtimespec_utimes32
+#include "printtimespec.h"
+#undef STRUCT_TIMESPEC
+#undef PRINTTIMESPEC
+#undef PRINTTIMESPEC_STRUCT
+#undef SPRINTTIMESPEC
+#undef SPRINTTIMESPEC_STRUCT
+#undef STRUCT_ITIMERSPEC
+#undef PRINTITIMERSPEC
+#undef PRECISION_FIELD
+#undef PRINTTIMESPEC_UTIMES
+
+#define STRUCT_TIMESPEC       t_struct_timespec64
+#define PRINTTIMESPEC         printtimespec64
+#define PRINTTIMESPEC_STRUCT  printtimespec64_struct
+#define SPRINTTIMESPEC        sprinttimespec64
+#define SPRINTTIMESPEC_STRUCT sprinttimespec64_struct
+#define STRUCT_ITIMERSPEC     t_struct_itimerspec64
+#define PRINTITIMERSPEC       printitimerspec64
+#define PRECISION_FIELD       tv_nsec
+#define PRINTTIMESPEC_UTIMES  printtimespec_utimes64
+#include "printtimespec.h"
+#undef STRUCT_TIMESPEC
+#undef PRINTTIMESPEC
+#undef PRINTTIMESPEC_STRUCT
+#undef SPRINTTIMESPEC
+#undef SPRINTTIMESPEC_STRUCT
+#undef STRUCT_ITIMERSPEC
+#undef PRINTITIMERSPEC
+#undef PRECISION_FIELD
+#undef PRINTTIMESPEC_UTIMES
+
+#define STRUCT_TIMESPEC       t_struct_timeval32
+#define PRINTTIMESPEC         printtimeval32
+#define PRINTTIMESPEC_STRUCT  printtimeval32_struct
+#define SPRINTTIMESPEC        sprinttimeval32
+#define SPRINTTIMESPEC_STRUCT sprinttimeval32_struct
+#define STRUCT_ITIMERSPEC     t_struct_itimerval32
+#define PRINTITIMERSPEC       printitimerval32
+#define PRECISION_FIELD       tv_usec
+#define PRINTTIMESPEC_UTIMES  printtimeval_utimes32
+#include "printtimespec.h"
+#undef STRUCT_TIMESPEC
+#undef PRINTTIMESPEC
+#undef PRINTTIMESPEC_STRUCT
+#undef SPRINTTIMESPEC
+#undef SPRINTTIMESPEC_STRUCT
+#undef STRUCT_ITIMERSPEC
+#undef PRINTITIMERSPEC
+#undef PRECISION_FIELD
+#undef PRINTTIMESPEC_UTIMES
+
+#define STRUCT_TIMESPEC       t_struct_timeval64
+#define PRINTTIMESPEC         printtimeval64
+#define PRINTTIMESPEC_STRUCT  printtimeval64_struct
+#define SPRINTTIMESPEC        sprinttimeval64
+#define SPRINTTIMESPEC_STRUCT sprinttimeval64_struct
+#define STRUCT_ITIMERSPEC     t_struct_itimerval64
+#define PRINTITIMERSPEC       printitimerval64
+#define PRECISION_FIELD       tv_usec
+#define PRINTTIMESPEC_UTIMES  printtimeval_utimes64
+#include "printtimespec.h"
+#undef STRUCT_TIMESPEC
+#undef PRINTTIMESPEC
+#undef PRINTTIMESPEC_STRUCT
+#undef SPRINTTIMESPEC
+#undef SPRINTTIMESPEC_STRUCT
+#undef STRUCT_ITIMERSPEC
+#undef PRINTITIMERSPEC
+#undef PRECISION_FIELD
+#undef PRINTTIMESPEC_UTIMES
+
+#define timeval_printsize   sizeof("{tv_sec=18446744073709551615, tv_usec=18446744073709551615}")
+#define itimerval_printsize sizeof("{it_interval={}, it_value={}}") + timeval_printsize * 2
+#define PRINTITIMERVAL      printitimerval64
 
 const char *sprinttime(unsigned long sec, unsigned long nsec)
 {
@@ -31,26 +129,6 @@ void printtime(unsigned long sec, unsigned long nsec)
 		print_comment("%s", s);
 }
 
-void printtimeval_struct(struct timeval *pt)
-{
-	print_struct_start();
-	PRINT_MEMBER(*pt, tv_sec, PRINT_LL);
-	print_struct_member_sep();
-	PRINT_MEMBER(*pt, tv_usec, PRINT_LL);
-	print_struct_end();
-
-	// printtime(pt->tv_sec, pt->tv_usec);
-}
-
-void printitimerval_struct(struct itimerval *pt)
-{
-	print_struct_start();
-	PRINT_MEMBER_ADDR(*pt, it_interval, printtimeval_struct);
-	print_struct_member_sep();
-	PRINT_MEMBER_ADDR(*pt, it_value, printtimeval_struct);
-	print_struct_end();
-}
-
 void printtimezone_struct(struct timezone *pt)
 {
 	print_struct_start();
@@ -70,22 +148,6 @@ void printutimbuf_struct(struct utimbuf *pt)
 	print_struct_end();
 }
 
-void printitimerval(struct s_td *td, __kernel_ulong_t addr)
-{
-	struct itimerval buf = {};
-	if (umovemem_or_printaddr(td, &buf, addr, sizeof(buf)))
-		return;
-	printitimerval_struct(&buf);
-}
-
-void printtimeval(struct s_td *td, __kernel_ulong_t addr)
-{
-	struct timeval buf = {};
-	if (umovemem_or_printaddr(td, &buf, addr, sizeof(buf)))
-		return;
-	printtimeval_struct(&buf);
-}
-
 void printtimezone(struct s_td *td, __kernel_ulong_t addr)
 {
 	struct timezone buf = {};
@@ -103,59 +165,24 @@ void printutimbuf(struct s_td *td, __kernel_ulong_t addr)
 	printutimbuf_struct(&buf);
 }
 
-void printutimbuf_utimes(struct s_td *td, __kernel_ulong_t addr)
-{
-	struct utimbuf buf[2];
+// void printutimbuf_utimes(struct s_td *td, __kernel_ulong_t addr)
+// {
+// 	struct utimbuf buf[2];
 
-	if (umovemem_or_printaddr(td, &buf, addr, sizeof(buf)))
-		return;
-	print_arr_start();
-	printutimbuf_struct(&buf[0]);
-	print_arr_sep();
-	printutimbuf_struct(&buf[1]);
-	print_arr_end();
-}
-
-#define timeval_printsize   sizeof("{tv_sec=18446744073709551615, tv_usec=18446744073709551615}")
-#define itimerval_printsize sizeof("{it_interval={}, it_value=}") + timeval_printsize * 2
-#define timezone_printsize  sizeof("{tz_minuteswest=32767, tz_dsttime=32767}")
-
-const char *sprinttimeval_struct(struct timeval *pt)
-{
-	static char buf[timeval_printsize];
-	inprint(buf, "{tv_sec=%lld, tv_usec=%lld}", (long long) pt->tv_sec, (long long) pt->tv_usec);
-	return buf;
-}
-
-const char *sprintitimerval_struct(struct itimerval *pt)
-{
-	static char buf[itimerval_printsize];
-	inprint(buf, "{it_interval=%s, it_value=%s}",
-			sprinttimeval_struct(&pt->it_interval), sprinttimeval_struct(&pt->it_value));
-	return buf;
-}
+// 	if (umovemem_or_printaddr(td, &buf, addr, sizeof(buf)))
+// 		return;
+// 	print_arr_start();
+// 	printutimbuf_struct(&buf[0]);
+// 	print_arr_sep();
+// 	printutimbuf_struct(&buf[1]);
+// 	print_arr_end();
+// }
 
 const char *sprinttimezone_struct(struct timezone *pt)
 {
-	static char buf[timezone_printsize];
+	static char buf[sizeof("{tz_minuteswest=32767, tz_dsttime=32767}")];
 	inprint(buf, "{tz_minuteswest=%d, tz_dsttime=%d}", pt->tz_minuteswest, pt->tz_dsttime);
 	return buf;
-}
-
-const char *sprintitimerval(struct s_td *td, __kernel_ulong_t addr)
-{
-	struct itimerval buf = {};
-	if (umovemem(td, &buf, addr, sizeof(buf)) != sizeof(buf))
-		return sprintaddr(addr);
-	return sprintitimerval_struct(&buf);
-}
-
-const char *sprinttimeval(struct s_td *td, __kernel_ulong_t addr)
-{
-	struct timeval buf = {};
-	if (umovemem(td, &buf, addr, sizeof(buf)) != sizeof(buf))
-		return sprintaddr(addr);
-	return sprinttimeval_struct(&buf);
 }
 
 const char *sprinttimezone(struct s_td *td, __kernel_ulong_t addr)
@@ -164,4 +191,9 @@ const char *sprinttimezone(struct s_td *td, __kernel_ulong_t addr)
 	if (umovemem(td, &buf, addr, sizeof(buf)) != sizeof(buf))
 		return sprintaddr(addr);
 	return sprinttimezone_struct(&buf);
+}
+
+void print_clock_id(int clockid)
+{
+	printflag_indexed(clock_ids, clockid, "CLOCK_???");
 }

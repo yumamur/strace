@@ -5,18 +5,17 @@
 #include <linux/fs.h>
 #include <unistd.h>
 
-const t_xlat_data lseek_whence_values_data[] = {
-	XLAT(SEEK_SET),
-	XLAT(SEEK_CUR),
-	XLAT(SEEK_END),
+const char *lseek_whence_values[] = {
+	XLAT_INDEXED(SEEK_SET),
+	XLAT_INDEXED(SEEK_CUR),
+	XLAT_INDEXED(SEEK_END),
 #ifdef SEEK_DATA
-	XLAT(SEEK_DATA),
+	XLAT_INDEXED(SEEK_DATA),
 #endif
 #ifdef SEEK_HOLE
-	XLAT(SEEK_HOLE),
+	XLAT_INDEXED(SEEK_HOLE),
 #endif
 };
-WXLAT(lseek_whence_values);
 
 const t_xlat_data rwf_flags_data[] = {
 	XLAT(RWF_HIPRI),
@@ -29,6 +28,5 @@ const t_xlat_data rwf_flags_data[] = {
 	XLAT(RWF_DONTCACHE),
 };
 WXLAT(rwf_flags);
-
 
 #endif

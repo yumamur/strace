@@ -38,5 +38,5 @@ const char *search_xlat(const t_xlat *xlat, const uint64_t val)
 		return (SF_DECODE_COMPLETE);                             \
 	}
 
-#include "xlat.stub.h"
+// #include "xlat.stub.h"
 #undef SYS_STUB

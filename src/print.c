@@ -32,7 +32,7 @@ int printpath(struct s_td *td, __kernel_ulong_t addr)
 	char str[MAX_PATH_LEN];
 	int  null_idx = umovestr(td, str, addr, sizeof(str) - 1);
 	if (null_idx < 0)
-		putnum(zero_extend_signed_to_ull(addr), HEX);
+		printaddr(addr);
 	else
 		putquotstr(str, (size_t) null_idx ?: sizeof(str));
 	return null_idx;
@@ -49,7 +49,7 @@ int printstr(struct s_td *td, __kernel_ulong_t addr)
 	char str[MAX_PRINTSTR_LEN + 3];
 	int  null_idx = umovestr(td, str, addr, sizeof(str) - 1);
 	if (null_idx < 0)
-		putnum(zero_extend_signed_to_ull(addr), HEX);
+		printaddr(addr);
 	else
 		putquotstr(str, (size_t) null_idx ?: sizeof(str));
 	return null_idx;
@@ -67,7 +67,7 @@ int printmem(struct s_td *td, __kernel_ulong_t addr, size_t n)
 	bzero(str, sizeof(str));
 	int r = umovemem(td, str, addr, MIN(sizeof(str) - 1, n));
 	if (r < 0)
-		putnum(zero_extend_signed_to_ull(addr), HEX);
+		printaddr(addr);
 	else
 		putquotmem(str, (size_t) r ?: sizeof(str));
 	return r;
@@ -85,7 +85,7 @@ int printnstr(struct s_td *td, __kernel_ulong_t addr, size_t n)
 	bzero(str, sizeof(str));
 	int read = umovemem(td, str, addr, MIN(sizeof(str) - 1, n));
 	if (read < 0)
-		putnum(zero_extend_signed_to_ull(addr), HEX);
+		printaddr(addr);
 	else
 		putquotstr(str, (size_t) read ?: sizeof(str));
 	return read;
@@ -374,19 +374,20 @@ void printarray(struct s_td *td, const t_printarray_cfg cfg)
 		return printaddr(cfg.start_addr);
 	}
 	__kernel_ulong_t      cur_addr = cfg.start_addr;
+	ssize_t               printed_count = 0;
 	enum e_printarr_state state = PRINTARR_STATE_CONT;
 
 	print_arr_start();
 	for (cur_addr = cfg.start_addr;
 		 cur_addr < end_addr;
-		 cur_addr += cfg.var_size)
+		 cur_addr += cfg.var_size, printed_count++)
 	{
 		if (state == PRINTARR_STATE_SEP)
 			cfg.separator ? TPUTS(cfg.separator) : print_arr_sep();
 
-		if (umovemem(td, cfg.pt_buf_var, cur_addr, cfg.var_size) < 0)
+		if ((cfg.max_vars > 0 && printed_count >= cfg.max_vars)
+			|| umovemem_or_printaddr(td, cfg.pt_buf_var, cur_addr, cfg.var_size))
 		{
-			printaddr(cur_addr);
 			if (cur_addr != cfg.start_addr)
 				print_has_more();
 			break;

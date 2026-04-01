@@ -1,6 +1,7 @@
 #ifndef FT_COMMON_H
 #define FT_COMMON_H
 
+#include "types_time.h"
 #include <inttypes.h>
 #include <linux/posix_types.h>
 #include <stdbool.h>
@@ -86,48 +87,131 @@ typedef int (*t_logger)(struct s_td *);
 #define SYS_FUNC(syscall_name)      int SYS_FUNC_NAME(syscall_name)(struct s_td * td)
 // #define SYS_FUNC_ARGS(index_)       (&syscall_argnames[index_])
 
+int syscall_noop(struct s_td *);
+
 #include "decoders.h"
 
-#define sys_stat  sys_newstat
-#define sys_fstat sys_newfstat
-#define sys_lstat sys_newlstat
+// deprecated
+#define sys_sysfs           printargs
+#define sys_olduname        printargs
+#define sys_oldolduname     printargs
+#define sys_oldfstat        printargs
+#define sys_oldstat         printargs
+#define sys_vm86            printargs
+#define sys_vm86old         printargs
+#define sys_old_mmap        printargs
+#define sys_create_module   printargs
+#define sys_get_kernel_syms printargs
+#define sys_query_module    printargs
+#define sys_bdflush         printargs
+#define sys_oldselect       printargs
+
+// not implemented
+#define sys_afs_syscall printargs
+#define sys_break       printargs
+#define sys_fattach     printargs
+#define sys_fdetach     printargs
+#define sys_ftime       printargs
+#define sys_getmsg      printargs
+#define sys_getpmsg     printargs
+#define sys_gtty        printargs
+#define sys_isastream   printargs
+#define sys_lock        printargs
+#define sys_madvise1    printargs
+#define sys_mpx         printargs
+#define sys_prof        printargs
+#define sys_profil      printargs
+#define sys_nfsservctl  printargs
+#define sys_putmsg      printargs
+#define sys_putpmsg     printargs
+#define sys_security    printargs
+#define sys_stty        printargs
+#define sys_tuxcall     printargs
+#define sys_ulimit      printargs
+#define sys_vserver     printargs
+
+// too tired to do
+#define sys_signal      printargs
+#define sys_sigaction   printargs
+#define sys_ssetmask    printargs
+#define sys_sigsuspend  printargs
+#define sys_sigpending  printargs
+#define sys_sigprocmask printargs
 
 // same thing?
-#define sys_bind                   sys_connect
 #define sys_getsockname            sys_accept
 #define sys_getpeername            sys_accept
-#define sys_exit_group             sys_exit
-#define sys_fsync                  sys_close
-#define sys_fdatasync              sys_close
-#define sys_fchdir                 sys_close
-#define sys_syncfs                 sys_close
+#define sys_bind                   sys_connect
 #define sys_rmdir                  sys_chdir
+#define sys_uselib                 sys_chdir
 #define sys_unlink                 sys_chdir
+#define sys_umount                 sys_chdir
 #define sys_chroot                 sys_chdir
 #define sys_acct                   sys_chdir
 #define sys_swapoff                sys_chdir
 #define sys_mq_unlink              sys_chdir
-#define sys_link                   sys_rename
-#define sys_symlink                sys_rename
-#define sys_pivot_root             sys_rename
+#define sys_lchown                 sys_chown
+#define sys_lchown16               sys_chown16
+#define sys_clock_getres_time32    sys_clock_gettime32
+#define sys_clock_getres_time64    sys_clock_gettime64
+#define sys_fsync                  sys_close
+#define sys_fdatasync              sys_close
+#define sys_fchdir                 sys_close
+#define sys_syncfs                 sys_close
+#define sys_exit_group             sys_exit
+#define sys_getdents64             sys_getdents
+#define sys_readdir                sys_getdents
+#define sys_getsid                 sys_getpgid
+#define sys_lgetxattr              sys_getxattr
+#define sys_tkill                  sys_kill
+#define sys_llistxattr             sys_listxattr
 #define sys_creat                  sys_mkdir
 #define sys_chmod                  sys_mkdir
-#define sys_lchown                 sys_chown
-#define sys_setgid                 sys_setuid
-#define sys_setreuid               sys_setregid
-#define sys_getsid                 sys_getpgid
-#define sys_sched_get_priority_min sys_sched_get_priority_max
 #define sys_mlock                  sys_munmap
 #define sys_munlock                sys_munmap
-#define sys_lsetxattr              sys_setxattr
-#define sys_lgetxattr              sys_getxattr
-#define sys_llistxattr             sys_listxattr
+#define sys_oldlstat               sys_oldstat
 #define sys_lremovexattr           sys_removexattr
-#define sys_tkill                  sys_kill
-#define sys_clock_getres           sys_clock_gettime
+#define sys_link                   sys_rename
+#define sys_symlink                sys_rename
+#define sys_pivotroot              sys_rename
+#define sys_sched_get_priority_min sys_sched_get_priority_max
+#define sys_setdomainname          sys_sethostname
+#define sys_setregid               sys_setreuid
+#define sys_setregid16             sys_setreuid16
+#define sys_setgid                 sys_setuid
+#define sys_setgid16               sys_setuid16
+#define sys_lsetxattr              sys_setxattr
+#define sys_lstat                  sys_stat
+#define sys_lstat64                sys_stat64
+#define sys_stime                  sys_time
 
-// deprecated
-#define sys_sysfs printargs
+// no-op
+#define sys_fork            syscall_noop
+#define sys_getegid         syscall_noop
+#define sys_getegid16       syscall_noop
+#define sys_geteuid         syscall_noop
+#define sys_geteuid16       syscall_noop
+#define sys_getgid          syscall_noop
+#define sys_getgid16        syscall_noop
+#define sys_getpgrp         syscall_noop
+#define sys_getpid          syscall_noop
+#define sys_getppid         syscall_noop
+#define sys_gettid          syscall_noop
+#define sys_getuid          syscall_noop
+#define sys_getuid16        syscall_noop
+#define sys_idle            syscall_noop
+#define sys_inotify_init    syscall_noop
+#define sys_munlockall      syscall_noop
+#define sys_pause           syscall_noop
+#define sys_restart_syscall syscall_noop
+#define sys_sched_yield     syscall_noop
+#define sys_setsid          syscall_noop
+#define sys_sgetmask        syscall_noop
+#define sys_sigreturn       syscall_noop
+#define sys_sync            syscall_noop
+#define sys_uretprobe       syscall_noop
+#define sys_vfork           syscall_noop
+#define sys_vhangup         syscall_noop
 
 typedef struct s_entry
 {

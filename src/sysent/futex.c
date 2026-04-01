@@ -1,7 +1,7 @@
 #include "../ft_print.h"
 #include "futex.xlat.h"
 
-SYS_FUNC(futex)
+void do_futex(struct s_td *td, typeof(printtimespec32) printtimespec_fn)
 {
 	FIRST_ARG("uaddr");
 	printaddr(td->sc_args[0]);
@@ -19,7 +19,7 @@ SYS_FUNC(futex)
 		PRINT_LLU(td->sc_args[2]);
 
 		NEXT_ARG("timeout");
-		printtimespec(td, td->sc_args[3]);
+		printtimespec_fn(td, td->sc_args[3]);
 		break;
 	case FUTEX_FD:
 	case FUTEX_WAKE:
@@ -66,7 +66,7 @@ SYS_FUNC(futex)
 	case FUTEX_LOCK_PI:
 	case FUTEX_LOCK_PI2:
 		NEXT_ARG("timeout");
-		printtimespec(td, td->sc_args[3]);
+		printtimespec_fn(td, td->sc_args[3]);
 		break;
 	case FUTEX_UNLOCK_PI:
 	case FUTEX_TRYLOCK_PI:
@@ -76,7 +76,7 @@ SYS_FUNC(futex)
 		PRINT_LLU(td->sc_args[2]);
 
 		NEXT_ARG("timeout");
-		printtimespec(td, td->sc_args[3]);
+		printtimespec_fn(td, td->sc_args[3]);
 
 		NEXT_ARG("val3");
 		printflag(futex_bitsets, td->sc_args[5], NULL);
@@ -93,7 +93,7 @@ SYS_FUNC(futex)
 		PRINT_LLU(td->sc_args[2]);
 
 		NEXT_ARG("timeout");
-		printtimespec(td, td->sc_args[3]);
+		printtimespec_fn(td, td->sc_args[3]);
 
 		NEXT_ARG("uaddr2");
 		printaddr(td->sc_args[4]);
@@ -112,7 +112,17 @@ SYS_FUNC(futex)
 		PRINT_LLX(td->sc_args[5]);
 		break;
 	}
+}
 
+SYS_FUNC(futex_time32)
+{
+	do_futex(td, printtimespec32);
+	return SF_DECODE_COMPLETE;
+}
+
+SYS_FUNC(futex_time64)
+{
+	do_futex(td, printtimespec64);
 	return SF_DECODE_COMPLETE;
 }
 
@@ -140,6 +150,129 @@ SYS_FUNC(get_robust_list)
 
 	NEXT_ARG("len");
 	PRINT_LLU(td->sc_args[2]);
+
+	return SF_DECODE_COMPLETE;
+}
+
+void print_futex2_flags(unsigned int flags)
+{
+	printflag(futex2_size_flags, flags & FUTEX2_SIZE_MASK, NULL);
+	flags &= ~FUTEX2_SIZE_MASK;
+	if (flags)
+	{
+		print_or();
+		printflags(futex2_flags, flags, "FUTEX2_???");
+	}
+}
+
+int print_futex_waitv_struct(struct s_td *td, void *pt, size_t size)
+{
+	struct futex_waitv *buf = pt;
+
+	(void) td;
+	(void) size;
+	print_struct_start();
+	PRINT_MEMBER_LLX(*buf, val);
+	print_struct_member_sep();
+	PRINT_MEMBER(*buf, uaddr, printaddr);
+	print_struct_member_sep();
+	PRINT_MEMBER(*buf, flags, print_futex2_flags);
+	print_struct_end();
+
+	return PRINTARR_STATE_SEP;
+}
+
+SYS_FUNC(futex_waitv)
+{
+	FIRST_ARG("waiters");
+	struct futex_waitv buf = {};
+	printarray(td, (t_printarray_cfg){
+					   .printer = print_futex_waitv_struct,
+					   .start_addr = td->sc_args[0],
+					   .n_var = td->sc_args[1],
+					   .pt_buf_var = &buf,
+					   .var_size = sizeof(buf),
+					   .max_vars = 5,
+				   });
+
+	NEXT_ARG("nr_futexes");
+	PRINT_U(td->sc_args[1]);
+
+	NEXT_ARG("flags");
+	// not implemented yet
+	PRINT_X(td->sc_args[2]);
+
+	NEXT_ARG("timeout");
+	printtimespec64(td, td->sc_args[3]);
+
+	NEXT_ARG("clock_id");
+	print_clock_id(td->sc_args[4]);
+
+	return SF_DECODE_COMPLETE;
+}
+
+SYS_FUNC(futex_wake)
+{
+	FIRST_ARG("uaddr");
+	printaddr(td->sc_args[0]);
+
+	NEXT_ARG("mask");
+	printflag(futex2_bitset, td->sc_args[1], NULL);
+
+	NEXT_ARG("nr");
+	PRINT_D(td->sc_args[2]);
+
+	NEXT_ARG("flags");
+	print_futex2_flags(td->sc_args[3]);
+
+	return SF_DECODE_COMPLETE;
+}
+
+SYS_FUNC(futex_wait)
+{
+	FIRST_ARG("uaddr");
+	printaddr(td->sc_args[0]);
+
+	NEXT_ARG("val");
+	PRINT_U(td->sc_args[1]);
+
+	NEXT_ARG("mask");
+	printflag(futex2_bitset, td->sc_args[2], NULL);
+
+	NEXT_ARG("flags");
+	print_futex2_flags(td->sc_args[3]);
+
+	NEXT_ARG("timeout");
+	printtimespec64(td, td->sc_args[4]);
+
+	NEXT_ARG("clock_id");
+	print_clock_id(td->sc_args[5]);
+
+	return SF_DECODE_COMPLETE;
+}
+
+SYS_FUNC(futex_requeue)
+{
+	FIRST_ARG("waiters");
+	struct futex_waitv buf = {};
+	printarray(td, (t_printarray_cfg){
+					   .printer = print_futex_waitv_struct,
+					   .start_addr = td->sc_args[0],
+					   .n_var = td->sc_args[1],
+					   .pt_buf_var = &buf,
+					   .var_size = sizeof(buf),
+					   .max_vars = 5,
+				   });
+
+	NEXT_ARG("flags");
+	// not implemented yet
+	PRINT_X(td->sc_args[1]);
+
+	NEXT_ARG("nr_wake");
+	PRINT_D(td->sc_args[2]);
+
+	NEXT_ARG("nr_requeue");
+	PRINT_D(td->sc_args[3]);
 
 	return SF_DECODE_COMPLETE;
 }

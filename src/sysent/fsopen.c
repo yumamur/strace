@@ -7,7 +7,7 @@ SYS_FUNC(fsopen)
 	printstr(td, td->sc_args[0]);
 
 	NEXT_ARG("flags");
-	printflags(fsopen_flags, td->sc_args[1], );
+	printflags(fsopen_flags, td->sc_args[1], "FSOPEN_???");
 
 	return SF_DECODE_COMPLETE;
 }
@@ -41,15 +41,15 @@ SYS_FUNC(fsmount)
 	printflags(fsmount_flags, td->sc_args[1], "FSMOUNT_???");
 
 	NEXT_ARG("attr_flags");
-	printflags(fsmount_attr_flags, td->sc_args[2], "FSMOUNT_ATTR_???")
+	printflags(fsmount_attr_flags, td->sc_args[2], "FSMOUNT_ATTR_???");
 
-		return SF_DECODE_COMPLETE;
+	return SF_DECODE_COMPLETE;
 }
 
 SYS_FUNC(fspick)
 {
 	FIRST_ARG("dfd");
-	printdfd(td->sc_args[0]);
+	printfd(td->sc_args[0]);
 
 	NEXT_ARG("path");
 	printpath(td, td->sc_args[1]);

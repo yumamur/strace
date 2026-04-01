@@ -84,15 +84,15 @@ SYS_FUNC(setns)
 	return SF_DECODE_COMPLETE;
 }
 
-// SYS_FUNC(clone3)
-// {
-// 	FIRST_ARG("uargs");
-// 	printarray(td, (t_printarray_cfg){
+SYS_FUNC(clone3)
+{
+	FIRST_ARG("uargs");
+	// clone3 has 7 args, and since the syscalls can have 6 at most,
+	// the first arg is an array of the args.
+	printaddr(td->sc_args[0]);
 
-// 				   });
+	NEXT_ARG("size");
+	PRINT_LU(td->sc_args[1]);
 
-// 	NEXT_ARG("size");
-// 	PRINT_LU(td->sc_args[1]);
-
-// 	return SF_DECODE_COMPLETE;
-// }
+	return SF_DECODE_COMPLETE;
+}

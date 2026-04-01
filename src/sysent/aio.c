@@ -54,7 +54,7 @@ void printio_event(struct s_td *td, __kernel_ulong_t addr)
 		printio_event_struct(td, &buf, sizeof(buf));
 }
 
-int decode_io_getevents(struct s_td *td)
+int do_io_getevents(struct s_td *td, typeof(printtimespec32) printtimespec_fn)
 {
 	if (entering(*td))
 	{
@@ -91,24 +91,41 @@ int decode_io_getevents(struct s_td *td)
 					   });
 
 		NEXT_ARG("timeout");
-		printtimespec(td, td->sc_args[4]);
+		printtimespec_fn(td, td->sc_args[4]);
 
 		return SF_DECODE_COMPLETE;
 	}
 }
 
-SYS_FUNC(io_getevents)
+SYS_FUNC(io_getevents_time32)
 {
-	return decode_io_getevents(td);
+	return do_io_getevents(td, printtimespec32);
 }
 
-SYS_FUNC(io_pgetevents)
+SYS_FUNC(io_getevents_time64)
 {
-	decode_io_getevents(td);
+	return do_io_getevents(td, printtimespec64);
+}
 
-	NEXT_ARG("usig");
-	printsigset_kernel(td, td->sc_args[5]);
-	return SF_DECODE_COMPLETE;
+int do_io_pgetevents(struct s_td *td, typeof(printtimespec32) printtimespec_fn)
+{
+	int ret = do_io_getevents(td, printtimespec_fn);
+	if (exiting(*td))
+	{
+		NEXT_ARG("usig");
+		printsigset_kernel(td, td->sc_args[5]);
+	}
+	return ret;
+}
+
+SYS_FUNC(io_pgetevents_time32)
+{
+	return do_io_pgetevents(td, printtimespec32);
+}
+
+SYS_FUNC(io_pgetevents_time64)
+{
+	return do_io_pgetevents(td, printtimespec64);
 }
 
 void print_iocb_struct(struct iocb *iocb)

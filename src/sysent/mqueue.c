@@ -42,7 +42,7 @@ SYS_FUNC(mq_open)
 	return SF_DECODE_COMPLETE;
 }
 
-SYS_FUNC(mq_timedsend)
+void decode_mq_timedsend(struct s_td *td, typeof(printtimespec32) printtimespec_fn)
 {
 	FIRST_ARG("mqdes");
 	printfd(td->sc_args[0]);
@@ -57,12 +57,22 @@ SYS_FUNC(mq_timedsend)
 	PRINT_LLU((unsigned int) td->sc_args[3]);
 
 	NEXT_ARG("abs_timeout");
-	printtimespec(td, td->sc_args[4]);
+	printtimespec_fn(td, td->sc_args[4]);
+}
 
+SYS_FUNC(mq_timedsend_time32)
+{
+	decode_mq_timedsend(td, printtimespec32);
 	return SF_DECODE_COMPLETE;
 }
 
-SYS_FUNC(mq_timedreceive)
+SYS_FUNC(mq_timedsend_time64)
+{
+	decode_mq_timedsend(td, printtimespec64);
+	return SF_DECODE_COMPLETE;
+}
+
+int do_mq_timedreceive(struct s_td *td, typeof(printtimespec32) printtimespec_fn)
 {
 	if (entering(*td))
 	{
@@ -84,10 +94,20 @@ SYS_FUNC(mq_timedreceive)
 		printnum_addr_int32(td, td->sc_args[3]);
 
 		NEXT_ARG("abs_timeout");
-		printtimespec(td, td->sc_args[4]);
+		printtimespec_fn(td, td->sc_args[4]);
 	}
 
 	return 0;
+}
+
+SYS_FUNC(mq_timedreceive_time32)
+{
+	return do_mq_timedreceive(td, printtimespec32);
+}
+
+SYS_FUNC(mq_timedreceive_time64)
+{
+	return do_mq_timedreceive(td, printtimespec64);
 }
 
 SYS_FUNC(mq_notify)
@@ -102,7 +122,7 @@ SYS_FUNC(mq_notify)
 	return SF_DECODE_COMPLETE;
 }
 
-SYS_FUNC(sys_mq_getsetattr)
+SYS_FUNC(mq_getsetattr)
 {
 	if (entering(*td))
 	{

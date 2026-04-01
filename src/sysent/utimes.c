@@ -23,7 +23,7 @@ void decode_utimes(struct s_td *td, unsigned off)
 	printpath(td, td->sc_args[off++]);
 
 	NEXT_ARG("times");
-	printutimbuf_utimes(td, td->sc_args[off]);
+	printtimeval_utimes64(td, td->sc_args[off]);
 }
 
 SYS_FUNC(utimes)
@@ -42,15 +42,29 @@ SYS_FUNC(futimesat)
 	return SF_DECODE_COMPLETE;
 }
 
-SYS_FUNC(utimensat)
+void do_utimensat(struct s_td *td, typeof(printtimespec_utimes64) printtimespec_utimes_fn)
 {
 	FIRST_ARG("dirfd");
 	printdirfd(td, td->sc_args[0]);
 
-	decode_utimes(td, 1);
+	NEXT_ARG("filename");
+	printpath(td, td->sc_args[1]);
+
+	NEXT_ARG("times");
+	printtimespec_utimes_fn(td, td->sc_args[2]);
 
 	NEXT_ARG("flags");
 	printflags(utimensat_flags, td->sc_args[3], "UTIME_???");
+}
 
+SYS_FUNC(utimensat_time32)
+{
+	do_utimensat(td, printtimespec_utimes32);
+	return SF_DECODE_COMPLETE;
+}
+
+SYS_FUNC(utimensat_time64)
+{
+	do_utimensat(td, printtimespec_utimes64);
 	return SF_DECODE_COMPLETE;
 }
