@@ -2,7 +2,8 @@
 #include "ft_utils.h"
 #include "sysent/xlat.h"
 #include <time.h>
-#include <linux/time.h>
+#include <sys/time.h>
+//#include <linux/time.h>
 #include <string.h>
 
 static const char *clock_ids[] = {
@@ -16,7 +17,7 @@ static const char *clock_ids[] = {
 	XLAT_INDEXED(CLOCK_BOOTTIME),
 	XLAT_INDEXED(CLOCK_REALTIME_ALARM),
 	XLAT_INDEXED(CLOCK_BOOTTIME_ALARM),
-	XLAT_INDEXED(CLOCK_SGI_CYCLE),
+//	XLAT_INDEXED(CLOCK_SGI_CYCLE),
 	XLAT_INDEXED(CLOCK_TAI),
 };
 

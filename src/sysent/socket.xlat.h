@@ -167,7 +167,7 @@ const t_xlat_data msg_flags_data[] = {
 	XLAT(MSG_MORE),
 	XLAT(MSG_WAITFORONE),
 	XLAT(MSG_BATCH),
-	XLAT(MSG_SOCK_DEVMEM),
+//	XLAT(MSG_SOCK_DEVMEM),
 	XLAT(MSG_ZEROCOPY),
 	XLAT(MSG_FASTOPEN),
 	XLAT(MSG_CMSG_CLOEXEC),
@@ -239,7 +239,7 @@ const t_xlat_data socket_option_levels_data[] = {
 #ifdef SOL_UDPLITE
 	XLAT(SOL_UDPLITE),
 #endif
-	XLAT(SOL_VSOCK),
+//	XLAT(SOL_VSOCK),
 	XLAT(SOL_X25),
 	XLAT(SOL_XDP),
 };
