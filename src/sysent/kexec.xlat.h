@@ -9,7 +9,6 @@ const t_xlat_data kexec_flags_data[] = {
 	XLAT(KEXEC_ON_CRASH),
 	XLAT(KEXEC_PRESERVE_CONTEXT),
 	XLAT(KEXEC_UPDATE_ELFCOREHDR),
-	XLAT(KEXEC_CRASH_HOTPLUG_SUPPORT),
 };
 WXLAT(kexec_flags);
 
@@ -38,8 +37,6 @@ const t_xlat_data kexec_file_load_flags_data[] = {
 	XLAT(KEXEC_FILE_ON_CRASH),
 	XLAT(KEXEC_FILE_NO_INITRAMFS),
 	XLAT(KEXEC_FILE_DEBUG),
-	XLAT(KEXEC_FILE_NO_CMA),
-	XLAT(KEXEC_FILE_FORCE_DTB),
 };
 WXLAT(kexec_file_load_flags);
 

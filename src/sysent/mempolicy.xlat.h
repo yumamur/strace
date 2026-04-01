@@ -12,7 +12,6 @@ const t_xlat_data memory_policies_data[] = {
 	XLAT(MPOL_INTERLEAVE),
 	XLAT(MPOL_LOCAL),
 	XLAT(MPOL_PREFERRED_MANY),
-	XLAT(MPOL_WEIGHTED_INTERLEAVE),
 };
 WXLAT(memory_policies);
 

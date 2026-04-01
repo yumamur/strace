@@ -21,7 +21,6 @@ const t_xlat_data landlock_ruleset_fs_actions_data[] = {
 	XLAT(LANDLOCK_ACCESS_FS_MAKE_SYM),
 	XLAT(LANDLOCK_ACCESS_FS_REFER),
 	XLAT(LANDLOCK_ACCESS_FS_TRUNCATE),
-	XLAT(LANDLOCK_ACCESS_FS_IOCTL_DEV),
 };
 WXLAT(landlock_ruleset_fs_actions);
 
@@ -31,6 +30,12 @@ const t_xlat_data landlock_ruleset_net_actions_data[] = {
 };
 WXLAT(landlock_ruleset_net_actions);
 
+#ifndef LANDLOCK_SCOPE_ABSTRACT_UNIX_SOCKET
+#  define LANDLOCK_SCOPE_ABSTRACT_UNIX_SOCKET (1ULL << 0)
+#endif
+#ifndef LANDLOCK_SCOPE_SIGNAL
+#  define LANDLOCK_SCOPE_SIGNAL (1ULL << 1)
+#endif
 const t_xlat_data landlock_ruleset_scope_flags_data[] = {
 	XLAT(LANDLOCK_SCOPE_ABSTRACT_UNIX_SOCKET),
 	XLAT(LANDLOCK_SCOPE_SIGNAL),

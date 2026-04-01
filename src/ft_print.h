@@ -216,11 +216,9 @@ void printrlimit(struct s_td *td, __kernel_ulong_t addr);
 
 void printkey_t(int32_t key);
 
-int __attribute__((format(printf, 1, 2)))
-print_flush(const char *fmt, ...);
+int print_flush(const char *fmt, ...);
 
-void __attribute__((format(printf, 1, 2)))
-print_comment(const char *fmt, ...);
+void print_comment(const char *fmt, ...);
 
 // some tiny functions
 

@@ -25,7 +25,7 @@ const t_xlat_data perf_attr_size_versions_data[] = {
 	XLAT(PERF_ATTR_SIZE_VER6),
 	XLAT(PERF_ATTR_SIZE_VER7),
 	XLAT(PERF_ATTR_SIZE_VER8),
-	XLAT(PERF_ATTR_SIZE_VER9),
+//	XLAT(PERF_ATTR_SIZE_VER9),
 };
 WXLAT(perf_attr_size_versions);
 

@@ -18,7 +18,7 @@ const t_xlat_data mmap_map_types_data[] = {
 	XLAT(MAP_SHARED),
 	XLAT(MAP_SHARED_VALIDATE),
 	XLAT(MAP_PRIVATE),
-	XLAT(MAP_DROPPABLE),
+//	XLAT(MAP_DROPPABLE),
 };
 WXLAT(mmap_map_types);
 
@@ -96,8 +96,8 @@ const t_xlat_data madvise_values_data[] = {
 	XLAT(MADV_POPULATE_WRITE),
 	XLAT(MADV_DONTNEED_LOCKED),
 	XLAT(MADV_COLLAPSE),
-	XLAT(MADV_GUARD_INSTALL),
-	XLAT(MADV_GUARD_REMOVE),
+//	XLAT(MADV_GUARD_INSTALL),
+//	XLAT(MADV_GUARD_REMOVE),
 };
 WXLAT(madvise_values);
 
@@ -114,7 +114,9 @@ const t_xlat_data mlock_flags_data[] = {
 WXLAT(mlock_flags);
 
 const t_xlat_data pkey_access_rights_data[] = {
+#ifdef PKEY_UNRESTRICTED
 	XLAT(PKEY_UNRESTRICTED),
+#endif
 	XLAT(PKEY_DISABLE_ACCESS),
 	XLAT(PKEY_DISABLE_WRITE),
 #ifdef PKEY_DISABLE_EXECUTE

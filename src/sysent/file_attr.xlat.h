@@ -1,4 +1,4 @@
-#ifndef FILE_ATTR_XLAT_H
+/*#ifndef FILE_ATTR_XLAT_H
 #define FILE_ATTR_XLAT_H
 
 #include "xlat.h"
@@ -33,4 +33,4 @@ const t_xlat_data fs_xflags_data[] = {
 };
 WXLAT(fs_xflags);
 
-#endif /* FILE_ATTR_XLAT_H */
+#endif */

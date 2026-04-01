@@ -2,11 +2,11 @@
 #define FT_COMMON_H
 
 #include "types_time.h"
+#include <stddef.h>
 #include <inttypes.h>
 #include <linux/posix_types.h>
 #include <stdbool.h>
 #include <stdint.h>
-#include <time.h>
 
 void __attribute__((__format__(__printf__, 2, 3)))
 perror_(int errno, const char *fmt, ...);
@@ -247,8 +247,8 @@ typedef struct s_td
 		__kernel_ulong_t sc_args[MAX_ARGS];
 		__kernel_ulong_t sc_ret;
 		uint32_t         sc_err;
-		struct timespec  ptime;
-		struct timespec  stime;
+		t_struct_timespec64  ptime;
+		t_struct_timespec64  stime;
 		void            *carry;
 		free_carry_func  free_carry;
 

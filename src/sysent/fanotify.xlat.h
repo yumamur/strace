@@ -33,12 +33,12 @@ const t_xlat_data fan_events_data[] = {
 	XLAT(FAN_OPEN_PERM),
 	XLAT(FAN_ACCESS_PERM),
 	XLAT(FAN_OPEN_EXEC_PERM),
-	XLAT(FAN_PRE_ACCESS),
-	XLAT(FAN_MNT_ATTACH),
-	XLAT(FAN_MNT_DETACH),
-	XLAT(FAN_EVENT_ON_CHILD),
-	XLAT(FAN_RENAME),
-	XLAT(FAN_ONDIR),
+//	XLAT(FAN_PRE_ACCESS),
+//	XLAT(FAN_MNT_ATTACH),
+//	XLAT(FAN_MNT_DETACH),
+//	XLAT(FAN_EVENT_ON_CHILD),
+//	XLAT(FAN_RENAME),
+//	XLAT(FAN_ONDIR),
 };
 WXLAT(fan_events);
 
@@ -55,7 +55,7 @@ const t_xlat_data fan_init_flags_data[] = {
 	XLAT(FAN_REPORT_NAME),
 	XLAT(FAN_REPORT_TARGET_FID),
 	XLAT(FAN_REPORT_FD_ERROR),
-	XLAT(FAN_REPORT_MNT),
+//	XLAT(FAN_REPORT_MNT),
 };
 WXLAT(fan_init_flags);
 
@@ -72,7 +72,7 @@ const t_xlat_data fan_mark_flags_data[] = {
 	XLAT(FAN_MARK_INODE),
 	XLAT(FAN_MARK_MOUNT),
 	XLAT(FAN_MARK_FILESYSTEM),
-	XLAT(FAN_MARK_MNTNS),
+//	XLAT(FAN_MARK_MNTNS),
 };
 WXLAT(fan_mark_flags);
 

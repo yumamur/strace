@@ -34,9 +34,6 @@ const t_xlat_data lsm_ids_data[] = {
 	XLAT(LSM_ID_LOCKDOWN),
 	XLAT(LSM_ID_BPF),
 	XLAT(LSM_ID_LANDLOCK),
-	XLAT(LSM_ID_IMA),
-	XLAT(LSM_ID_EVM),
-	XLAT(LSM_ID_IPE),
 };
 WXLAT(lsm_ids);
 

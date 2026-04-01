@@ -49,6 +49,9 @@ const t_xlat_data futex2_size_flags_data[] = {
 };
 WXLAT(futex2_size_flags);
 
+#ifndef FUTEX2_MPOL
+#  define FUTEX2_MPOL 0x08
+#endif
 const t_xlat_data futex2_flags_data[] = {
 	XLAT(FUTEX2_NUMA),
 	XLAT(FUTEX2_MPOL),

@@ -59,6 +59,13 @@ const t_xlat_data fchownat_flags_data[] = {
 };
 WXLAT(fchownat_flags);
 
+#ifndef AT_HANDLE_MNT_ID_UNIQUE
+# define AT_HANDLE_MNT_ID_UNIQUE 0x001
+#endif
+
+#ifndef AT_HANDLE_CONNECTABLE
+# define AT_HANDLE_CONNECTABLE 0x002
+#endif
 const t_xlat_data name_to_handle_at_flags_data[] = {
 	XLAT(AT_HANDLE_MNT_ID_UNIQUE),
 	XLAT(AT_HANDLE_CONNECTABLE),

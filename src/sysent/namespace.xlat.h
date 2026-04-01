@@ -3,7 +3,10 @@
 
 #include "xlat.h"
 
-#include <linux/fcntl.h>
+#ifndef __USE_GNU
+#  define __USE_GNU
+#endif
+#include <fcntl.h>
 #include <sys/mount.h>
 
 const t_xlat_data mount_flags_data[] = {

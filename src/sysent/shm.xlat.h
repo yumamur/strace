@@ -9,7 +9,7 @@
 #ifndef __USE_MISC
 #  define __USE_MISC
 #endif
-#include <sys/shm.h>
+#include <linux/shm.h>
 
 const t_xlat_data shm_resource_flags_data[] = {
 	XLAT(IPC_CREAT),

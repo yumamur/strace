@@ -18,9 +18,10 @@ void printlandlock_ruleset_attr(struct s_td *td, __kernel_ulong_t addr, size_t s
 	print_struct_member_sep();
 	PRINT_MEMBER_FLAGS(buf, handled_access_net,
 					   landlock_ruleset_net_actions, "LANDLOCK_ACCESS_NET_???");
-	print_struct_member_sep();
-	PRINT_MEMBER_FLAGS(buf, scoped,
-					   landlock_ruleset_scope_flags, "LANDLOCK_SCOPE_???");
+// this exists on newer versions, but we are using ubuntu 22 and it does not exist.
+//	print_struct_member_sep();
+//	PRINT_MEMBER_FLAGS(buf, scoped,
+//					   landlock_ruleset_scope_flags, "LANDLOCK_SCOPE_???");
 	print_struct_end();
 }
 

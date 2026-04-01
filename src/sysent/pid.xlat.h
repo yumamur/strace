@@ -7,7 +7,7 @@
 
 const t_xlat_data pidfd_open_flags_data[] = {
 	XLAT(PIDFD_NONBLOCK),
-	XLAT(PIDFD_THREAD),
+//	XLAT(PIDFD_THREAD),
 };
 WXLAT(pidfd_open_flags);
 

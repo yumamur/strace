@@ -1,9 +1,9 @@
-#include "../ft_print.h"
+/*#include "../ft_print.h"
 #include "../ft_utils.h"
 #include "file_attr.xlat.h"
 #include <linux/fs.h>
 
-void printfile_attr(struct s_td *td, __kernel_ulong_t addr, size_t usize, bool is_get)
+ void printfile_attr(struct s_td *td, __kernel_ulong_t addr, size_t usize, bool is_get)
 {
 	struct file_attr buf;
 	unsigned long    pagesize = ft_getpagesize();
@@ -77,4 +77,4 @@ SYS_FUNC(file_setattr)
 	printflags(file_attr_flags, td->sc_args[4], "AT_???");
 
 	return SF_DECODE_COMPLETE;
-}
+}*/

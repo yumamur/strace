@@ -3,6 +3,7 @@
 
 #include "xlat.h"
 
+#include <sys/time.h>
 #include <linux/fcntl.h>
 #ifdef __USE_XOPEN2K8
 #  undef __USE_XOPEN2K8
@@ -17,7 +18,6 @@
 #  undef __DISABLED_USE_XOPEN2K8
 #endif
 #include <sys/sysmacros.h>
-#include <time.h>
 
 const t_xlat_data mode_file_types_data[] = {
 	XLAT_NAMED(__S_IFDIR, "S_IFDIR"),
@@ -72,9 +72,6 @@ const t_xlat_data statx_flags_data[] = {
 	XLAT(STATX_MNT_ID),
 	XLAT(STATX_DIOALIGN),
 	XLAT(STATX_MNT_ID_UNIQUE),
-	XLAT(STATX_SUBVOL),
-	XLAT(STATX_WRITE_ATOMIC),
-	XLAT(STATX_DIO_READ_ALIGN),
 };
 WXLAT(statx_flags);
 

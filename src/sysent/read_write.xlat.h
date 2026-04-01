@@ -17,6 +17,16 @@ const char *lseek_whence_values[] = {
 #endif
 };
 
+#ifndef RWF_NOAPPEND
+#  define RWF_NOAPPEND ((__kernel_rwf_t) 0x00000020)
+#endif
+#ifndef RWF_ATOMIC
+#  define RWF_ATOMIC ((__kernel_rwf_t) 0x00000040)
+#endif
+#ifndef RWF_DONTCACHE
+#  define RWF_DONTCACHE ((__kernel_rwf_t) 0x00000080)
+#endif
+
 const t_xlat_data rwf_flags_data[] = {
 	XLAT(RWF_HIPRI),
 	XLAT(RWF_DSYNC),
