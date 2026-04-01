@@ -235,24 +235,6 @@ int decode_ptrace_entering(struct s_td *const td)
 	case PTRACE_SETSIGMASK:
 		printsigmask_sized(td, data, addr);
 		break;
-	// case PTRACE_GETREGSET:
-	// 	return decode_getregset(td, data, addr);
-	// case PTRACE_SETREGSET:
-	// 	return decode_setregset(td, data, addr);
-	// case PTRACE_SECCOMP_GET_METADATA:
-	// 	return decode_seccomp_metadata(td, data, addr);
-	case PTRACE_SET_SYSCALL_INFO:
-		printptrace_syscall_info(td, data, addr, addr);
-		break;
-	// case PTRACE_PEEKDATA:
-	// case PTRACE_PEEKTEXT:
-	// case PTRACE_PEEKUSER:
-	// case PTRACE_GETEVENTMSG:
-	// case PTRACE_GETSIGINFO:
-	// case PTRACE_GETSIGMASK:
-	// case PTRACE_PEEKSIGINFO:
-	// case PTRACE_SECCOMP_GET_FILTER:
-	// case PTRACE_GET_SYSCALL_INFO:
 	default:
 		printaddr(data);
 		break;

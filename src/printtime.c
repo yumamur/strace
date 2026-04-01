@@ -1,6 +1,7 @@
 #include "ft_print.h"
 #include "ft_utils.h"
 #include "sysent/xlat.h"
+#include <time.h>
 #include <linux/time.h>
 #include <string.h>
 

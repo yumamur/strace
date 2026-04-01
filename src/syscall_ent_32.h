@@ -459,7 +459,7 @@
 [465]	= {5,	SYS_FUNC_NAME(listxattrat),					"listxattrat"},
 [466]	= {4,	SYS_FUNC_NAME(removexattrat),				"removexattrat"},
 [467]	= {5,	SYS_FUNC_NAME(open_tree_attr),				"open_tree_attr"},
-[468]	= {5,	SYS_FUNC_NAME(file_getattr),				"file_getattr"},
-[469]	= {5,	SYS_FUNC_NAME(file_setattr),				"file_setattr"},
-[470]	= {4,	SYS_FUNC_NAME(listns),						"listns"},
+// [468]	= {5,	SYS_FUNC_NAME(file_getattr),				"file_getattr"},
+// [469]	= {5,	SYS_FUNC_NAME(file_setattr),				"file_setattr"},
+// [470]	= {4,	SYS_FUNC_NAME(listns),						"listns"},
 #endif /* SYSCALL_ENT_32_H */
