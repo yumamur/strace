@@ -162,104 +162,104 @@ static inline void decode_dfd_path_flags_name(struct s_td *td)
 	printstr(td, td->sc_args[3]);
 }
 
-void printxattr_args(struct s_td *td, __kernel_ulong_t addr, size_t usize,
-					 struct xattr_args *buf)
-{
-	print_struct_start();
+// void printxattr_args(struct s_td *td, __kernel_ulong_t addr, size_t usize,
+// 					 struct xattr_args *buf)
+// {
+// 	print_struct_start();
 
-	print_struct_member("value");
-	if (buf->size > XATTR_SIZE_MAX)
-		printaddr(buf->value);
-	else
-		printnstr(td, buf->value, entering(*td) ? buf->size : td->sc_ret);
+// 	print_struct_member("value");
+// 	if (buf->size > XATTR_SIZE_MAX)
+// 		printaddr(buf->value);
+// 	else
+// 		printnstr(td, buf->value, entering(*td) ? buf->size : td->sc_ret);
 
-	print_struct_member_sep();
-	PRINT_MEMBER_U(*buf, size);
+// 	print_struct_member_sep();
+// 	PRINT_MEMBER_U(*buf, size);
 
-	print_struct_member_sep();
-	PRINT_MEMBER_FLAGS(*buf, flags, xattr_flags, "XATTR_???");
+// 	print_struct_member_sep();
+// 	PRINT_MEMBER_FLAGS(*buf, flags, xattr_flags, "XATTR_???");
 
-	if (is_verbose(*td) && usize > sizeof(struct xattr_args))
-	{
-		print_struct_member_sep();
-		print_comment("%u extra bytes at %0#lx",
-					  (unsigned) (usize - sizeof(struct xattr_args)),
-					  addr + sizeof(struct xattr_args));
-	}
+// 	if (is_verbose(*td) && usize > sizeof(struct xattr_args))
+// 	{
+// 		print_struct_member_sep();
+// 		print_comment("%u extra bytes at %0#lx",
+// 					  (unsigned) (usize - sizeof(struct xattr_args)),
+// 					  addr + sizeof(struct xattr_args));
+// 	}
 
-	print_struct_end();
-}
+// 	print_struct_end();
+// }
 
-int fetch_xattr_args_or_printaddr(struct s_td *td, __kernel_ulong_t addr, size_t usize,
-								  struct xattr_args *buf)
-{
-	return usize < sizeof(struct xattr_args) ?
-			   -1 :
-			   umovemem_or_printaddr(td, buf, addr, MIN(sizeof(*buf), usize));
-}
+// int fetch_xattr_args_or_printaddr(struct s_td *td, __kernel_ulong_t addr, size_t usize,
+// 								  struct xattr_args *buf)
+// {
+// 	return usize < sizeof(struct xattr_args) ?
+// 			   -1 :
+// 			   umovemem_or_printaddr(td, buf, addr, MIN(sizeof(*buf), usize));
+// }
 
-SYS_FUNC(setxattrat)
-{
-	struct xattr_args buf;
+// SYS_FUNC(setxattrat)
+// {
+// 	struct xattr_args buf;
 
-	decode_dfd_path_flags_name(td);
+// 	decode_dfd_path_flags_name(td);
 
-	NEXT_ARG("uargs");
-	if (!fetch_xattr_args_or_printaddr(td, td->sc_args[4], td->sc_args[5], &buf))
-		printxattr_args(td, td->sc_args[4], td->sc_args[5], &buf);
+// 	NEXT_ARG("uargs");
+// 	if (!fetch_xattr_args_or_printaddr(td, td->sc_args[4], td->sc_args[5], &buf))
+// 		printxattr_args(td, td->sc_args[4], td->sc_args[5], &buf);
 
-	NEXT_ARG("usize");
-	PRINT_LLU(td->sc_args[5]);
+// 	NEXT_ARG("usize");
+// 	PRINT_LLU(td->sc_args[5]);
 
-	return SF_DECODE_COMPLETE;
-}
+// 	return SF_DECODE_COMPLETE;
+// }
 
-SYS_FUNC(getxattrat)
-{
-	if (entering(*td))
-	{
-		struct xattr_args buf;
+// SYS_FUNC(getxattrat)
+// {
+// 	if (entering(*td))
+// 	{
+// 		struct xattr_args buf;
 
-		decode_dfd_path_flags_name(td);
+// 		decode_dfd_path_flags_name(td);
 
-		if (!fetch_xattr_args_or_printaddr(td, td->sc_args[4], td->sc_args[5], &buf))
-		{
-			if (buf.size)
-			{
-				struct xattr_args *cpy = malloc(sizeof(struct xattr_args));
-				if (!cpy)
-					perror_and_die(errno, "malloc");
-				td_carry(td, &buf, free);
-				return 0;
-			}
-			printxattr_args(td, td->sc_args[4], td->sc_args[5], &buf);
-		}
-	}
-	else
-	{
-		struct xattr_args *buf = td_carry_get_voidptr(td);
+// 		if (!fetch_xattr_args_or_printaddr(td, td->sc_args[4], td->sc_args[5], &buf))
+// 		{
+// 			if (buf.size)
+// 			{
+// 				struct xattr_args *cpy = malloc(sizeof(struct xattr_args));
+// 				if (!cpy)
+// 					perror_and_die(errno, "malloc");
+// 				td_carry(td, &buf, free);
+// 				return 0;
+// 			}
+// 			printxattr_args(td, td->sc_args[4], td->sc_args[5], &buf);
+// 		}
+// 	}
+// 	else
+// 	{
+// 		struct xattr_args *buf = td_carry_get_voidptr(td);
 
-		NEXT_ARG("uargs");
-		printxattr_args(td, td->sc_args[4], td->sc_args[5], buf);
+// 		NEXT_ARG("uargs");
+// 		printxattr_args(td, td->sc_args[4], td->sc_args[5], buf);
 
-		NEXT_ARG("usize");
-		PRINT_LLU(td->sc_args[5]);
-	}
+// 		NEXT_ARG("usize");
+// 		PRINT_LLU(td->sc_args[5]);
+// 	}
 
-	return SF_DECODE_COMPLETE;
-}
+// 	return SF_DECODE_COMPLETE;
+// }
 
-SYS_FUNC(listxattrat)
-{
-	if (entering(*td))
-		decode_dfd_path_flags(td);
-	else
-		decode_xattr_list(td, td->sc_args[3], td->sc_args[4]);
-	return 0;
-}
+// SYS_FUNC(listxattrat)
+// {
+// 	if (entering(*td))
+// 		decode_dfd_path_flags(td);
+// 	else
+// 		decode_xattr_list(td, td->sc_args[3], td->sc_args[4]);
+// 	return 0;
+// }
 
-SYS_FUNC(removexattrat)
-{
-	decode_dfd_path_flags_name(td);
-	return SF_DECODE_COMPLETE;
-}
+// SYS_FUNC(removexattrat)
+// {
+// 	decode_dfd_path_flags_name(td);
+// 	return SF_DECODE_COMPLETE;
+// }

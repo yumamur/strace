@@ -412,17 +412,17 @@ SYS_FUNC(cachestat)
 	return 0;
 }
 
-SYS_FUNC(mseal)
-{
-	FIRST_ARG("start");
-	printaddr(td->sc_args[0]);
+// SYS_FUNC(mseal)
+// {
+// 	FIRST_ARG("start");
+// 	printaddr(td->sc_args[0]);
 
-	NEXT_ARG("len");
-	PRINT_LU(td->sc_args[1]);
+// 	NEXT_ARG("len");
+// 	PRINT_LU(td->sc_args[1]);
 
-	NEXT_ARG("flags");
-	// not implemented yet
-	PRINT_X(td->sc_args[2]);
+// 	NEXT_ARG("flags");
+// 	// not implemented yet
+// 	PRINT_X(td->sc_args[2]);
 
-	return SF_DECODE_COMPLETE;
-}
+// 	return SF_DECODE_COMPLETE;
+// }
