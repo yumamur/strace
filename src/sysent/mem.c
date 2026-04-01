@@ -273,7 +273,7 @@ SYS_FUNC(readahead)
 	printfd(td->sc_args[0]);
 
 	NEXT_ARG("offset");
-	unsigned int next_arg = print_ll_arg(td, td->sc_args[1]);
+	unsigned int next_arg = print_ll_arg(td, 1);
 
 	NEXT_ARG("count");
 	PRINT_LLU(td->sc_args[next_arg]);

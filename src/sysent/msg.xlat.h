@@ -30,8 +30,16 @@ const t_xlat_data msgctl_flags_data[] = {
 };
 WXLAT(msgctl_flags);
 
-extern const t_xlat *ipc_key;
-extern const t_xlat *ipc_mode_flags;
-extern const t_xlat *ipc_cmd_flags;
+const t_xlat_data msg_ipc_key_data[] = {
+	XLAT(IPC_PRIVATE),
+};
+WXLAT(msg_ipc_key);
+
+const t_xlat_data msg_ipc_mode_flags_data[] = {
+	XLAT(IPC_CREAT),
+	XLAT(IPC_EXCL),
+	XLAT(IPC_NOWAIT),
+};
+WXLAT(msg_ipc_mode_flags);
 
 #endif

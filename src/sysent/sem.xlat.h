@@ -35,8 +35,16 @@ const t_xlat_data semctl_ops_data[] = {
 };
 WXLAT(semctl_ops);
 
-extern const t_xlat *ipc_key;
-extern const t_xlat *ipc_mode_flags;
-extern const t_xlat *ipc_cmd_flags;
+const t_xlat_data sem_ipc_key_data[] = {
+	XLAT(IPC_PRIVATE),
+};
+WXLAT(sem_ipc_key);
+
+const t_xlat_data sem_ipc_mode_flags_data[] = {
+	XLAT(IPC_CREAT),
+	XLAT(IPC_EXCL),
+	XLAT(IPC_NOWAIT),
+};
+WXLAT(sem_ipc_mode_flags);
 
 #endif

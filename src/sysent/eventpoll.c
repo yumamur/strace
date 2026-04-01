@@ -38,7 +38,7 @@ int decode_epoll_wait(struct s_td *td, t_print_timeout print_timeout)
 	{
 		NEXT_ARG("events");
 		struct epoll_event buf;
-		printarray(td, (t_printarray_cfg) {
+		printarray(td, (t_printarray_cfg){
 						   .printer = print_epoll_event,
 						   .start_addr = td->sc_args[1],
 						   .pt_buf_var = &buf,
@@ -58,7 +58,7 @@ int decode_epoll_wait(struct s_td *td, t_print_timeout print_timeout)
 void print_timeout_int(struct s_td *td, __kernel_ulong_t addr)
 {
 	(void) td;
-	PRINT_D(*(int *) (void *) addr);
+	PRINT_D(addr);
 }
 
 SYS_FUNC(epoll_wait)

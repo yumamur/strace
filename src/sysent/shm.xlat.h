@@ -32,8 +32,9 @@ const t_xlat_data shmctl_ops_data[] = {
 };
 WXLAT(shmctl_ops);
 
-extern const t_xlat *ipc_key;
-extern const t_xlat *ipc_mode_flags;
-extern const t_xlat *ipc_cmd_flags;
+const t_xlat_data shm_ipc_key_data[] = {
+	XLAT(IPC_PRIVATE),
+};
+WXLAT(shm_ipc_key);
 
 #endif

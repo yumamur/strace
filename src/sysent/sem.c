@@ -19,7 +19,7 @@ int printsembuf_struct(struct s_td *td, void *sbvp, size_t mem_size)
 
 void printkey_t(int32_t key)
 {
-	printflag(ipc_key, key, "IPC_???");
+	printflag(sem_ipc_key, key, "IPC_???");
 }
 
 SYS_FUNC(semget)
@@ -33,7 +33,7 @@ SYS_FUNC(semget)
 	NEXT_ARG("semflg");
 	__kernel_ulong_t flg = td->sc_args[2] & ~0777;
 	if (flg)
-		printflags(ipc_mode_flags, flg, "SEM_???");
+		printflags(sem_ipc_mode_flags, flg, "SEM_???");
 	printumode(td->sc_args[2] & 0777);
 
 	return SF_DECODE_COMPLETE;

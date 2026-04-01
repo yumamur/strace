@@ -8,7 +8,7 @@ void print_memmode(__kernel_ulong_t arg)
 	const unsigned int flags = arg & MPOL_MODE_FLAGS;
 	if (flags)
 	{
-		printf("|");
+		print_or();
 		printflags(memory_policy_flags, flags, "MPOL_F_???");
 	}
 }

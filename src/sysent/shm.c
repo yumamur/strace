@@ -30,7 +30,7 @@ void printshm_flags(__kernel_ulong_t flags)
 SYS_FUNC(shmget)
 {
 	FIRST_ARG("key");
-	printflag(ipc_key, td->sc_args[0], NULL);
+	printflag(shm_ipc_key, td->sc_args[0], NULL);
 
 	NEXT_ARG("size");
 	PRINT_LLU(td->sc_args[1]);

@@ -13,7 +13,11 @@ SYS_FUNC(memfd_create)
 	unsigned int huge_size = (td->sc_args[1] & MFD_HUGE_SIZE) >> MFD_HUGE_SHIFT;
 	printflags(memfd_create_flags, flags, "MFD_???");
 	if (huge_size)
-		printf("|%u<<MFD_HUGE_SIZE", huge_size);
+	{
+		print_or();
+		PRINT_U(huge_size);
+		prints("<<MFD_HUGE_SIZE");
+	}
 
 	return SF_DECODE_COMPLETE;
 }

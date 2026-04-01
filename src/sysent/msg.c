@@ -73,7 +73,7 @@ SYS_FUNC(msgget)
 	NEXT_ARG("msgflg");
 	__kernel_ulong_t flg = td->sc_args[1] & ~0777;
 	if (flg)
-		printflags(ipc_mode_flags, flg, "MSG_???");
+		printflags(msg_ipc_mode_flags, flg, "MSG_???");
 	printumode(td->sc_args[2] & 0777);
 
 	return SF_DECODE_COMPLETE;
