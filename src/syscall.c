@@ -92,6 +92,7 @@ unsigned int   current_klongsize = abi_klongsize0;
 struct iovec   g_io = {.iov_base = &g_regs};
 
 extern bool    g_flag_trace;
+extern bool    g_flag_count;
 
 static t_entry sysent_stub = {
 	.call_name = "unkown",
@@ -216,15 +217,6 @@ void get_syscall_args(struct s_td *td)
 		td->sc_args[4] = (uint32_t) REGS_32.edi;
 		td->sc_args[5] = (uint32_t) REGS_32.ebp;
 	}
-	// else if (IS_ABI_X32)
-	// {
-	// 	td->sc_args[0] = (uint32_t) REGS_64.rdi;
-	// 	td->sc_args[1] = (uint32_t) REGS_64.rsi;
-	// 	td->sc_args[2] = (uint32_t) REGS_64.rdx;
-	// 	td->sc_args[3] = (uint32_t) REGS_64.r10;
-	// 	td->sc_args[4] = (uint32_t) REGS_64.r8;
-	// 	td->sc_args[5] = (uint32_t) REGS_64.r9;
-	// }
 	else
 	{
 		td->sc_args[0] = REGS_64.rdi;
@@ -290,9 +282,9 @@ void syscallstart(struct s_td *td)
 		t_entry *ent = td->entry;
 		print_syscall_enter(ent->call_name);
 		td->flags |= ent->logger(td);
+		fflush(FT_OUTFILE);
 	}
 	td->flags |= TD_INSYSCALL;
-	fflush(FT_OUTFILE);
 }
 
 void syscallend(struct s_td *td)

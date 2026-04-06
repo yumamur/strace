@@ -32,6 +32,7 @@ extern void         syscallend(struct s_td *);
 
 // flags
 bool g_flag_trace = false;
+bool g_flag_count = false;
 
 void trace_syscalls(pid_t child)
 {
@@ -118,7 +119,7 @@ void trace_syscalls(pid_t child)
 				if (ptrace(PTRACE_GETSIGINFO, child, 0, &si) == 0)
 				{
 					sig = si.si_signo;
-					// printf("--- We had a signal: %s ---\n", signal_names[sig]);
+					printf("--- We had a signal: %s ---\n", signal_names[sig]);
 				}
 				else
 					sig = stopsig;
@@ -206,11 +207,13 @@ void verify_flag(const char *flag_str)
 {
 	if (!flag_str)
 		return;
-	if (strncmp(flag_str, "--trace=", 8UL) == 0)
+	if (!strncmp(flag_str, "-c", 2UL))
+		g_flag_count = true;
+	if (!strncmp(flag_str, "--trace=", 8UL))
 		parse_tokens(flag_str + 8UL, ",", mark_syscall_to_trace);
-	else if (strncmp(flag_str, "-v", 2UL) == 0)
+	else if (!strncmp(flag_str, "-v", 2UL))
 		mark_syscall_verbose_all();
-	else if (strncmp(flag_str, "--verbose=", 10UL) == 0)
+	else if (!strncmp(flag_str, "--verbose=", 10UL))
 		parse_tokens(flag_str + 10UL, ",", mark_syscall_to_verbose);
 }
 
@@ -223,18 +226,11 @@ int main(int argc, char *const *argv, char *const *envp)
 	{
 		if (argv[args_start][0] != '-')
 			break;
-		verify_flag(argv[args_start]);
-		args_start++;
+		verify_flag(argv[args_start++]);
 	}
 
-	// if (argv[1][0] == '-' && strncmp(argv[1], "--trace=", 8) == 0)
-	// {
-	// 	parse_trace_options(argv[1] + 8);
-	// 	args_start = 2;
-	// }
-
 	if (argc - args_start < 1)
-		die("Usage: %s [--trace=<syscall_name[,syscall_name...]>] <program> [args...]",
+		die("Usage: %s [--trace=<syscall_name[,syscall_name...]>] <program> [args...]\n",
 			argv[0]);
 
 	if (!get_executable(argv[args_start], path, sizeof(path)))

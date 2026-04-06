@@ -2,10 +2,10 @@
 #define FT_COMMON_H
 
 #include "types_time.h"
-#include <stddef.h>
 #include <inttypes.h>
 #include <linux/posix_types.h>
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 
 void __attribute__((__format__(__printf__, 2, 3)))
@@ -239,18 +239,18 @@ typedef void (*free_carry_func)(void *);
 
 typedef struct s_td
 {
-		enum e_abi       abi;
-		unsigned int     flags;
-		int              pid;
-		struct s_entry  *entry;
-		__kernel_ulong_t sc_no;
-		__kernel_ulong_t sc_args[MAX_ARGS];
-		__kernel_ulong_t sc_ret;
-		uint32_t         sc_err;
-		t_struct_timespec64  ptime;
-		t_struct_timespec64  stime;
-		void            *carry;
-		free_carry_func  free_carry;
+		enum e_abi          abi;
+		unsigned int        flags;
+		int                 pid;
+		struct s_entry     *entry;
+		__kernel_ulong_t    sc_no;
+		__kernel_ulong_t    sc_args[MAX_ARGS];
+		__kernel_ulong_t    sc_ret;
+		uint32_t            sc_err;
+		t_struct_timespec64 ptime;
+		t_struct_timespec64 stime;
+		void               *carry;
+		free_carry_func     free_carry;
 
 } t_td;
 
@@ -311,7 +311,5 @@ extern unsigned int current_klongsize;
 
 const char         *get_errmsg(unsigned int num);
 const char         *get_errname(unsigned int num);
-
-// __kernel_ulong_t    get_sp_reg(void);
 
 #endif
